@@ -505,7 +505,7 @@ def Nw_S_aa(g_node_coor, Nw_beta_0, Nw_theta_0, f_array, Nw_U_bar, Nw_Ii, cospec
         Nw_Xu_Gs = np.einsum('nij,nj->ni', T_GsNw, np.array([Nw_U_bar, 0*Nw_U_bar, 0*Nw_U_bar]).T)  # Get all Nw Xu vectors. We will later average these.
         Nw_Xu_Gs_avg_nonnorm = (Nw_Xu_Gs[:, None] + Nw_Xu_Gs) / 2  # shape (n_g_nodes, n_g_nodes, 3), so each entry m,n is an average of the Xu vector at node m and the Xu vector at node n
         Nw_U_bar_avg = np.linalg.norm(Nw_Xu_Gs_avg_nonnorm, axis=2)
-    elif method is 'quadratic_vector_mean':  # weighted average by U**2
+    elif method == 'quadratic_vector_mean':  # weighted average by U**2
         Nw_Xu_Gs = np.einsum('nij,nj->ni', T_GsNw, np.array([Nw_U_bar**2, 0*Nw_U_bar, 0*Nw_U_bar]).T)  # Get all Nw Xu vectors. We will later average these.
         Nw_Xu_Gs_avg_nonnorm = (Nw_Xu_Gs[:, None] + Nw_Xu_Gs) / 2  # shape (n_g_nodes, n_g_nodes, 3), so each entry m,n is an average of the Xu vector at node m and the Xu vector at node n
         Nw_U_bar_avg = np.sqrt(np.linalg.norm(Nw_Xu_Gs_avg_nonnorm, axis=2))
