@@ -497,11 +497,11 @@ def Nw_S_aa(g_node_coor, Nw_beta_0, Nw_theta_0, f_array, Nw_U_bar, Nw_Ii, cospec
 
     # Difficult part. We need a cross-transformation matrix T_GsNw_avg, which is an array with shape (n_g_nodes, n_g_nodes, 3) where each (i,j) entry is the T_GsNw_avg, where Nw_avg is the avg. between Nw_i (at node i) and Nw_j (at node j)
     T_GsNw = T_GsNw_func(Nw_beta_0, Nw_theta_0)  # shape (n_g_nodes,3,3)
-    if method is 'unit_vector_mean':  # not weighted mean
+    if method == 'unit_vector_mean':  # not weighted mean
         Nw_Xu_Gs = np.einsum('nij,j->ni', T_GsNw, np.array([1, 0, 0]))  # Get all Nw Xu vectors. We will later average these.
         Nw_Xu_Gs_avg_nonnorm = (Nw_Xu_Gs[:, None] + Nw_Xu_Gs) / 2  # shape (n_g_nodes, n_g_nodes, 3), so each entry m,n is an average of the Xu vector at node m and the Xu vector at node n
         Nw_U_bar_avg = (Nw_U_bar[:, None] + Nw_U_bar) / 2  # from shape (n_g_nodes) to shape (n_g_nodes,n_g_nodes)
-    elif method is 'linear_vector_mean':   # weighted average by U
+    elif method == 'linear_vector_mean':   # weighted average by U
         Nw_Xu_Gs = np.einsum('nij,nj->ni', T_GsNw, np.array([Nw_U_bar, 0*Nw_U_bar, 0*Nw_U_bar]).T)  # Get all Nw Xu vectors. We will later average these.
         Nw_Xu_Gs_avg_nonnorm = (Nw_Xu_Gs[:, None] + Nw_Xu_Gs) / 2  # shape (n_g_nodes, n_g_nodes, 3), so each entry m,n is an average of the Xu vector at node m and the Xu vector at node n
         Nw_U_bar_avg = np.linalg.norm(Nw_Xu_Gs_avg_nonnorm, axis=2)

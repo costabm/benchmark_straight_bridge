@@ -3,7 +3,6 @@ import numpy as np
 import scipy.stats
 from buffeting import beta_DB_func
 from create_minigrid_data_from_raw_WRF_500_data import lat_lon_aspect_ratio, bridge_WRF_nodes_coor_func
-from nonhomogeneity import NwOneCase, NwAllCases, equivalent_Hw_beta_0_all
 from simple_5km_bridge_geometry import g_node_coor, p_node_coor, g_s_3D_func
 from my_utils import normalize
 import matplotlib.pyplot as plt
