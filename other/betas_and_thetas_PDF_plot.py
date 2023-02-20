@@ -1,6 +1,6 @@
 import numpy as np
 from buffeting import beta_and_theta_bar_func, beta_0_func
-from simple_5km_bridge_geometry import g_node_coor
+from straight_bridge_geometry import g_node_coor
 from transformations import T_LsGs_3g_func, T_GsGw_func
 import pandas as pd
 import matplotlib.pyplot as plt

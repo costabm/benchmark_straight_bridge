@@ -8,7 +8,7 @@ Calculates the effects from static loads, such as mean wind
 """
 
 import numpy as np
-from simple_5km_bridge_geometry import pontoons_s
+from straight_bridge_geometry import pontoons_s
 from mass_and_stiffness_matrix import stiff_matrix_func, stiff_matrix_12b_local_func, stiff_matrix_12c_local_func, linmass, SDL
 from transformations import g_node_L_3D_func, mat_Gs_elem_Gs_node_all_func, \
     mat_Ls_elem_Gs_elem_all_func

@@ -11,12 +11,12 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 from mass_and_stiffness_matrix import mass_matrix_func, stiff_matrix_func, geom_stiff_matrix_func
-from simple_5km_bridge_geometry import g_node_coor, p_node_coor, g_node_coor_func, R, arc_length, zbridge, bridge_shape, g_s_3D_func
+from straight_bridge_geometry import g_node_coor, p_node_coor, g_node_coor_func, R, arc_length, zbridge, bridge_shape, g_s_3D_func
 from transformations import mat_Ls_node_Gs_node_all_func, from_cos_sin_to_0_2pi, beta_within_minus_Pi_and_Pi_func, mat_6_Ls_node_12_Ls_elem_girder_func, NumpyEncoder
 from modal_analysis import modal_analysis_func, simplified_modal_analysis_func
 from static_loads import static_wind_func
 # from create_WRF_data_at_bridge_nodes_from_minigrid_data import Nw_ws_wd_func  # todo: go get this function in the trash folder "old_wrong_files"
-from buffeting import buffeting_FD_func, rad, deg, list_of_cases_FD_func, parametric_buffeting_FD_func, U_bar_func, buffeting_TD_func, list_of_cases_TD_func, parametric_buffeting_TD_func, beta_0_func
+from buffeting import buffeting_FD_func, rad, deg, list_of_cases_FD_func, parametric_buffeting_FD_func, U_bar_func, buffeting_TD_func, list_of_cases_TD_func, parametric_buffeting_TD_func, beta_0_func, beta_DB_func, beta_DB_func_2
 from my_utils import normalize, normalize_mode_shape
 import copy
 from static_loads import static_dead_loads_func, R_loc_func
@@ -34,7 +34,7 @@ generate_new_C_Ci_grid = True  # attention!!
 # Initialize structure:
 ########################################################################################################################
 bridge_concept = 'K11'
-from simple_5km_bridge_geometry import g_node_coor, p_node_coor
+from straight_bridge_geometry import g_node_coor, p_node_coor
 
 g_node_num = len(g_node_coor)
 g_elem_num = g_node_num - 1
@@ -417,7 +417,8 @@ n_nodes_cases = [len(g_node_coor)]
 # Nw_idxs = np.arange(n_Nw_sw_cases)  # Use: [None] or np.arange(positive integer) (e.g. np.arange(n_Nw_sw_cases)). [None] -> Homogeneous wind only (as in Paper 2). Do not use np.arange(0)
 Nw_idxs = [None]  # Use: [None] or np.arange(positive integer) (e.g. np.arange(n_Nw_sw_cases)). [None] -> Homogeneous wind only (as in Paper 2). Do not use np.arange(0)
 Nw_or_equiv_Hw_cases = [None]  # Use [Nw] to analyse Nw only. Use ['Nw', 'Hw'] to analyse both Nw and the equivalent Hw!
-beta_DB_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
+beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
+beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
 if Nw_idxs != [None]:
     assert len(beta_DB_cases) == 1
@@ -499,7 +500,7 @@ parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplif
 # Validating the wind field:
 # #######################################################################################################################
 from wind_field.wind_field_3D_applied_validation import wind_field_3D_applied_validation_func
-from simple_5km_bridge_geometry import arc_length, R
+from straight_bridge_geometry import arc_length, R
 from buffeting import wind_field_3D_all_blocks_func, rad, deg
 
 beta_DB = rad(100)  # wind direction

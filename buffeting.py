@@ -48,7 +48,7 @@ import math
 import copy
 import time
 import pandas as pd
-from simple_5km_bridge_geometry import arc_length
+from straight_bridge_geometry import arc_length
 from aero_coefficients import aero_coef, aero_coef_derivatives
 from transformations import normalize, g_node_L_3D_func, g_elem_nodes_func, T_GsGw_func, T_LsGs_3g_func, T_LsGs_6g_func,\
     T_LrLs_func, T_LSOHLwbar_func, mat_Ls_node_Gs_node_all_func, rotate_v1_about_v2_func, vec_Ls_elem_Ls_node_girder_func, \
@@ -1678,7 +1678,7 @@ def buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, ske
     # plt.show()
 
     # Plotting local VS global std. of the response along the bridge girder.
-    from simple_5km_bridge_geometry import g_s_3D_func
+    from straight_bridge_geometry import g_s_3D_func
     g_s_3D = g_s_3D_func(g_node_coor)
     if plot_std_along_girder:
         plt.figure(figsize=(3.65, 2.65), dpi=400)
@@ -1750,8 +1750,8 @@ def parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
     # New Dataframe that instead stores the std of all nodes
     for i in range(0, 6):
         results_df['std_max_dof_' + str(i)] = None
-        for n in range(n_g_nodes):
-            results_df_all_g_nodes[f'g_node_{n}_std_dof_{i}'] = None
+        col_list = [f'g_node_{n}_std_dof_{i}' for n in range(n_g_nodes)]
+        results_df_all_g_nodes = pd.concat([results_df_all_g_nodes, pd.DataFrame(columns=col_list)]).replace({np.nan: None})
 
     case_idx = -1  # index of the case
     for aero_coef_method, n_aero_coef, include_SE, flutter_derivatives_type, n_modes, n_freq, g_node_num, f_min, f_max, include_sw, include_KG, skew_approach, f_array_type, make_M_C_freq_dep, \

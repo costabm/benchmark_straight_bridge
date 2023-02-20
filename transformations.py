@@ -3,7 +3,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from simple_5km_bridge_geometry import p_node_idx
+from straight_bridge_geometry import p_node_idx
 from sympy import cos, sin, Matrix, diff, symbols, pi, lambdify
 
 def normalize(v):

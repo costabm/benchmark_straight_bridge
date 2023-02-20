@@ -6,7 +6,7 @@ from my_utils import normalize_mode_shape
 from transformations import mat_Ls_node_Gs_node_all_func
 from mass_and_stiffness_matrix import mass_matrix_func, stiff_matrix_func, geom_stiff_matrix_func
 from modal_analysis import simplified_modal_analysis_func
-from simple_5km_bridge_geometry import g_node_coor, p_node_coor
+from straight_bridge_geometry import g_node_coor, p_node_coor
 
 n_modes_plot = 100
 
@@ -14,7 +14,7 @@ n_modes_plot = 100
 # Initialize structure:
 ########################################################################################################################
 bridge_concept = 'K11'
-from simple_5km_bridge_geometry import g_node_coor, p_node_coor
+from straight_bridge_geometry import g_node_coor, p_node_coor
 
 g_node_num = len(g_node_coor)
 g_elem_num = g_node_num - 1

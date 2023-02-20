@@ -413,7 +413,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
 
 ## Validation:
 from buffeting import deg, rad, U_bar_func, Ai_func, Cij_func, Ii_func, iLj_func, beta_0_func
-from simple_5km_bridge_geometry import g_node_coor, arc_length, R
+from straight_bridge_geometry import g_node_coor, arc_length, R
 from wind_field.wind_field_3D import wind_field_3D_func
 from transformations import T_GsGw_func
 import numpy as np

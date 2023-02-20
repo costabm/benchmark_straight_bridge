@@ -541,7 +541,7 @@ def colormap_2D_vs_Cosine():
     thetas = np.arange(rad(-89.9), rad(89.9) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
     xx, yy = np.meshgrid(betas, thetas)
     from buffeting import U_bar_func
-    from simple_5km_bridge_geometry import g_node_coor
+    from straight_bridge_geometry import g_node_coor
     def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
         new_cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),

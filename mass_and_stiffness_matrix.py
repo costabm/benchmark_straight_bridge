@@ -14,7 +14,7 @@ email: bernamdc@gmail.com
 """
 
 import numpy as np
-from simple_5km_bridge_geometry import p_node_idx, c_height
+from straight_bridge_geometry import p_node_idx, c_height
 from transformations import T_LsGs_12b_func, T_LsGs_12c_func, T_LsGs_6p_func, g_elem_L_3D_func
 from frequency_dependencies.read_Aqwa_file import pontoon_area_func, pontoon_Ixx_Iyy_func, pontoon_displacement_func, pontoon_stiffness_func, added_mass_func, added_damping_func
 

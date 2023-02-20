@@ -11,7 +11,7 @@ https://www.orcina.com/webhelp/OrcaFlex/Content/html/Rayleighdamping,Guidance.ht
 """
 
 import numpy as np
-from simple_5km_bridge_geometry import g_node_coor, p_node_coor
+from straight_bridge_geometry import g_node_coor, p_node_coor
 from frequency_dependencies.read_Aqwa_file import added_damping_func
 from transformations import T_LsGs_6p_func
 

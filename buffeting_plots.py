@@ -3,7 +3,7 @@ import numpy as np
 import scipy.stats
 from buffeting import beta_DB_func
 from create_minigrid_data_from_raw_WRF_500_data import lat_lon_aspect_ratio, bridge_WRF_nodes_coor_func
-from simple_5km_bridge_geometry import g_node_coor, p_node_coor, g_s_3D_func
+from straight_bridge_geometry import g_node_coor, p_node_coor, g_s_3D_func
 from my_utils import normalize
 import matplotlib.pyplot as plt
 import matplotlib
@@ -398,7 +398,7 @@ def plot_contourf_time_history_response(u_loc, time_array, g_node_coor, filename
     S_delta_local: shape(n_freq, n_nodes, n_dof)
     """
     import matplotlib
-    from simple_5km_bridge_geometry import g_s_3D_func
+    from straight_bridge_geometry import g_s_3D_func
     import copy
     g_s_3D = g_s_3D_func(g_node_coor)
     dt = time_array[1] - time_array[0]
@@ -437,7 +437,7 @@ def plot_contourf_time_history_response(u_loc, time_array, g_node_coor, filename
     pass
 
 def time_domain_plots():
-    from simple_5km_bridge_geometry import g_node_coor
+    from straight_bridge_geometry import g_node_coor
     my_path = os.path.join(os.getcwd(), r'results')
     u_loc_path = []
     TD_df_path = []  # to obtain the time step dt
