@@ -22,12 +22,12 @@ import copy
 from static_loads import static_dead_loads_func, R_loc_func
 
 start_time = time.time()
-run_modal_analysis = False
+run_modal_analysis = True
 run_DL = False  # include Dead Loads, for all analyses.
-run_sw_for_modal = False # include Static wind for the modal_analysis_after_static_loads. For other analyses use include_SW (inside buffeting function).
+run_sw_for_modal = True # include Static wind for the modal_analysis_after_static_loads. For other analyses use include_SW (inside buffeting function).
 run_new_Nw_sw = False
 
-run_modal_analysis_after_static_loads = False
+run_modal_analysis_after_static_loads = True
 generate_new_C_Ci_grid = True  # attention!!
 
 ########################################################################################################################
@@ -399,18 +399,18 @@ include_SE_in_modal = False  # includes effects from Kse when calculating mode s
 
 # MULTIPLE CASES
 dtype_in_response_spectra_cases = ['float64']  # complex128, float64, float32. It doesn't make a difference in accuracy, nor in computational time (only when memory is an issue!).
-include_sw_cases = [False]  # include static wind effects or not (initial angle of attack and geometric stiffness)
+include_sw_cases = [True]  # include static wind effects or not (initial angle of attack and geometric stiffness)
 include_KG_cases = [True]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
-include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
+include_SE_cases = [False]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [128]  # Use 1024 with 'equal_width_bins' or 128 with 'equal_energy_bins'
+n_freq_cases = [1024]  # Use 1024 with 'equal_width_bins' or 128 with 'equal_energy_bins'
 f_min_cases = [0.002]  # Hz. Use 0.002
 f_max_cases = [0.5]  # Hz. Use 0.5! important to not overstretch this parameter
-f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins'
+f_array_type_cases = ['equal_width_bins']  # 'equal_width_bins', 'equal_energy_bins'
 # n_modes_cases = [(g_node_num+len(p_node_coor))*6]
 n_modes_cases = [100]
 n_nodes_cases = [len(g_node_coor)]
@@ -418,6 +418,7 @@ n_nodes_cases = [len(g_node_coor)]
 Nw_idxs = [None]  # Use: [None] or np.arange(positive integer) (e.g. np.arange(n_Nw_sw_cases)). [None] -> Homogeneous wind only (as in Paper 2). Do not use np.arange(0)
 Nw_or_equiv_Hw_cases = [None]  # Use [Nw] to analyse Nw only. Use ['Nw', 'Hw'] to analyse both Nw and the equivalent Hw!
 beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
+# beta_0_cases = np.array([rad(0)])
 beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
 if Nw_idxs != [None]:

@@ -22,54 +22,28 @@ from frequency_dependencies.read_Aqwa_file import pontoon_area_func, pontoon_Ixx
 ########################################################################################################################
 # Global variables: Mostly obtained from "Appendix B - SBJ-30-C3-NOR-90-RE-102 Global analyses rev A.pdf"
 ########################################################################################################################
-E = 210E9  # (Pa) (Young Modulus)
-A = 1.43  # (m2) (CS Area)
-Iy = 2.67  # (m4) (CS Weak Axis Inertia)
-Iz = 114.83  # (m4) (CS Strong Axis Inertia)
-J = 6.88  # (m4) (CS Torsional Inertia)
-poissonratio = 0.3  # (for steel)
-zbridge = 14.5  # (m) (deck height above water, measured at the Shear Centre!))
-linmass = 175.1 * 1000  # (N/m) (linear mass) (== 17850 kg/m)  # Obtained from Phase 3 document SBJ-30-C3-NOR-90-RE-102 Version: A, Table 2-2. Slightly different from Phase 5 Appendix F – Global Analyses - Modelling and assumptions, Table 4-1
-c_linmass = 7200 * 9.81  # (N/m) (column linear mass)
-c_A = 0.872  # (m2) (Column area)
-c_Iy = 5.53  # (m4) (Column Inertia y)
-c_Iz = c_Iy  # (m4) (Column Inertia z)
-c_J = 11.06  # (m4) (Column torsional inertia. Circular -> J = I0 = Iy+Iz)
-c_diameter = 7.16  # (m4)
-c_CD = 1.05  # drag coefficient.
-stiffspring = 1E15  # (N/m) or (Nm/rad) (value of a fixed support spring)
 g = 9.81  # (m/s2) (gravity acc.)
-water_gamma = 10000  # (N/m3) (water density)
-SDL = (4.89+0.6+1.33)*1000 * g  # (N/m) (asphalt + railings + transv stiffeners. See phase 3, MUL, App. A, Table 4-3)
+E = 210E9  # (Pa) (Young Modulus)
+A = 1.2  # (m2) (CS Area)
+Iy = 3  # (m4) (CS Weak Axis Inertia)
+Iz = 80  # (m4) (CS Strong Axis Inertia)
+J = 9  # (m4) (CS Torsional Inertia)
+poissonratio = 0.3  # (for steel)
+zbridge = 20  # (m) (deck height above water, measured at the Shear Centre!))
+linmass = A*7849*g  # (N/m) (linear mass) (== 17850 kg/m)  # Obtained from Phase 3 document SBJ-30-C3-NOR-90-RE-102 Version: A, Table 2-2. Slightly different from Phase 5 Appendix F – Global Analyses - Modelling and assumptions, Table 4-1
+
+c_A = 0.8  # (m2) (Column area)
+c_Iy = 2  # (m4) (Column Inertia y)
+c_Iz = 4  # (m4) (Column Inertia z)
+c_J = 7  # (m4) (Column torsional inertia. Circular -> J = I0 = Iy+Iz)
+c_linmass = A*7849*g  # (N/m) (column linear mass)
+
+stiffspring = 1E12  # (N/m) or (Nm/rad) (value of a fixed support spring)
+
+SDL = 0 * g  # (N/m) (asphalt + railings + transv stiffeners. See phase 3, MUL, App. A, Table 4-3)
 # Dependent variables:
 G = E / (2 * (1 + poissonratio))  # (Pa) (Shear Modulus)
 ########################################################################################################################
-
-
-# # todo: TESTINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
-# E = 210E9 / 10 # (Pa) (Young Modulus)
-# A = 1.43 / 1  # (m2) (CS Area)
-# Iy = 2.67 / 1  # (m4) (CS Weak Axis Inertia)
-# Iz = 114.83 / 3000  # (m4) (CS Strong Axis Inertia)
-# J = 6.88 / 100  # (m4) (CS Torsional Inertia)
-# poissonratio = 0.3  # (for steel)
-# zbridge = 14.5  # (m) (deck height above water, measured at the Shear Centre!))
-# linmass = 175.1 * 1000 * 100  # (N/m) (linear mass)
-# c_linmass = 7200 * 9.81  # (N/m) (column linear mass)
-# c_A = 0.872  # (m2) (Column area)
-# c_Iy = 5.53  # (m4) (Column Inertia y)
-# c_Iz = c_Iy  # (m4) (Column Inertia z)
-# c_J = 11.06  # (m4) (Column torsional inertia. Circular -> J = I0 = Iy+Iz)
-# c_diameter = 7.16  # (m4)
-# c_CD = 1.05  # drag coefficient.
-# stiffspring = 1E14  # (N/m) or (Nm/rad) (value of a fixed support spring)
-# g = 9.81  # (m/s2) (gravity acc.)
-# water_gamma = 10000  # (N/m3) (water density)
-# SDL = (4.89+0.6+1.33)*1000 * g  # (N/m) (asphalt + railings + transverse stiffeners. See phase 3, MUL, App. A, Table 4-3)
-# # Dependent variables:
-# G = E / (2 * (1 + poissonratio))  # (Pa) (Shear Modulus)
-# # todo: TESTINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
-
 
 ########################################################################################################################
 # MASS MATRIX
@@ -90,12 +64,12 @@ def P1_mass_self_func():  # Pontoon type 1. Local Pontoon Coordinates.
     # # return np.diag([p11, p22, p33, p44, p55, p66]) / g  # Units in kg (N/g)
 
     # NEW VERSION
-    p11 = 985 * 1000  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
+    p11 = 800 * 1000  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
     p22 = p11  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
     p33 = p11  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
-    p44 = 33.1E6  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
-    p55 = 252E6  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
-    p66 = 252E6  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
+    p44 = 0  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
+    p55 = 0  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
+    p66 = 0  # Table 4-2. PDF p. 44 Appendix F. AMX "Global Analyses - Modelling and assumptions"
     return np.diag([p11, p22, p33, p44, p55, p66])  # Units in kg (N/g)
 
 def P1_mass_added_func(w_array=None, make_freq_dep=False):  # todo: freq. dependency
@@ -130,7 +104,7 @@ def P1_mass_added_func(w_array=None, make_freq_dep=False):  # todo: freq. depend
         added_mass[5,5] = added_mass_func(w_horizontal, plot=False)[0][5,5]  # match T = 100 s (pontoon yaw)
         # # IF OFF-DIAGONALS ARE TO BE FORCED TO 0 (to avoid torsional modes with strong vertical component)
         # added_mass = np.diag(np.diag(added_mass))
-        return added_mass  # shape (6, 6)
+        return added_mass*0*0*0*0*0*0*0*0*0*0*0
 
     elif make_freq_dep:
         return added_mass_func(w_array, plot=False)  # shape (n_freq, 6, 6)
@@ -359,16 +333,16 @@ def mass_matrix_func(g_node_coor, p_node_coor, alpha, w_array=None, make_freq_de
 
 # Pontoons properties:
 def P1_stiff_func():  # Pontoon type 1. Local Pontoon Coordinates.
-    # # OLD VERSION:
-    # p11 = 0
-    # p22 = 0
-    # p33 = 5613 * 1000  # (N/m). Heave.
-    # p44 = 49541.7 * 1000  # (Nm/rad). Pontoon roll (bridge pitch)
-    # p55 = 1666581.7 * 1000  # (Nm/rad). Pontoon pitch (bridge roll)
-    # p66 = 0
+    # OLD VERSION:
+    p11 = 0
+    p22 = 0
+    p33 = 7000 * 1000  # (N/m). Heave.
+    p44 = 0
+    p55 = 900000 * 1000  # (Nm/rad). Pontoon pitch (bridge roll)
+    p66 = 0
 
-    p_stiffness = pontoon_stiffness_func()
-    return np.diag(np.diag(p_stiffness))  # removes the small values on the off-diagonals
+    # p_stiffness = pontoon_stiffness_func()
+    return np.diag([p11, p22, p33, p44, p55, p66])  # removes the small values on the off-diagonals
 
 # Girder 12dof element stiffness matrix:
 def stiff_matrix_12b_local_func(g_node_coor):
@@ -534,7 +508,7 @@ def stiff_matrix_func(g_node_coor, p_node_coor, alpha):
         matrix[6*(g_node_num + p):6 * (g_node_num + p) + 6, 6 * (g_node_num + p):6 * (g_node_num + p) + 6] += p_stiff_global[p]
     # Boundary conditions (first and last girder g_nodes):
     matrix[0:6, 0:6] += np.diag([stiffspring, stiffspring, stiffspring, stiffspring, stiffspring, stiffspring])
-    matrix[(g_node_num - 1) * 6:g_node_num * 6, (g_node_num - 1) * 6:g_node_num * 6] += np.diag([stiffspring, stiffspring, stiffspring,
+    matrix[(g_node_num - 1) * 6:g_node_num * 6, (g_node_num - 1) * 6:g_node_num * 6] += np.diag([0, stiffspring, stiffspring,
                                                                                                  stiffspring, stiffspring, stiffspring])
 
 

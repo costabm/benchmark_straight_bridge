@@ -64,7 +64,7 @@ import os
 ########################################################################################################################
 # Global variables
 ########################################################################################################################
-CS_width = 30  # m. CS width.
+CS_width = 31  # m. CS width.
 CS_height = 4  # m. CS height
 rho = 1.25  # kg/m3. air density.
 RP = 100  # years Return Period.
@@ -72,8 +72,8 @@ x_tower = 325  # m. x-coordinate of South tower for turbulence considerations.
 theta_0 = 0  # it is 0 if wind is in the Global XY plane. theta will account for girder geometries (and static loads).
 # Damping
 damping_ratio = 0.005  # Structural damping
-damping_Ti = 120  # period matching exactly the damping ratio (see Rayleigh damping)
-damping_Tj = 2  # period matching exactly the damping ratio (see Rayleigh damping)  # this used to be 5 sec, but see AMC\Milestone 10\Appendix F - Enclosure 1, Designers format, K11-K14.zip
+damping_Ti = 10  # period matching exactly the damping ratio (see Rayleigh damping)
+damping_Tj = 1  # period matching exactly the damping ratio (see Rayleigh damping)  # this used to be 5 sec, but see AMC\Milestone 10\Appendix F - Enclosure 1, Designers format, K11-K14.zip
 
 ########################################################################################################################
 # Auxiliary generic functions
@@ -117,47 +117,7 @@ def beta_DB_func_2(beta_0):
 
 def U_bar_func(g_node_coor, RP=RP):
     """ 10min mean wind """  #
-    g_node_coor_z = g_node_coor[:, 2]  # m. Meters above sea level
-    z = g_node_coor_z
-    # Possible distributions of wind speed:
-    # 1) Constant if same z. 2) Linearly varying from 0.6*V to V, from one end to the other. # NOTE: case 2 not done.
-
-    # # 10min mean wind speed, at 10m height:
-    # U10_1 = 22.9  # m/s at 10m height, for 1 year return period
-    # U10_10 = 27.6
-    # U10_100 = 31.7
-    # U10_10000 = 38.4  # m/s at 10m height, for 10000 year return period
-    #
-    # z0 = 0.01  # roughness length
-    # kt = 0.17  # terrain factor.
-    #
-    # # Wind speed, for each point and for each Return Period. Design Basis chapter 2.1.3.
-    # U_1 = 1.07 * U10_1 * kt * np.log(nodes_coor_z / z0)
-    # U_10 = 1.07 * U10_10 * kt * np.log(nodes_coor_z / z0)
-    # U_100 = 1.07 * U10_100 * kt * np.log(nodes_coor_z / z0)
-    # U_10000 = 1.07 * U10_10000 * kt * np.log(nodes_coor_z / z0)
-    #
-    # if (RP == 1):
-    #     U = U_1
-    # elif (RP == 10):
-    #     U = U_10
-    # elif (RP == 100):
-    #     U = U_100
-    # elif (RP == 10000):
-    #     U = U_10000
-    # return U
-
-    # Newest version:
-    # Alternative
-    z0 = 0.01
-    kt = 0.17
-    K = 0.2
-    n = 0.5
-    p = 1 - np.exp(-1/RP)
-    Cr = kt * np.log(z/z0)
-    Cprob = ((1-K*np.log(-np.log(1-p)))/(1-K*np.log(-np.log(0.98))))**n
-    V_1hour = Cr * Cprob * 24.3
-    V_10min = V_1hour * 1.07
+    V_10min = np.ones(len(g_node_coor)) * 30
     return V_10min
 
 def wind_vector_func(beta_0, theta_0):
@@ -185,40 +145,23 @@ def beta_and_theta_bar_func(g_node_coor, beta_0, theta_0, alpha):
 # Wind properties
 ########################################################################################################################
 def Ai_func(cond_rand_A):
-    # Shall Au,Av,Aw parameters be varied +-40%?:
-    if cond_rand_A:
-        Au = random.uniform(6.8 - 0.4*6.8, 6.8 + 0.4*6.8)
-        Av = random.uniform(9.4 - 0.4*9.4, 9.4 + 0.4*9.4)
-        Aw = random.uniform(9.4 - 0.4*9.4, 9.4 + 0.4*9.4)
-    else:
-        Au = 6.8
-        Av = 9.4
-        Aw = 9.4
+    Au = 6.8
+    Av = 9.4
+    Aw = 9.4
     Ai = np.array([Au, Av, Aw])
     return Ai
 
 def Cij_func(cond_rand_C):
-    # Shall Cij parameters be varied +-50%?:
-    if cond_rand_C:
-        Cux = random.uniform(3 - 0.5*3, 3 + 0.5*3)  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373
-        Cvx = random.uniform(3 - 0.5*3, 3 + 0.5*3)  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373
-        Cwx = random.uniform(3 - 0.5*3, 3 + 0.5*3)  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373
-        Cuy = random.uniform(10 - 0.5*10, 10 + 0.5*10)
-        Cuz = Cuy
-        Cvy = random.uniform(6.5 - 0.5*6.5, 6.5 + 0.5*6.5)
-        Cvz = Cvy
-        Cwy = Cvy
-        Cwz = random.uniform(3 - 0.5*3, 3 + 0.5*3)
-    else:
-        Cux = 3.  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373
-        Cvx = 6.  # Taken from AMC Aerodynamics report, Table 4. Changed recently!
-        Cwx = 3.  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373
-        Cuy = 10.
-        Cvy = 6.5
-        Cwy = 6.5
-        Cuz = Cuy
-        Cvz = Cvy
-        Cwz = 3.
+
+    Cux = 3.  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373
+    Cvx = 6.  # Taken from AMC Aerodynamics report, Table 4. Changed recently!
+    Cwx = 3.  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373
+    Cuy = 10.
+    Cvy = 6.5
+    Cwy = 6.5
+    Cuz = Cuy
+    Cvz = Cvy
+    Cwz = 3.
     Cij = np.array([[Cux, Cuy, Cuz],
                     [Cvx, Cvy, Cvz],
                     [Cwx, Cwy, Cwz]])
@@ -277,19 +220,9 @@ def Ii_func(g_node_coor, beta_DB, Ii_simplified):
     g_node_coor_z = g_node_coor[:, 2]  # m. Meters above sea level
     g_nodes = np.array(list(range(g_node_num)))  # starting at 0
 
-    Iu = np.zeros(g_node_num)
-    if Ii_simplified:
-        # OLD VERSION. CHANGED ONLY ON (15/04/2021)
-        # Iu = np.zeros(g_node_num)
-        # for n in g_nodes:
-        #     Iu[n] = 0.14
-        # Iv = 0.85 * Iu
-        # Iw = 0.55 * Iu
-        Iu = np.zeros(g_node_num)
-        for n in g_nodes:
-            Iu[n] = 1 / np.log(g_node_coor_z[n]/0.01)  # Design basis rev 0, 2018, Chapter 2.2
-        Iv = 0.84 * Iu  # Design basis rev 0, 2018, Chapter 2.2
-        Iw = 0.60 * Iu  # Design basis rev 0, 2018, Chapter 2.2
+    Iu = np.ones(g_node_num) * 3.947 / 30
+    Iv = np.ones(g_node_num) * 2.960 / 30  # Design basis rev 0, 2018, Chapter 2.2
+    Iw = np.ones(g_node_num) * 1.973 / 30  # Design basis rev 0, 2018, Chapter 2.2
     #
     # else:
     #     if 150 <= beta_DB <= 210:
@@ -1720,11 +1653,16 @@ def buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, ske
     print('Kse & Cse, Pre-processing, Buffeting, and Post-processing times (s): ' + str(stop_time_Kse_Cse) + ', ' + str(stop_time_1) + ', ' + str(stop_time_2) + \
           ', ' + str(stop_time_3) + '. Total time (s): ' + str(stop_time_1+stop_time_2+stop_time_3))
 
-    return {'std_delta_local': std_delta_local,
+    static_delta_local = copy.deepcopy(D_loc[:g_node_num]).T  # converting D_loc to the same format as std_delta_local
+
+    results = {'std_delta_local': std_delta_local,
             'cospec_type':cospec_type,
             'damping_ratio':damping_ratio,
             'damping_Ti':damping_Ti,
-            'damping_Tj':damping_Tj}
+            'damping_Tj':damping_Tj,
+            'static_delta_local': static_delta_local}
+
+    return results
 
 def list_of_cases_FD_func(n_aero_coef_cases, include_SE_cases, aero_coef_method_cases, beta_DB_cases, flutter_derivatives_type_cases, n_freq_cases, n_modes_cases,
                           n_nodes_cases, f_min_cases, f_max_cases, include_sw_cases, include_KG_cases, skew_approach_cases, f_array_type_cases, make_M_C_freq_dep_cases,
@@ -1761,6 +1699,7 @@ def parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
                                               p_node_coor, Ii_simplified, beta_DB, R_loc, D_loc, cospec_type, include_modal_coupling, include_SE_in_modal, f_array_type, make_M_C_freq_dep,
                                               dtype_in_response_spectra, Nw_idx, Nw_or_equiv_Hw)
         # Reading results
+        static_delta_local = buffeting_results['static_delta_local']
         std_delta_local = buffeting_results['std_delta_local']
         cospec_type = buffeting_results['cospec_type']
         damping_ratio = buffeting_results['damping_ratio']
@@ -1775,10 +1714,15 @@ def parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
         results_df_all_g_nodes.at[case_idx, 'damping_ratio'] = damping_ratio
         results_df_all_g_nodes.at[case_idx, 'damping_Ti'] = damping_Ti
         results_df_all_g_nodes.at[case_idx, 'damping_Tj'] = damping_Tj
-        for i in range(0,6):
+        for i in range(0, 6):
             results_df.at[case_idx, 'std_max_dof_'+str(i)] = np.max(std_delta_local[i])
             for n in range(n_g_nodes):
                 results_df_all_g_nodes.at[case_idx, f'g_node_{n}_std_dof_{i}'] = std_delta_local[i,n]
+        # New 4 lines of code to include static loads (dead loads and/or static wind) in the results
+        for i in range(0, 6):
+            results_df.at[case_idx, 'static_max_dof_'+str(i)] = np.max(static_delta_local[i])
+            for n in range(n_g_nodes):
+                results_df_all_g_nodes.at[case_idx, f'g_node_{n}_static_dof_{i}'] = static_delta_local[i,n]
 
         # Saving intermediate results (redundant) to avoid losing important data that took a long time to obtain
         if Nw_idx is not None:
@@ -1789,8 +1733,6 @@ def parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
     from time import gmtime, strftime
     results_df.to_csv(r'results\FD_std_delta_max_'+strftime("%Y-%m-%d_%H-%M-%S", gmtime())+'.csv')
     results_df_all_g_nodes.to_csv(r'results\FD_all_nodes_std_delta' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
-
-
 
     return None
 
