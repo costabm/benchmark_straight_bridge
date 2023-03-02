@@ -1195,9 +1195,12 @@ def buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, ske
     g_elem_num = g_node_num - 1
     if f_array_type == 'equal_width_bins':
         f_array = np.linspace(f_min, f_max, n_freq)
+    elif 'logspace_base_' in f_array_type:
+        log_base = float(f_array_type[len('logspace_base_'):])
+        f_array = np.logspace(np.emath.logn(log_base, f_min), np.emath.logn(log_base, f_max), num=n_freq, base=log_base)
     elif f_array_type == 'equal_energy_bins':
         print("""When using f_array_type = 'equal_energy_bins' make sure f_array.npy and max_S_delta_local.npy are both representative of the response and are very well discretized""")
-        f_array = discretize_S_delta_local_by_equal_energies(f_array=np.load(r"intermediate_results\f_array.npy"), max_S_delta_local=np.load(r"intermediate_results\max_S_delta_local.npy") ,n_freq_desired=copy.deepcopy(n_freq), plot=False)
+        f_array = discretize_S_delta_local_by_equal_energies(f_array=np.load(r"intermediate_results\f_array.npy"), max_S_delta_local=np.load(r"intermediate_results\max_S_delta_local.npy"), n_freq_desired=copy.deepcopy(n_freq))
 
     n_freq = len(f_array)
     w_array = f_array * 2 * np.pi
@@ -1714,15 +1717,17 @@ def parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
         results_df_all_g_nodes.at[case_idx, 'damping_ratio'] = damping_ratio
         results_df_all_g_nodes.at[case_idx, 'damping_Ti'] = damping_Ti
         results_df_all_g_nodes.at[case_idx, 'damping_Tj'] = damping_Tj
+
         for i in range(0, 6):
             results_df.at[case_idx, 'std_max_dof_'+str(i)] = np.max(std_delta_local[i])
-            for n in range(n_g_nodes):
-                results_df_all_g_nodes.at[case_idx, f'g_node_{n}_std_dof_{i}'] = std_delta_local[i,n]
+            col_list = [f'g_node_{n}_std_dof_{i}' for n in range(n_g_nodes)]
+            results_df_all_g_nodes.loc[case_idx, col_list] = std_delta_local[i]
         # New 4 lines of code to include static loads (dead loads and/or static wind) in the results
         for i in range(0, 6):
             results_df.at[case_idx, 'static_max_dof_'+str(i)] = np.max(static_delta_local[i])
-            for n in range(n_g_nodes):
-                results_df_all_g_nodes.at[case_idx, f'g_node_{n}_static_dof_{i}'] = static_delta_local[i,n]
+            col_list = [f'g_node_{n}_static_dof_{i}' for n in range(n_g_nodes)]
+            results_df_all_g_nodes.loc[case_idx, col_list] = static_delta_local[i]
+
 
         # Saving intermediate results (redundant) to avoid losing important data that took a long time to obtain
         if Nw_idx is not None:

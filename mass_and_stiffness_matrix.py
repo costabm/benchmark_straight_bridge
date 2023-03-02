@@ -36,9 +36,9 @@ c_A = 0.8  # (m2) (Column area)
 c_Iy = 2  # (m4) (Column Inertia y)
 c_Iz = 4  # (m4) (Column Inertia z)
 c_J = 7  # (m4) (Column torsional inertia. Circular -> J = I0 = Iy+Iz)
-c_linmass = A*7849*g  # (N/m) (column linear mass)
+c_linmass = c_A*7849*g  # (N/m) (column linear mass)
 
-stiffspring = 1E12  # (N/m) or (Nm/rad) (value of a fixed support spring)
+stiffspring = 1E15  # (N/m) or (Nm/rad) (value of a fixed support spring)
 
 SDL = 0 * g  # (N/m) (asphalt + railings + transv stiffeners. See phase 3, MUL, App. A, Table 4-3)
 # Dependent variables:

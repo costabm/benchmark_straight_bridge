@@ -8,6 +8,8 @@ import os
 import sys
 import time
 import json
+
+import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from mass_and_stiffness_matrix import mass_matrix_func, stiff_matrix_func, geom_stiff_matrix_func
@@ -24,7 +26,7 @@ from static_loads import static_dead_loads_func, R_loc_func
 start_time = time.time()
 run_modal_analysis = True
 run_DL = False  # include Dead Loads, for all analyses.
-run_sw_for_modal = True # include Static wind for the modal_analysis_after_static_loads. For other analyses use include_SW (inside buffeting function).
+run_sw_for_modal = False # include Static wind for the modal_analysis_after_static_loads. For other analyses use include_SW (inside buffeting function).
 run_new_Nw_sw = False
 
 run_modal_analysis_after_static_loads = True
@@ -84,34 +86,33 @@ if run_modal_analysis:
             ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[i, :, 1], c='tab:green', label='Horizontal (y-axis)')
             ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[i, :, 2], c='tab:blue', label='Vertical (z-axis)')
             ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[i, :, 3], c='tab:orange', label='Torsional (rx-axis)')
-            ax.text(0.049, 0.65, '$T_{'+f'{i+1}'+'}='+f'{np.round(periods[i],1)}s$', bbox={'fc': 'white', 'alpha': 0.6})
-            ax.set_xticks([0, 2500, 5000])
+            ax.text(0.049, 0.65, '$T_{'+f'{i+1}'+'}='+f'{np.round(periods[i],2)}s$', bbox={'fc': 'white', 'alpha': 0.6})
+            ax.set_xticks([0, 500, 1000])
         fig.supxlabel('x-axis [m]')
         plt.tight_layout(pad=0.5) # w_pad=0.04, h_pad=0.06)
         plt.savefig(r'_mode_shapes/first_50_modes.png')
-        plt.show()
 
-        h, l = ax.get_legend_handles_labels()
-        plt.figure(dpi=500, figsize=(6,1))
-        plt.axis('off')
-        plt.legend(h,l, ncol=3)
-        plt.tight_layout()
-        plt.savefig(r'_mode_shapes/new_mode_legend.png')
-        plt.show()
-
-        fig, axs = plt.subplots(10, 5, sharex=True,sharey=True, dpi=200, figsize=(8,10.4))
-        # plt.subplots_adjust(wspace=0.1, hspace=0.1)
-        for i, ax in enumerate(axs.ravel()):
-            j = i + int(n_modes_plot/2)
-            ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 1], c='tab:green', label='Horizontal (y-axis)')
-            ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 2], c='tab:blue', label='Vertical (z-axis)')
-            ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 3], c='tab:orange', label='Torsional (rx-axis)')
-            ax.text(0.049, 0.65, '$T_{'+f'{j+1}'+'}='+f'{np.round(periods[j],1)}s$', bbox={'fc': 'white', 'alpha': 0.6})
-            ax.set_xticks([0, 2500, 5000])
-        fig.supxlabel('x-axis [m]')
-        plt.tight_layout(pad=0.5) # w_pad=0.04, h_pad=0.06)
-        plt.savefig(r'_mode_shapes/other_50_modes.png')
-        plt.show()
+        # h, l = ax.get_legend_handles_labels()
+        # plt.figure(dpi=500, figsize=(6,1))
+        # plt.axis('off')
+        # plt.legend(h,l, ncol=3)
+        # plt.tight_layout()
+        # plt.savefig(r'_mode_shapes/new_mode_legend.png')
+        # plt.show()
+        #
+        # fig, axs = plt.subplots(10, 5, sharex=True,sharey=True, dpi=200, figsize=(8,10.4))
+        # # plt.subplots_adjust(wspace=0.1, hspace=0.1)
+        # for i, ax in enumerate(axs.ravel()):
+        #     j = i + int(n_modes_plot/2)
+        #     ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 1], c='tab:green', label='Horizontal (y-axis)')
+        #     ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 2], c='tab:blue', label='Vertical (z-axis)')
+        #     ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 3], c='tab:orange', label='Torsional (rx-axis)')
+        #     ax.text(0.049, 0.65, '$T_{'+f'{j+1}'+'}='+f'{np.round(periods[j],2)}s$', bbox={'fc': 'white', 'alpha': 0.6})
+        #     ax.set_xticks([0, 500, 1000])
+        # fig.supxlabel('x-axis [m]')
+        # plt.tight_layout(pad=0.5) # w_pad=0.04, h_pad=0.06)
+        # plt.savefig(r'_mode_shapes/other_50_modes.png')
+        # plt.show()
         return None
     plot_mode_shapes(shapes, omegas, g_node_coor, p_node_coor)
 
@@ -380,37 +381,40 @@ include_SE_in_modal = False  # includes effects from Kse when calculating mode s
 # # ONE CASE (Can be used to generate new spectra of response for further use in the frequency discretization)
 # dtype_in_response_spectra = 'float32'
 # include_sw = True
-# include_KG = True
+# include_KG = False
 # n_aero_coef = 6
-# include_SE = True
+# cospec_type = 2
+# include_SE = False
 # make_M_C_freq_dep = False
 # aero_coef_method = '2D_fit_cons'
 # skew_approach = '3D'
 # flutter_derivatives_type = '3D_full'
-# n_freq = 2050  # Needs to be (much) larger than the number of frequencies used when 'equal_energy_bins'. E.g. 2050 for 'equal_width_bins', or 256 otherwise
+# n_freq = 1024*16  # Needs to be (much) larger than the number of frequencies used when 'equal_energy_bins'. E.g. 2050 for 'equal_width_bins', or 256 otherwise
 # f_min = 0.002
-# f_max = 0.5
-# f_array_type = 'equal_width_bins'  # Needs to be 'equal_width_bins' in order to generate the spectra which then enables obtaining 'equal_energy_bins'
+# f_max = 0.5*40
+# f_array_type = 'equal_width_bins'  # Needs to be 'equal_width_bins' or 'logspace_base_n' in order to generate the spectra which then enables obtaining 'equal_energy_bins'
 # n_modes = 100
 # beta_DB = rad(100)
-# generate_spectra_for_discretization = True if (f_array_type == 'equal_width_bins' and n_freq >= 1024) else False
+# Nw_idx=None
+# Nw_or_equiv_Hw=None
+# generate_spectra_for_discretization = True if (f_array_type != 'equal_energy_bins' and n_freq >= 1024) else False  # the point is to find 'equal_energy_bins', not to use them here
 # std_delta_local = buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, skew_approach, include_SE, flutter_derivatives_type, n_modes, f_min, f_max, n_freq, g_node_coor, p_node_coor,
-#                       Ii_simplified, beta_DB, R_loc, D_loc, cospec_type, include_modal_coupling, include_SE_in_modal, f_array_type, make_M_C_freq_dep, dtype_in_response_spectra, generate_spectra_for_discretization)['std_delta_local']
+#                       Ii_simplified, beta_DB, R_loc, D_loc, cospec_type, include_modal_coupling, include_SE_in_modal, f_array_type, make_M_C_freq_dep, dtype_in_response_spectra, Nw_idx, Nw_or_equiv_Hw, generate_spectra_for_discretization)['std_delta_local']
 
 # MULTIPLE CASES
 dtype_in_response_spectra_cases = ['float64']  # complex128, float64, float32. It doesn't make a difference in accuracy, nor in computational time (only when memory is an issue!).
 include_sw_cases = [True]  # include static wind effects or not (initial angle of attack and geometric stiffness)
-include_KG_cases = [True]  # include the effects of geometric stiffness (both in girder and columns)
+include_KG_cases = [False]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [False]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [1024]  # Use 1024 with 'equal_width_bins' or 128 with 'equal_energy_bins'
+n_freq_cases = [4096]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
 f_min_cases = [0.002]  # Hz. Use 0.002
-f_max_cases = [0.5]  # Hz. Use 0.5! important to not overstretch this parameter
-f_array_type_cases = ['equal_width_bins']  # 'equal_width_bins', 'equal_energy_bins'
+f_max_cases = [0.5*40]  # Hz. Use 0.5! important to not overstretch this parameter
+f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins', 'logspace_base_n' where n is the base of the log
 # n_modes_cases = [(g_node_num+len(p_node_coor))*6]
 n_modes_cases = [100]
 n_nodes_cases = [len(g_node_coor)]
@@ -418,7 +422,6 @@ n_nodes_cases = [len(g_node_coor)]
 Nw_idxs = [None]  # Use: [None] or np.arange(positive integer) (e.g. np.arange(n_Nw_sw_cases)). [None] -> Homogeneous wind only (as in Paper 2). Do not use np.arange(0)
 Nw_or_equiv_Hw_cases = [None]  # Use [Nw] to analyse Nw only. Use ['Nw', 'Hw'] to analyse both Nw and the equivalent Hw!
 beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
-# beta_0_cases = np.array([rad(0)])
 beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
 if Nw_idxs != [None]:

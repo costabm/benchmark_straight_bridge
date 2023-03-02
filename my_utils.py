@@ -17,3 +17,11 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return array[idx]
 
+def delta_array_func(array):
+    """Gives array with consecutive differences between its element values. Half distance for first and last elements"""
+    n_array = len(array)
+    delta_array = np.zeros(n_array)
+    delta_array[0] = (array[1]-array[0])/2
+    delta_array[-1] = (array[-1]-array[-2])/2
+    delta_array[1:-1] = np.array([array[f+1]-array[f] for f in range(1, n_array-1)])
+    return delta_array
