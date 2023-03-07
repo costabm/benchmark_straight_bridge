@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/K12_portable.iml" filepath="$PROJECT_DIR$/.idea/K12_portable.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/benchmark_straight_bridge.iml" filepath="$PROJECT_DIR$/.idea/benchmark_straight_bridge.iml" />
     </modules>
   </component>
 </project>
