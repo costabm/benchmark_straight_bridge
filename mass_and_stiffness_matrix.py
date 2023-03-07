@@ -121,16 +121,18 @@ def mass_matrix_12b_local_func(g_node_coor, matrix_type='consistent'):
     g_elem_L_3D = g_elem_L_3D_func(g_node_coor)
 
     # Rotational Mass is assumed to be described by I0 = Iy + Iz and linmass. It would be correct if we only
-    # had self-weight (and no transverse stiffeners). Slightly incorrect for the super imposed dead loads.
+    # had self-weight (and no transverse stiffeners). Slightly incorrect for the superimposed dead loads.
     I0 = Iy + Iz  # (m4) (Polar moment of inertia. Used for rotational mass)
     mass_elem_loc = np.zeros((g_elem_num, 12, 12))
     if matrix_type == 'lumped':
+        print('Mass is lumped!!!')
+        guess = 0.01  # conservative small value
         rotmass = linmass * I0 / A  # (Nm2/m) (torsional mass moment of inertia)
         mass_elem_loc_0 = np.array([[linmass, rotmass]] * g_elem_num)
         for n in range(g_elem_num):
             mass_elem_loc[n] = mass_elem_loc_0[n][0] * g_elem_L_3D[n] / 2 * np.diag(
-                [1, 1, 1, mass_elem_loc_0[n][1] / mass_elem_loc_0[n][0], 0, 0, 1, 1, 1,
-                 mass_elem_loc_0[n][1] / mass_elem_loc_0[n][0], 0, 0]) / g
+                [1, 1, 1, mass_elem_loc_0[n][1] / mass_elem_loc_0[n][0], guess, guess, 1, 1, 1,
+                 mass_elem_loc_0[n][1] / mass_elem_loc_0[n][0], guess, guess]) / g
     elif matrix_type == 'consistent':  # todo: update to include eccentricities from shear centre. See Strommens book.
         mass_elem_loc[:, 0, 0] = linmass / g * g_elem_L_3D * 1 / 3
         mass_elem_loc[:, 1, 1] = linmass / g * g_elem_L_3D * 13 / 35

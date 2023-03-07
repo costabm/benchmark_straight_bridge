@@ -71,7 +71,7 @@ RP = 100  # years Return Period.
 x_tower = 325  # m. x-coordinate of South tower for turbulence considerations.
 theta_0 = 0  # it is 0 if wind is in the Global XY plane. theta will account for girder geometries (and static loads).
 # Damping
-damping_ratio = 0.005  # Structural damping
+damping_ratio = 0.000001 * 0.005  # Structural damping
 damping_Ti = 10  # period matching exactly the damping ratio (see Rayleigh damping)
 damping_Tj = 1  # period matching exactly the damping ratio (see Rayleigh damping)  # this used to be 5 sec, but see AMC\Milestone 10\Appendix F - Enclosure 1, Designers format, K11-K14.zip
 
@@ -152,7 +152,6 @@ def Ai_func(cond_rand_A):
     return Ai
 
 def Cij_func(cond_rand_C):
-
     Cux = 3.  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373
     Cvx = 6.  # Taken from AMC Aerodynamics report, Table 4. Changed recently!
     Cwx = 3.  # Taken from paper: https://www.sciencedirect.com/science/article/pii/S0022460X04001373

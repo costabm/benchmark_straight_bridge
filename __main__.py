@@ -29,7 +29,7 @@ run_DL = False  # include Dead Loads, for all analyses.
 run_sw_for_modal = False # include Static wind for the modal_analysis_after_static_loads. For other analyses use include_SW (inside buffeting function).
 run_new_Nw_sw = False
 
-run_modal_analysis_after_static_loads = True
+run_modal_analysis_after_static_loads = False
 generate_new_C_Ci_grid = True  # attention!!
 
 ########################################################################################################################
@@ -373,7 +373,7 @@ except FileNotFoundError:
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 cospec_type_cases = [2]  # Best choices: 2, or 5.... 1: L.D.Zhu (however, the Cij params should be fitted again to measurements using this Zhu's formula and not Davenports). 2: Davenport, adapted for a 3D wind field (9 coherence coefficients). 3: Further including 1-pt spectrum Suw as in (Kaimal et al, 1972) and 2-pt spectrum Suw,ij as in (Katsuchi et al, 1999). 4: Fully according to (Hémon and Santi, 2007)(WRONG. No Coh_uw information required which is strange!). 5: Fully according to "A turbulence model based on principal components" (Solari and Tubino, 2002), supported by (Oiseth et al, 2013). 6: same as 2 but now with cosine term that allows negative coh
 Ii_simplified = True  # Turbulence intensities. Simplified -> same turbulence intensities everywhere for all directions.
-include_modal_coupling = True  # True: CQC. False: SRSS. Off-diag of modal M, C and K in the Freq. Dom. (modal coupling).
+include_modal_coupling = False  # True: CQC. False: SRSS. Off-diag of modal M, C and K in the Freq. Dom. (modal coupling).
 include_SE_in_modal = False  # includes effects from Kse when calculating mode shapes (only relevant in Freq. Domain). True gives complex mode shapes!
 ########################################################################################################################
 # Frequency domain buffeting analysis:
@@ -403,10 +403,10 @@ include_SE_in_modal = False  # includes effects from Kse when calculating mode s
 
 # MULTIPLE CASES
 dtype_in_response_spectra_cases = ['float64']  # complex128, float64, float32. It doesn't make a difference in accuracy, nor in computational time (only when memory is an issue!).
-include_sw_cases = [True]  # include static wind effects or not (initial angle of attack and geometric stiffness)
+include_sw_cases = [False]  # include static wind effects or not (initial angle of attack and geometric stiffness)
 include_KG_cases = [False]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
-include_SE_cases = [False]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
+include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
@@ -422,6 +422,7 @@ n_nodes_cases = [len(g_node_coor)]
 Nw_idxs = [None]  # Use: [None] or np.arange(positive integer) (e.g. np.arange(n_Nw_sw_cases)). [None] -> Homogeneous wind only (as in Paper 2). Do not use np.arange(0)
 Nw_or_equiv_Hw_cases = [None]  # Use [Nw] to analyse Nw only. Use ['Nw', 'Hw'] to analyse both Nw and the equivalent Hw!
 beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
+# beta_0_cases = np.array([rad(0)])
 beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
 if Nw_idxs != [None]:

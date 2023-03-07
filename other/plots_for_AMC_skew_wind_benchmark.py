@@ -44,4 +44,4 @@ fig.tight_layout()
 fig.subplots_adjust(bottom=0.08)  # play with this number to adjust legend placement
 
 plt.savefig(r'results\benchmark_' + f"SW_{str(df['SWind'][0])[0]}_KG_{str(df['KG'][0])[0]}_SE_{str(df['SE'][0])[0]}"
-                                  + f"_nfreq_{df['n_freq'][0]}_fmin_{df['f_min'][0]}_fmax_{df['f_max'][0]}.jpg")
+                                  + f"_nfreq_{df['n_freq'][0]}_fmin_{df['f_min'][0]}_fmax_{df['f_max'][0]}_zeta_{df['damping_ratio'][0]}.jpg")
