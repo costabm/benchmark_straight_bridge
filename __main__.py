@@ -8,7 +8,6 @@ import os
 import sys
 import time
 import json
-
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
