@@ -126,7 +126,7 @@ def mass_matrix_12b_local_func(g_node_coor, matrix_type='consistent'):
     mass_elem_loc = np.zeros((g_elem_num, 12, 12))
     if matrix_type == 'lumped':
         print('Mass is lumped!!!')
-        guess = 0.01  # conservative small value
+        guess = 0.0001  # conservative small value
         rotmass = linmass * I0 / A  # (Nm2/m) (torsional mass moment of inertia)
         mass_elem_loc_0 = np.array([[linmass, rotmass]] * g_elem_num)
         for n in range(g_elem_num):
@@ -190,12 +190,13 @@ def mass_matrix_12c_local_func(p_node_coor, matrix_type='consistent'):
     c_I0 = c_Iy + c_Iz  # (m4) (Polar moment of inertia. Used for rotational mass)
     mass_elem_loc = np.zeros((n_pontoons, 12, 12))
     if matrix_type == 'lumped':
-        rotmass = c_linmass * c_I0 / c_A  # (Nm2/m) (torsional mass moment of inertia)
-        mass_elem_loc_0 = np.array([[c_linmass, rotmass]] * n_pontoons)
+        guess = 0.0001  # conservative small value
+        c_rotmass = c_linmass * c_I0 / c_A  # (Nm2/m) (torsional mass moment of inertia)
+        mass_elem_loc_0 = np.array([[c_linmass, c_rotmass]] * n_pontoons)
         for n in range(n_pontoons):
             mass_elem_loc[n] = mass_elem_loc_0[n][0] * c_height[n] / 2 * np.diag(
-                [1, 1, 1, mass_elem_loc_0[n][1] / mass_elem_loc_0[n][0], 0, 0, 1, 1, 1,
-                 mass_elem_loc_0[n][1] / mass_elem_loc_0[n][0], 0, 0]) / g
+                [1, 1, 1, mass_elem_loc_0[n][1] / mass_elem_loc_0[n][0], guess, guess, 1, 1, 1,
+                 mass_elem_loc_0[n][1] / mass_elem_loc_0[n][0], guess, guess]) / g
     elif matrix_type == 'consistent':
         mass_elem_loc[:, 0, 0] = c_linmass / g * c_height * 1 / 3
         mass_elem_loc[:, 1, 1] = c_linmass / g * c_height * 13 / 35

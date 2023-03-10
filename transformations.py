@@ -926,13 +926,13 @@ def discretize_S_delta_local_by_equal_energies(f_array, max_S_delta_local, n_fre
 
     if plot == True:
         import matplotlib.pyplot as plt
-        plt.figure(figsize=(100,8))
-        plt.plot(f_array, spectrum_horiz, c='darkblue')
+        plt.figure(figsize=(200,8))
         for i in freq_indexes_horiz:
-            plt.axvline(f_array[i], c='lightblue', alpha=0.6)
-        plt.plot(f_array, spectrum_other, c='darkorange')
+            plt.axvline(f_array[i], c='lightblue', alpha=0.3)
         for i in freq_indexes_other:
-            plt.axvline(f_array[i], c='moccasin', alpha=0.6)
+            plt.axvline(f_array[i], c='moccasin', alpha=0.3)
+        plt.plot(f_array, spectrum_horiz, c='darkblue')
+        plt.plot(f_array, spectrum_other, c='darkorange')
         plt.ylim([0,None])
         plt.savefig(r'results\freq_discretization_VS_predefined_response_spectrum.jpg')
         plt.close()

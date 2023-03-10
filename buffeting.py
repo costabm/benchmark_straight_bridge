@@ -71,9 +71,12 @@ RP = 100  # years Return Period.
 x_tower = 325  # m. x-coordinate of South tower for turbulence considerations.
 theta_0 = 0  # it is 0 if wind is in the Global XY plane. theta will account for girder geometries (and static loads).
 # Damping
-damping_ratio = 0.000001 * 0.005  # Structural damping
+damping_type = 'modal'  # 'Rayleigh' or 'modal'.
+damping_ratio = 0.005  #  0.000001 * 0.005  # Structural damping
 damping_Ti = 10  # period matching exactly the damping ratio (see Rayleigh damping)
 damping_Tj = 1  # period matching exactly the damping ratio (see Rayleigh damping)  # this used to be 5 sec, but see AMC\Milestone 10\Appendix F - Enclosure 1, Designers format, K11-K14.zip
+
+U_benchmark = 30
 
 ########################################################################################################################
 # Auxiliary generic functions
@@ -117,7 +120,7 @@ def beta_DB_func_2(beta_0):
 
 def U_bar_func(g_node_coor, RP=RP):
     """ 10min mean wind """  #
-    V_10min = np.ones(len(g_node_coor)) * 30
+    V_10min = np.ones(len(g_node_coor)) * U_benchmark
     return V_10min
 
 def wind_vector_func(beta_0, theta_0):
@@ -1319,7 +1322,6 @@ def buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, ske
     g_shapes = np.moveaxis(np.array([shapes[:, i : g_node_num*6 : 6] for i in range(6)]), 0, -1)  # trimming nodes, reshaping.
     w_eigen, g_shapes, shapes = w_eigen[:n_modes], g_shapes[:n_modes], shapes[:n_modes]  # trimming modes.
     damping_alpha, damping_beta = rayleigh_coefficients_func(damping_ratio, damping_Ti, damping_Tj)
-
     print('First eigen period (s) = ' + str(np.round(2*np.pi/w_eigen[0], 2)))
 
     if make_M_C_freq_dep:
@@ -1341,10 +1343,16 @@ def buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, ske
             K_tot_tilde = K_tilde + Kse_tilde  # broadcasting into freq dimension
         else:  # if Kse was already addded
             K_tot_tilde = copy.deepcopy(K_tilde)
-        C_tot_tilde = damping_alpha * M_tilde + damping_beta * K_tot_tilde + Cse_tilde + C_added_tilde  # broadcasting into freq dimension if M_tilde and C_added_tilde are not freq-dependent
+        if damping_type == 'Rayleigh':
+            C_tot_tilde = damping_alpha * M_tilde + damping_beta * K_tot_tilde + Cse_tilde + C_added_tilde  # broadcasting into freq dimension if M_tilde and C_added_tilde are not freq-dependent
+        elif damping_type == 'modal':
+            C_tot_tilde = 2 * M_tilde @ np.diag(w_eigen) * damping_ratio       + Cse_tilde + C_added_tilde  # broadcasting into freq dimension if M_tilde and C_added_tilde are not freq-dependent
     else:  # then K_tot_tilde and C_tot_tilde do not have the frequency dimension.
         K_tot_tilde = copy.deepcopy(K_tilde)
-        C_tot_tilde = damping_alpha * M_tilde + damping_beta * K_tot_tilde + C_added_tilde  # broadcasting into freq dimension if make_M_C_freq_dep. Shape either: (n_modes, n_modes) OR (n_freq, n_modes, n_modes)
+        if damping_type == 'Rayleigh':
+            C_tot_tilde = damping_alpha * M_tilde + damping_beta * K_tot_tilde + C_added_tilde  # broadcasting into freq dimension if make_M_C_freq_dep. Shape either: (n_modes, n_modes) OR (n_freq, n_modes, n_modes)
+        elif damping_type == 'modal':
+            C_tot_tilde = 2 * M_tilde @ np.diag(w_eigen) * damping_ratio       + C_added_tilde
     # At this stage, M_tilde, C_tot_tilde and K_tot_tilde can either be or not frequency-depenent
 
     # # OLD Confirmation of Kse_tilde and Cse_tilde:
@@ -1673,7 +1681,8 @@ def list_of_cases_FD_func(n_aero_coef_cases, include_SE_cases, aero_coef_method_
     list_of_cases = [(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,z) for a in aero_coef_method_cases for b in n_aero_coef_cases for c in include_SE_cases
                      for d in flutter_derivatives_type_cases for e in n_modes_cases for f in n_freq_cases
                      for g in n_nodes_cases for h in f_min_cases for i in f_max_cases for j in include_sw_cases for k in include_KG_cases for l in skew_approach_cases
-                     for m in f_array_type_cases for n in make_M_C_freq_dep_cases for o in dtype_in_response_spectra_cases for p in Nw_idxs for q in Nw_or_equiv_Hw_cases for r in cospec_type_cases for z in beta_DB_cases] # Note: new parameters should be added before beta_DB
+                     for m in f_array_type_cases for n in make_M_C_freq_dep_cases for o in dtype_in_response_spectra_cases for p in Nw_idxs for q in Nw_or_equiv_Hw_cases
+                     for r in cospec_type_cases for z in beta_DB_cases] # Note: new parameters should be added before beta_DB
     list_of_cases = [list(case) for case in list_of_cases
                      if not (('3D' in case[3] and '2D' in case[11]) or ('2D' in case[3] and '3D' in case[11]) or (case[2]==False and case[3] in ['3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_in_plane']))]
     # if skew_approach is '3D' only '3D' flutter_derivatives accepted. If SE=False, only one dummy FD case is accepted: '3D_full' or '2D_full'

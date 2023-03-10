@@ -132,14 +132,16 @@ def p_node_coor_func(g_node_coor, arc_length, pontoons_s, FEM_max_length):
     p_node_coor = np.array([[g_node_coor[i, 0], g_node_coor[i, 1], 0] for i in p_node_idx])
     return p_node_coor
 
-def c_height_func(g_node_coor, arc_length, pontoons_s, FEM_max_length):
+def c_height_func(g_node_coor, arc_length, pontoons_s, FEM_max_length, neglect_overlaps=True):
     g_node_num = len(g_node_coor)
     g_nodes = np.array(list(range(g_node_num)))  # starting at 0
     p_node_idx = p_node_idx_func(arc_length, pontoons_s, FEM_max_length)
     # Column heights, g_nodes & Pontoon g_nodes.
-    c_height = np.array([(g_node_coor[i, 2] - p_freeboard - CS_height/2) for i in p_node_idx])  # todo: do it as function of coordinates of girder and pontoon.
+    if neglect_overlaps:
+        c_height = np.array([(g_node_coor[i, 2]) for i in p_node_idx])
+    else:
+        c_height = np.array([(g_node_coor[i, 2] - p_freeboard - CS_height / 2) for i in p_node_idx])  # todo: do it as function of coordinates of girder and pontoon.
     return c_height
-
 
 
 g_node_coor = g_node_coor_func(R=R, arc_length=arc_length, pontoons_s=pontoons_s, zbridge=zbridge, FEM_max_length=FEM_max_length, bridge_shape=bridge_shape)
