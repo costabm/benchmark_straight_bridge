@@ -846,21 +846,25 @@ def C_Ci_Ls_to_C_Ci_Lnw(beta, theta, C_Ci_Ls, CS_height, CS_width, C_Ci_Lnw_norm
         C_Ci_Lnw[0] = copy.deepcopy(C_Ci_Lnw[0]) * CS_width / CS_height
     return C_Ci_Lnw
 
-def discretize_S_delta_local_by_equal_energies(f_array, max_S_delta_local, n_freq_desired, plot=True):
+def discretize_S_delta_local_by_equal_energies(f_array_base, max_S_delta_local, n_freq_desired, plot=True):
     """
     It receives the 6 spectra of maximum (along bridge girder) response. It separately discretizes 1) the horizontal response and 2) all other responses separately,
     by an (almost) equal-energy separation of the bins. Then combines both of them.
-    :param f_array: shape: (n_freq,). frequency array associated with max_S_delta_local
+    :param f_array_base: shape: (n_freq,). frequency array associated with max_S_delta_local
     :param max_S_delta_local: shape:(n_freq,6(dof)). Obtain by np.max(np.real(S_delta_local),axis=1), where S_delta_local are diagonal entries of S_deltadelta_local (covar. matrix of spectral response)
     :param n_freq_desired: desired number of (optimized) frequency discretizations.
     :param plot: to plot or not the combined spectrum of responses and the returned frequency discretizations
     :return: the optimal frequency array
-    DISCLAIMER: the returned optimal frequency array can only choose optimal frequencies from f_array! So make sure the input f_array and max_S_delta_local are well enough discretized!
+    DISCLAIMER: the returned optimal frequency array can only choose optimal frequencies from f_array_base! So make sure the input f_array_base and max_S_delta_local are well enough discretized!
+    Mistakes to be careful:
+        Earlier, I dedicated half the freqs to horiz and the other half to vertical+others, but when merged, duplicate frequencies cause a problem.
+        In the PhD I found iterativelly new freqs so that n_freqs = n_freqs_desired. But after PhD, I simply removed them. However, that caused problems in the buffeting script.
+        New solution is to add the horizontal and the other spectra together before doing the equal energy division
     """
     from scipy import integrate
     import time
 
-    n_freq = len(f_array)
+    n_freq = len(f_array_base)
     assert max_S_delta_local.shape == (n_freq, 6)
 
     # Normalizing input spectra
@@ -874,70 +878,53 @@ def discretize_S_delta_local_by_equal_energies(f_array, max_S_delta_local, n_fre
         idx = (np.abs(array - value)).argmin()
         return array[idx]
 
-    delta_f_array = delta_array_func(copy.deepcopy(f_array))
+    delta_f_array = delta_array_func(copy.deepcopy(f_array_base))
 
     # Discretizing the horizontal response
     horiz_response_idxs = [0, 1, 5]  # DOF indexes, related to the horizontal response
     spectrum_horiz = np.sum(np.array([max_S_delta_local_normalized[:,i] for i in horiz_response_idxs]), axis=0)
     spectrum_horiz_integral = integrate.cumtrapz(spectrum_horiz * delta_f_array, initial=0)
     spectrum_horiz_integral = spectrum_horiz_integral / np.max(spectrum_horiz_integral)  # Normalizing
-    n_freq_desired_horiz = int(n_freq_desired // 2)
-    energy_bins_horiz_desired = np.linspace(0, 1, n_freq_desired_horiz)  # desired (energy) bins, where total energy is 1 (e.g. for n_freq_desired = 11, then: [0., 0.1, 0.2, 0.3 ... 1.])
-    energy_bins_horiz = []
 
-    for i in energy_bins_horiz_desired:
-        energy_bins_horiz.append(find_nearest(spectrum_horiz_integral, i))
-    energy_bins_horiz = np.asarray(energy_bins_horiz)
-    freq_indexes_horiz = np.searchsorted(spectrum_horiz_integral, energy_bins_horiz)
-
-    # Discretizing all the other responses together
+    # Adding all the other responses together
     other_response_idxs = [i for i in list(range(6)) if i not in horiz_response_idxs]
     spectrum_other = np.sum(np.array([max_S_delta_local_normalized[:, i] for i in other_response_idxs]), axis=0)
     spectrum_other_integral = integrate.cumtrapz(spectrum_other * delta_f_array, initial=0)
     spectrum_other_integral = spectrum_other_integral / np.max(spectrum_other_integral)
-    n_freq_desired_other = int(n_freq_desired - n_freq_desired_horiz)
-    energy_bins_other_desired = np.linspace(0, 1, n_freq_desired_other)  # desired (energy) bins, where total energy is 1 (e.g. for n_freq_desired = 11, then: [0., 0.1, 0.2, 0.3 ... 1.])
-    energy_bins_other = []
-    for i in energy_bins_other_desired:
-        energy_bins_other.append(find_nearest(spectrum_other_integral, i))
-    energy_bins_other = np.asarray(energy_bins_other)
-    freq_indexes_other = np.searchsorted(spectrum_other_integral, energy_bins_other)
+    spectrum_all_integral = (spectrum_horiz_integral + spectrum_other_integral) / np.max(spectrum_horiz_integral + spectrum_other_integral)
 
-    # Merging:
-    freq_indexes = np.sort(np.concatenate((freq_indexes_horiz, freq_indexes_other)))
+    energy_bins_all_desired = np.linspace(0, 1, n_freq_desired)  # desired (energy) bins, where total energy is 1 (e.g. for n_freq_desired = 11, then: [0., 0.1, 0.2, 0.3 ... 1.])
+    energy_bins_all = []
+    for i in energy_bins_all_desired:
+        energy_bins_all.append(find_nearest(spectrum_all_integral, i))
+    energy_bins_all = np.asarray(energy_bins_all)
+    freq_indexes_incomplete = np.unique(np.searchsorted(spectrum_all_integral, energy_bins_all))  # all repeated indexes were removed, hence incomplete because now n_freqs < n_desired_freqs
 
-    # # OLD METHOD THAT FORCES f_array to have exact same len as n_freq_desired. It is uneffective as up to 49% of freqs are badly placed.
-    # # Replacing duplicated indexes with the nearest index from a list of available indexes, such that all frequency bins have non-zero widths
-    # timeout = time.time() + 5  # 5 seconds. Time limit to execute loop, otherwise exit with error.
-    # still_available_indexes = list(set(np.arange(len(f_array))) - set(freq_indexes))  # list of the indexes not included in freq_indexes
-    # while len(freq_indexes) != len(set(freq_indexes)): # while there are duplicates
-    #     for n,i in enumerate(freq_indexes[:-1]):
-    #         if freq_indexes[n] == freq_indexes[n+1]:
-    #             freq_indexes[n+1] = find_nearest(still_available_indexes, freq_indexes[n+1])
-    #             freq_indexes = np.sort(freq_indexes)  # sort it again, so that freq_indexes[n] == freq_indexes[n+1] can capture all duplicates
-    #             still_available_indexes = list(set(np.arange(len(f_array))) - set(freq_indexes))  # list of the indexes not included in freq_indexes
-    #             break  # Leave the "for" loop. If there are still duplicates, run new "for" loop with the new freq_indexes
-    #     if time.time() > timeout:
-    #         raise Exception("Encountered an infinite loop in the equal energy discretization!")
-
-    # New method simply removes duplicates, without replacing them with other frequencies
-    freq_indexes = np.array(list(set(freq_indexes)))
-    print('Note: n_freq will be smaller than the predefined value when using equal_energy_bins to avoid an iterative process (duplicate freq_indexes, from horizontal and other responses were simply removed)')
+    n_freq_missing = n_freq_desired - len(freq_indexes_incomplete)
+    if n_freq_desired > 0:
+        print(f'Note: {len(freq_indexes_incomplete)} freqs were found with the equal_energy method, but {n_freq_missing} other frequencies were simply added inefficiently.' + r'(to improve, either reduce n_freqs or increase the n_freqs in the base case in intermediate_results\f_array.npy)')
+    # METHOD THAT FORCES f_array_base to have exact same len as n_freq_desired. It is uneffective as up to 49% of freqs are badly placed BUT IS NECESSARY TO AVOID BUGS IN buffeting.py.
+    # Replacing duplicated indexes with the nearest index from a list of available indexes, such that all frequency bins have non-zero widths
+    still_available_indexes = list(set(np.arange(len(f_array_base))) - set(freq_indexes_incomplete))  # list of the indexes not included in freq_indexes
+    # This method simply adds all free f_indexes (still_available_indexes), starting from the lowest frequency, until n_freq_desired is satisfied
+    freq_indexes_all = list(freq_indexes_incomplete) + still_available_indexes[:n_freq_missing]
+    freq_indexes_all = np.unique(np.array(freq_indexes_all))
+    assert len(freq_indexes_all) == n_freq_desired
 
     if plot == True:
         import matplotlib.pyplot as plt
-        plt.figure(figsize=(200,8))
-        for i in freq_indexes_horiz:
-            plt.axvline(f_array[i], c='lightblue', alpha=0.3)
-        for i in freq_indexes_other:
-            plt.axvline(f_array[i], c='moccasin', alpha=0.3)
-        plt.plot(f_array, spectrum_horiz, c='darkblue')
-        plt.plot(f_array, spectrum_other, c='darkorange')
+        # Actual frequencies, actually used
+        plt.figure(figsize=(200, 8))
+        for i in freq_indexes_all:
+            plt.axvline(f_array_base[i], c='grey', alpha=0.3, linewidth=0.1)
+        plt.plot(f_array_base, spectrum_horiz, c='darkblue', linewidth=0.8)
+        plt.plot(f_array_base, spectrum_other, c='darkorange', linewidth=0.8)
         plt.ylim([0,None])
-        plt.savefig(r'results\freq_discretization_VS_predefined_response_spectrum.jpg')
+        plt.tight_layout()
+        plt.savefig(r'results\freq_discretization_VS_predefined_response_spectrum_actual.pdf')
         plt.close()
 
-    return f_array[freq_indexes]
+    return f_array_base[freq_indexes_all]
 
 
 class NumpyEncoder(json.JSONEncoder):

@@ -9,12 +9,15 @@ from buffeting import beta_0_func
 from my_utils import deg, rad
 
 results = {}
-results_path = []
+results_path_list = []
 results_folder_path = os.path.join(os.getcwd(), r'results')
 
 for item in os.listdir(results_folder_path):
     if item[:12] == "FD_all_nodes":
-        results_path = item
+        results_path_list.append(item)
+
+input_idx = int(input(pd.Series(results_path_list)))
+results_path = results_path_list[input_idx]
 
 # Getting the DataFrames of the results
 df = pd.read_csv(os.path.join(results_folder_path, results_path))

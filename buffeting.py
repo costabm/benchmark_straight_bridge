@@ -1202,7 +1202,7 @@ def buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, ske
         f_array = np.logspace(np.emath.logn(log_base, f_min), np.emath.logn(log_base, f_max), num=n_freq, base=log_base)
     elif f_array_type == 'equal_energy_bins':
         print("""When using f_array_type = 'equal_energy_bins' make sure f_array.npy and max_S_delta_local.npy are both representative of the response and are very well discretized""")
-        f_array = discretize_S_delta_local_by_equal_energies(f_array=np.load(r"intermediate_results\f_array.npy"), max_S_delta_local=np.load(r"intermediate_results\max_S_delta_local.npy"), n_freq_desired=copy.deepcopy(n_freq))
+        f_array = discretize_S_delta_local_by_equal_energies(f_array_base=np.load(r"intermediate_results\f_array.npy"), max_S_delta_local=np.load(r"intermediate_results\max_S_delta_local.npy"), n_freq_desired=copy.deepcopy(n_freq))
 
     n_freq = len(f_array)
     w_array = f_array * 2 * np.pi
@@ -1745,7 +1745,7 @@ def parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
     # Exporting the results to a table
     from time import gmtime, strftime
     results_df.to_csv(r'results\FD_std_delta_max_'+strftime("%Y-%m-%d_%H-%M-%S", gmtime())+'.csv')
-    results_df_all_g_nodes.to_csv(r'results\FD_all_nodes_std_delta' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
+    results_df_all_g_nodes.to_csv(r'results\FD_all_nodes_std_delta_' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
 
     return None
 

@@ -32,6 +32,7 @@ run_new_Nw_sw = False
 run_modal_analysis_after_static_loads = False
 generate_new_C_Ci_grid = True  # attention!!
 
+
 ########################################################################################################################
 # Initialize structure:
 ########################################################################################################################
@@ -377,40 +378,40 @@ include_SE_in_modal = False  # includes effects from Kse when calculating mode s
 ########################################################################################################################
 # Frequency domain buffeting analysis:
 # ######################################################################################################################
-# ONE CASE (Can be used to generate new spectra of response for further use in the frequency discretization)
-dtype_in_response_spectra = 'float32'
-include_sw = False
-include_KG = False
-n_aero_coef = 6
-cospec_type = 2
-include_SE = False
-make_M_C_freq_dep = False
-aero_coef_method = '2D_fit_cons'
-skew_approach = '3D'
-flutter_derivatives_type = '3D_full'
-n_freq = 1024*16  # Needs to be (much) larger than the number of frequencies used when 'equal_energy_bins'. E.g. 2050 for 'equal_width_bins', or 256 otherwise
-f_min = 0.002
-f_max = 10
-f_array_type = 'equal_width_bins'  # Needs to be 'equal_width_bins' or 'logspace_base_n' in order to generate the spectra which then enables obtaining 'equal_energy_bins'
-n_modes = 100
-beta_DB = rad(100)
-Nw_idx=None
-Nw_or_equiv_Hw=None
-generate_spectra_for_discretization = True if (f_array_type != 'equal_energy_bins' and n_freq >= 1024) else False  # the point is to find 'equal_energy_bins', not to use them here
-std_delta_local = buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, skew_approach, include_SE, flutter_derivatives_type, n_modes, f_min, f_max, n_freq, g_node_coor, p_node_coor,
-                      Ii_simplified, beta_DB, R_loc, D_loc, cospec_type, include_modal_coupling, include_SE_in_modal, f_array_type, make_M_C_freq_dep, dtype_in_response_spectra, Nw_idx, Nw_or_equiv_Hw, generate_spectra_for_discretization)['std_delta_local']
+# # ONE CASE (Can be used to generate new spectra of response for further use in the frequency discretization)
+# dtype_in_response_spectra = 'float32'
+# include_sw = False
+# include_KG = False
+# n_aero_coef = 6
+# cospec_type = 2
+# include_SE = False
+# make_M_C_freq_dep = False
+# aero_coef_method = '2D_fit_cons'
+# skew_approach = '3D'
+# flutter_derivatives_type = '3D_full'
+# n_freq = 1024*32  # Needs to be (much) larger than the number of frequencies used when 'equal_energy_bins'. E.g. 2050 for 'equal_width_bins', or 256 otherwise
+# f_min = 0.002
+# f_max = 10
+# f_array_type = 'equal_width_bins'  # Needs to be 'equal_width_bins' or 'logspace_base_n' in order to generate the spectra which then enables obtaining 'equal_energy_bins'
+# n_modes = 100
+# beta_DB = rad(100)
+# Nw_idx=None
+# Nw_or_equiv_Hw=None
+# generate_spectra_for_discretization = True if (f_array_type != 'equal_energy_bins' and n_freq >= 1024) else False  # the point is to find 'equal_energy_bins', not to use them here
+# std_delta_local = buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, skew_approach, include_SE, flutter_derivatives_type, n_modes, f_min, f_max, n_freq, g_node_coor, p_node_coor,
+#                       Ii_simplified, beta_DB, R_loc, D_loc, cospec_type, include_modal_coupling, include_SE_in_modal, f_array_type, make_M_C_freq_dep, dtype_in_response_spectra, Nw_idx, Nw_or_equiv_Hw, generate_spectra_for_discretization)['std_delta_local']
 
 # MULTIPLE CASES
 dtype_in_response_spectra_cases = ['float64']  # complex128, float64, float32. It doesn't make a difference in accuracy, nor in computational time (only when memory is an issue!).
-include_sw_cases = [True]  # include static wind effects or not (initial angle of attack and geometric stiffness)
+include_sw_cases = [False]  # include static wind effects or not (initial angle of attack and geometric stiffness)
 include_KG_cases = [False]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
-aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
+aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [1024*1]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
+n_freq_cases = [2048]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
 f_min_cases = [0.002]  # Hz. Use 0.002
 f_max_cases = [10]  # Hz. Use 0.5! important to not overstretch this parameter
 f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins', 'logspace_base_n' where n is the base of the log

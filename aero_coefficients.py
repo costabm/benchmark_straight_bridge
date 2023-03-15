@@ -327,6 +327,12 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     #         [Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,
     #          Czz_Ls_2D_fit_cons])
 
+    if method == 'benchmark':
+        C_Ci_Ls_benchmark = np.zeros((6, size))
+        # C_Ci_Ls_benchmark[1,:] = 0.07455
+        C_Ci_Ls_benchmark[2, :] = -0.14749
+        return C_Ci_Ls_benchmark  # shape is (6, g_node_num)
+
     if 'Lnw' in coor_system:
         C_Ci_Lnw_2D_fit_cons = np.einsum('icd,di->ci', T_LnwLs, C_Ci_Ls_2D_fit_cons, optimize=True)
 
