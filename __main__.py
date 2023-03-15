@@ -4,7 +4,7 @@ author: Bernardo Costa
 email: bernamdc@gmail.com
 """
 
-
+#just testing
 import os
 import sys
 import time
