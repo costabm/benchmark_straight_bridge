@@ -4,7 +4,7 @@ author: Bernardo Costa
 email: bernamdc@gmail.com
 """
 
-#%%
+
 import os
 import sys
 import time
@@ -32,7 +32,6 @@ run_new_Nw_sw = False
 run_modal_analysis_after_static_loads = False
 generate_new_C_Ci_grid = True  # attention!!
 
-#%%
 ########################################################################################################################
 # Initialize structure:
 ########################################################################################################################
@@ -50,7 +49,7 @@ girder_N = copy.deepcopy(R_loc[:g_elem_num, 0])  # No girder axial forces
 c_N = copy.deepcopy(R_loc[g_elem_num:, 0])  # No columns axial forces
 alpha = copy.deepcopy(D_loc[:g_node_num, 3])  # No girder nodes torsional rotations
 
-#%%
+
 ########################################################################################################################
 # Modal analysis:
 ########################################################################################################################
@@ -445,7 +444,7 @@ parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplif
 
 raise Exception  # remove this (used to stop the code from reaching the time-domain calculations)
 
-#%%
+
 ########################################################################################################################
 # Time domain buffeting analysis:
 ########################################################################################################################
