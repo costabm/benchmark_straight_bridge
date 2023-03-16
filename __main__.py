@@ -403,7 +403,7 @@ include_SE_in_modal = False  # includes effects from Kse when calculating mode s
 
 # MULTIPLE CASES
 dtype_in_response_spectra_cases = ['float64']  # complex128, float64, float32. It doesn't make a difference in accuracy, nor in computational time (only when memory is an issue!).
-include_sw_cases = [False]  # include static wind effects or not (initial angle of attack and geometric stiffness)
+include_sw_cases = [True]  # include static wind effects or not (initial angle of attack and geometric stiffness)
 include_KG_cases = [False]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
