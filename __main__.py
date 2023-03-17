@@ -93,27 +93,27 @@ if run_modal_analysis:
         plt.tight_layout(pad=0.5) # w_pad=0.04, h_pad=0.06)
         plt.savefig(r'_mode_shapes/first_50_modes.png')
 
-        # h, l = ax.get_legend_handles_labels()
-        # plt.figure(dpi=500, figsize=(6,1))
-        # plt.axis('off')
-        # plt.legend(h,l, ncol=3)
-        # plt.tight_layout()
-        # plt.savefig(r'_mode_shapes/new_mode_legend.png')
-        # plt.show()
-        #
-        # fig, axs = plt.subplots(10, 5, sharex=True,sharey=True, dpi=200, figsize=(8,10.4))
-        # # plt.subplots_adjust(wspace=0.1, hspace=0.1)
-        # for i, ax in enumerate(axs.ravel()):
-        #     j = i + int(n_modes_plot/2)
-        #     ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 1], c='tab:green', label='Horizontal (y-axis)')
-        #     ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 2], c='tab:blue', label='Vertical (z-axis)')
-        #     ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 3], c='tab:orange', label='Torsional (rx-axis)')
-        #     ax.text(0.049, 0.65, '$T_{'+f'{j+1}'+'}='+f'{np.round(periods[j],2)}s$', bbox={'fc': 'white', 'alpha': 0.6})
-        #     ax.set_xticks([0, 500, 1000])
-        # fig.supxlabel('x-axis [m]')
-        # plt.tight_layout(pad=0.5) # w_pad=0.04, h_pad=0.06)
-        # plt.savefig(r'_mode_shapes/other_50_modes.png')
-        # plt.show()
+        h, l = ax.get_legend_handles_labels()
+        plt.figure(dpi=500, figsize=(6,1))
+        plt.axis('off')
+        plt.legend(h,l, ncol=3)
+        plt.tight_layout()
+        plt.savefig(r'_mode_shapes/new_mode_legend.png')
+        plt.show()
+        
+        fig, axs = plt.subplots(10, 5, sharex=True,sharey=True, dpi=200, figsize=(8,10.4))
+        # plt.subplots_adjust(wspace=0.1, hspace=0.1)
+        for i, ax in enumerate(axs.ravel()):
+            j = i + int(n_modes_plot/2)
+            ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 1], c='tab:green', label='Horizontal (y-axis)')
+            ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 2], c='tab:blue', label='Vertical (z-axis)')
+            ax.plot(np.linspace(0, arc_length, n_g_nodes), g_shapes_Ls[j, :, 3], c='tab:orange', label='Torsional (rx-axis)')
+            ax.text(0.049, 0.65, '$T_{'+f'{j+1}'+'}='+f'{np.round(periods[j],2)}s$', bbox={'fc': 'white', 'alpha': 0.6})
+            ax.set_xticks([0, 500, 1000])
+        fig.supxlabel('x-axis [m]')
+        plt.tight_layout(pad=0.5) # w_pad=0.04, h_pad=0.06)
+        plt.savefig(r'_mode_shapes/other_50_modes.png')
+        plt.show()
         return None
     plot_mode_shapes(shapes, omegas, g_node_coor, p_node_coor)
 
@@ -408,7 +408,7 @@ include_KG_cases = [False]  # include the effects of geometric stiffness (both i
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
-aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark"
+aero_coef_method_cases = ['benchmark2']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
 n_freq_cases = [2048]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise

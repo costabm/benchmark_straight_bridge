@@ -30,7 +30,7 @@ import sys
 import numpy as np
 import pandas as pd
 from aerodynamic_coefficients.polynomial_fit import cons_poly_fit
-from transformations import T_LnwLs_func, theta_yz_bar_func
+from transformations import T_LnwLs_func, theta_yz_bar_func, T_LsGw_func
 import copy
 
 def rad(deg):
@@ -327,11 +327,37 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     #         [Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,
     #          Czz_Ls_2D_fit_cons])
 
-    if method == 'benchmark':
-        C_Ci_Ls_benchmark = np.zeros((6, size))
+    if method == 'benchmark1':
+        # C_Ci_Ls_benchmark = np.zeros((6, size))
         # C_Ci_Ls_benchmark[1,:] = 0.07455
-        C_Ci_Ls_benchmark[2, :] = -0.14749
+        # C_Ci_Ls_benchmark[2, :] = -0.14749
+        T_LsGw = T_LsGw_func(betas=betas_extrap, thetas=thetas_extrap, dim='6x6')
+        C_Ci_Gw_benchmark = np.zeros((6, size))
+        C_Ci_Gw_benchmark[0,:] = 0.0745517584974706
+        factor = np.cos(betas_extrap) ** 2
+        C_Ci_Ls_benchmark = factor * np.einsum('icd,di->ci', T_LsGw, C_Ci_Gw_benchmark, optimize=True)
+        C_Ci_Ls_benchmark = np.array([C_Ci_Ls_benchmark[0] * Cx_sign,
+                                      C_Ci_Ls_benchmark[1] * Cy_sign,
+                                      C_Ci_Ls_benchmark[2] * Cz_sign,
+                                      C_Ci_Ls_benchmark[3] * Cxx_sign,
+                                      C_Ci_Ls_benchmark[4] * Cyy_sign,
+                                      C_Ci_Ls_benchmark[5] * Czz_sign])
         return C_Ci_Ls_benchmark  # shape is (6, g_node_num)
+    
+    if method == 'benchmark2':
+        T_LsGw = T_LsGw_func(betas=betas_extrap, thetas=thetas_extrap, dim='6x6')
+        C_Ci_Gw_benchmark = np.zeros((6, size))
+        C_Ci_Gw_benchmark[2,:] = -0.14749
+        factor = np.cos(betas_extrap) ** 2
+        C_Ci_Ls_benchmark = factor * np.einsum('icd,di->ci', T_LsGw, C_Ci_Gw_benchmark, optimize=True)
+        C_Ci_Ls_benchmark = np.array([C_Ci_Ls_benchmark[0] * Cx_sign,
+                                      C_Ci_Ls_benchmark[1] * Cy_sign,
+                                      C_Ci_Ls_benchmark[2] * Cz_sign,
+                                      C_Ci_Ls_benchmark[3] * Cxx_sign,
+                                      C_Ci_Ls_benchmark[4] * Cyy_sign,
+                                      C_Ci_Ls_benchmark[5] * Czz_sign])
+        return C_Ci_Ls_benchmark  # shape is (6, g_node_num)
+
 
     if 'Lnw' in coor_system:
         C_Ci_Lnw_2D_fit_cons = np.einsum('icd,di->ci', T_LnwLs, C_Ci_Ls_2D_fit_cons, optimize=True)
@@ -410,16 +436,16 @@ def aero_coef_derivatives(betas, thetas, method, coor_system):
     Cx_theta_next, Cy_theta_next, Cz_theta_next, Cxx_theta_next, Cyy_theta_next, Czz_theta_next = aero_coef(copy.deepcopy(betas), copy.deepcopy(theta_next), method=method, coor_system=coor_system)
 
     # Calculating the derivatives = delta(Coef)/delta(angle)
-    Cx_dbeta = np.gradient(np.array([Cx_beta_prev, Cx, Cx_beta_next]), axis=0)[1] / delta_angle  # Confirmed. For cos_rule method, compared with d(cos(x)**2) = -sin(2x)
-    Cy_dbeta = np.gradient(np.array([Cy_beta_prev, Cy, Cy_beta_next]), axis=0)[1] / delta_angle
-    Cz_dbeta = np.gradient(np.array([Cz_beta_prev, Cz, Cz_beta_next]), axis=0)[1] / delta_angle
+    Cx_dbeta = np.gradient( np.array([ Cx_beta_prev,  Cx,  Cx_beta_next]), axis=0)[1] / delta_angle  # Confirmed. For cos_rule method, compared with d(cos(x)**2) = -sin(2x)
+    Cy_dbeta = np.gradient( np.array([ Cy_beta_prev,  Cy,  Cy_beta_next]), axis=0)[1] / delta_angle
+    Cz_dbeta = np.gradient( np.array([ Cz_beta_prev,  Cz,  Cz_beta_next]), axis=0)[1] / delta_angle
     Cxx_dbeta = np.gradient(np.array([Cxx_beta_prev, Cxx, Cxx_beta_next]), axis=0)[1] / delta_angle  # Confirmed. For cos_rule method, compared with d(cos(x)**2) = -sin(2x)
     Cyy_dbeta = np.gradient(np.array([Cyy_beta_prev, Cyy, Cyy_beta_next]), axis=0)[1] / delta_angle
     Czz_dbeta = np.gradient(np.array([Czz_beta_prev, Czz, Czz_beta_next]), axis=0)[1] / delta_angle
 
-    Cx_dtheta = np.gradient(np.array([Cx_theta_prev, Cx, Cx_theta_next]), axis=0)[1] / delta_angle  # Confirmed. For cos_rule method, compared with d(cos(x)**2) = -sin(2x)
-    Cy_dtheta = np.gradient(np.array([Cy_theta_prev, Cy, Cy_theta_next]), axis=0)[1] / delta_angle
-    Cz_dtheta = np.gradient(np.array([Cz_theta_prev, Cz, Cz_theta_next]), axis=0)[1] / delta_angle
+    Cx_dtheta = np.gradient( np.array([ Cx_theta_prev,  Cx,  Cx_theta_next]), axis=0)[1] / delta_angle  # Confirmed. For cos_rule method, compared with d(cos(x)**2) = -sin(2x)
+    Cy_dtheta = np.gradient( np.array([ Cy_theta_prev,  Cy,  Cy_theta_next]), axis=0)[1] / delta_angle
+    Cz_dtheta = np.gradient( np.array([ Cz_theta_prev,  Cz,  Cz_theta_next]), axis=0)[1] / delta_angle
     Cxx_dtheta = np.gradient(np.array([Cxx_theta_prev, Cxx, Cxx_theta_next]), axis=0)[1] / delta_angle  # Confirmed. For cos_rule method, compared with d(cos(x)**2) = -sin(2x)
     Cyy_dtheta = np.gradient(np.array([Cyy_theta_prev, Cyy, Cyy_theta_next]), axis=0)[1] / delta_angle
     Czz_dtheta = np.gradient(np.array([Czz_theta_prev, Czz, Czz_theta_next]), axis=0)[1] / delta_angle
