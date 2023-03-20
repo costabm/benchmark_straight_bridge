@@ -222,9 +222,9 @@ def Ii_func(g_node_coor, beta_DB, Ii_simplified):
     g_node_coor_z = g_node_coor[:, 2]  # m. Meters above sea level
     g_nodes = np.array(list(range(g_node_num)))  # starting at 0
 
-    Iu = np.ones(g_node_num) * 3.947 / 30
-    Iv = np.ones(g_node_num) * 2.960 / 30  # Design basis rev 0, 2018, Chapter 2.2
-    Iw = np.ones(g_node_num) * 1.973 / 30  # Design basis rev 0, 2018, Chapter 2.2
+    Iu = np.ones(g_node_num) * 3.947 / 30 
+    Iv = np.ones(g_node_num) * 2.960 / 30 # Design basis rev 0, 2018, Chapter 2.2
+    Iw = np.ones(g_node_num) * 1.973 / 30 # Design basis rev 0, 2018, Chapter 2.2
     #
     # else:
     #     if 150 <= beta_DB <= 210:
