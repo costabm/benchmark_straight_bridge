@@ -25,22 +25,22 @@ df = pd.read_csv(os.path.join(results_folder_path, results_path))
 
 x_coords = g_node_coor[:,0]
 beta_DBs = df['beta_DB']
-dof_string = ['x', 'y', 'z', 'rx', 'ry', 'rz']
+dof_string = ['x', 'y', 'z', 'rx [rad]', 'ry', 'rz']
 analysis_string = ['mean', 'std']
 color_list = ['blue', 'orange', 'green', 'red', 'purple']
 
 fig, axs = plt.subplots(3, 2, figsize=(8, 10), dpi=300, constrained_layout=False)
 for a, analysis_type in enumerate(['static', 'std']):
     for b, beta_DB in enumerate(beta_DBs):
-        for dof in range(3):
+        for d, dof in enumerate([1,2,3]):
             # Organizing results
             df_one_beta = df.loc[df['beta_DB'] == beta_DB]
             mask = df_one_beta.columns[[f'{analysis_type}_dof_{dof}' in c for c in df_one_beta.columns]]  # for analysis and dof
             results = np.squeeze(np.array(df_one_beta[mask]))
             # Plotting
-            ax = axs[dof, a]
+            ax = axs[d, a]
             ax.set_title(f'{analysis_string[a]} of {dof_string[dof]}')
-            ax.plot(x_coords, results, c=color_list[b], label=r'$\beta = $' + f'{round(deg(beta_0_func(beta_DB)))}' if a==dof==0 else None)
+            ax.plot(x_coords, results, c=color_list[b], label=r'$\beta = $' + f'{round(deg(beta_0_func(beta_DB)))}' if a==d==0 else None)
 
 
 fig.legend(loc=8, ncol=len(beta_DBs))

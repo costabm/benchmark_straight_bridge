@@ -438,11 +438,11 @@ list_of_cases = list_of_cases_FD_func(n_aero_coef_cases, include_SE_cases, aero_
 # pr = cProfile.Profile()
 # pr.enable()
 # Writing results
-parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
+# parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
 # pr.disable()
 # pr.print_stats(sort='cumtime')
 
-raise Exception  # remove this (used to stop the code from reaching the time-domain calculations)
+# raise Exception  # remove this (used to stop the code from reaching the time-domain calculations)
 
 
 ########################################################################################################################
@@ -482,7 +482,7 @@ aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolat
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law' # todo: not working for aero_coef 'NL'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5'
 aero_coef_linearity_cases = ['NL']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
-SE_linearity_cases = ['L']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
+SE_linearity_cases = ['NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
 geometric_linearity_cases = ['L']  # 'L': Constant M,K in Newmark. 'NL': M,K are updated each time step from deformed node coordinates.
 n_nodes_cases = [len(g_node_coor)]
 n_seeds_cases = [2]
@@ -493,7 +493,7 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
 
 # Writing results
 parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T,
-                      wind_T, transient_T, ramp_T, R_loc, D_loc, cospec_type, plots=False, save_txt=False)
+                      wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 
 # # Plotting
 # import buffeting_plots

@@ -280,7 +280,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
         cons_poly_fit(data_in_Czz_Ls, data_coor_out, data_bounds, constr_fit_degree_list[5], ineq_constraint_Czz, other_constraint_Czz,
                       degree_type='max')[1] * Czz_sign
         # C_Ci_Ls_2D_fit_cons = np.array([Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,Czz_Ls_2D_fit_cons])
-        C_Ci_Ls_2D_fit_cons = np.array([0*Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, 0*Cxx_Ls_2D_fit_cons, 0*Cyy_Ls_2D_fit_cons,0*Czz_Ls_2D_fit_cons])       
+        C_Ci_Ls_2D_fit_cons = np.array([0*Cx_Ls_2D_fit_cons, 0*Cy_Ls_2D_fit_cons, 0*Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, 0*Cyy_Ls_2D_fit_cons,0*Czz_Ls_2D_fit_cons])       
         print('COEFFICIENTS !!!!!!!')
 
     # if method == '2D_fit_cons_2':

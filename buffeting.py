@@ -2060,6 +2060,7 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
     #     alpha += copy.deepcopy(alpha_sw)
     # # delete??
 
+    U_bar = U_bar_func(g_node_coor=g_node_coor)
     beta_bar, theta_bar = beta_and_theta_bar_func(g_node_coor, beta_0, theta_0, alpha)
 
     # Transformation from all nodes in Global to Local
