@@ -4,6 +4,7 @@ author: Bernardo Costa
 email: bernamdc@gmail.com
 """
 
+#good
 
 import os
 import sys
