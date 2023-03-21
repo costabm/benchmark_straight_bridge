@@ -71,7 +71,7 @@ RP = 100  # years Return Period.
 x_tower = 325  # m. x-coordinate of South tower for turbulence considerations.
 theta_0 = 0  # it is 0 if wind is in the Global XY plane. theta will account for girder geometries (and static loads).
 # Damping
-damping_type = 'modal'  # 'Rayleigh' or 'modal'.
+damping_type = 'Rayleigh'  # 'Rayleigh' or 'modal'.
 damping_ratio = 0.005  #  0.000001 * 0.005  # Structural damping
 damping_Ti = 10  # period matching exactly the damping ratio (see Rayleigh damping)
 damping_Tj = 1  # period matching exactly the damping ratio (see Rayleigh damping)  # this used to be 5 sec, but see AMC\Milestone 10\Appendix F - Enclosure 1, Designers format, K11-K14.zip
@@ -167,7 +167,8 @@ def Cij_func(cond_rand_C):
     Cij = np.array([[Cux, Cuy, Cuz],
                     [Cvx, Cvy, Cvz],
                     [Cwx, Cwy, Cwz]])
-    return Cij
+    print('Coherence !!!!')
+    return Cij / 10000
 
 def iLj_func(g_node_coor):
     g_node_num = len(g_node_coor)
@@ -222,9 +223,10 @@ def Ii_func(g_node_coor, beta_DB, Ii_simplified):
     g_node_coor_z = g_node_coor[:, 2]  # m. Meters above sea level
     g_nodes = np.array(list(range(g_node_num)))  # starting at 0
 
-    Iu = np.ones(g_node_num) * 3.947 / 30 
-    Iv = np.ones(g_node_num) * 2.960 / 30 # Design basis rev 0, 2018, Chapter 2.2
-    Iw = np.ones(g_node_num) * 1.973 / 30 # Design basis rev 0, 2018, Chapter 2.2
+    Iu = np.ones(g_node_num) * 3.947 / 30 * 0 
+    Iv = np.ones(g_node_num) * 2.960 / 30 * 0 # Design basis rev 0, 2018, Chapter 2.2
+    Iw = np.ones(g_node_num) * 1.973 / 30 / 100 # Design basis rev 0, 2018, Chapter 2.2
+    print('Turbulence!!!')
     #
     # else:
     #     if 150 <= beta_DB <= 210:

@@ -279,9 +279,9 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
         Czz_Ls_2D_fit_cons = \
         cons_poly_fit(data_in_Czz_Ls, data_coor_out, data_bounds, constr_fit_degree_list[5], ineq_constraint_Czz, other_constraint_Czz,
                       degree_type='max')[1] * Czz_sign
-        C_Ci_Ls_2D_fit_cons = np.array(
-            [Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,
-             Czz_Ls_2D_fit_cons])
+        # C_Ci_Ls_2D_fit_cons = np.array([Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,Czz_Ls_2D_fit_cons])
+        C_Ci_Ls_2D_fit_cons = np.array([0*Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, 0*Cxx_Ls_2D_fit_cons, 0*Cyy_Ls_2D_fit_cons,0*Czz_Ls_2D_fit_cons])       
+        print('COEFFICIENTS !!!!!!!')
 
     # if method == '2D_fit_cons_2':
     #     # Ls coordinates.
@@ -357,7 +357,18 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
                                       C_Ci_Ls_benchmark[4] * Cyy_sign,
                                       C_Ci_Ls_benchmark[5] * Czz_sign])
         return C_Ci_Ls_benchmark  # shape is (6, g_node_num)
-
+    
+    if method == 'benchmark3':
+        C_Ci_Ls_benchmark = np.zeros((6, size))
+        C_Ci_Ls_benchmark[1,:] = 0.0745517584974706
+        C_Ci_Ls_benchmark = np.array([C_Ci_Ls_benchmark[0] * Cx_sign,
+                                      C_Ci_Ls_benchmark[1] * Cy_sign,
+                                      C_Ci_Ls_benchmark[2] * Cz_sign,
+                                      C_Ci_Ls_benchmark[3] * Cxx_sign,
+                                      C_Ci_Ls_benchmark[4] * Cyy_sign,
+                                      C_Ci_Ls_benchmark[5] * Czz_sign])
+        return C_Ci_Ls_benchmark  # shape is (6, g_node_num)
+    
 
     if 'Lnw' in coor_system:
         C_Ci_Lnw_2D_fit_cons = np.einsum('icd,di->ci', T_LnwLs, C_Ci_Ls_2D_fit_cons, optimize=True)

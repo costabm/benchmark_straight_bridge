@@ -24,7 +24,7 @@ import copy
 from static_loads import static_dead_loads_func, R_loc_func
 
 start_time = time.time()
-run_modal_analysis = True
+run_modal_analysis = False
 run_DL = False  # include Dead Loads, for all analyses.
 run_sw_for_modal = False # include Static wind for the modal_analysis_after_static_loads. For other analyses use include_SW (inside buffeting function).
 run_new_Nw_sw = False
@@ -411,7 +411,7 @@ make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses an
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [2048]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
+n_freq_cases = [2048*2]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
 f_min_cases = [0.002]  # Hz. Use 0.002
 f_max_cases = [10]  # Hz. Use 0.5! important to not overstretch this parameter
 f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins', 'logspace_base_n' where n is the base of the log
