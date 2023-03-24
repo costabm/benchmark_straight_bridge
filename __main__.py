@@ -374,7 +374,7 @@ except FileNotFoundError:
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 cospec_type_cases = [2]  # Best choices: 2, or 5.... 1: L.D.Zhu (however, the Cij params should be fitted again to measurements using this Zhu's formula and not Davenports). 2: Davenport, adapted for a 3D wind field (9 coherence coefficients). 3: Further including 1-pt spectrum Suw as in (Kaimal et al, 1972) and 2-pt spectrum Suw,ij as in (Katsuchi et al, 1999). 4: Fully according to (Hémon and Santi, 2007)(WRONG. No Coh_uw information required which is strange!). 5: Fully according to "A turbulence model based on principal components" (Solari and Tubino, 2002), supported by (Oiseth et al, 2013). 6: same as 2 but now with cosine term that allows negative coh
 Ii_simplified = True  # Turbulence intensities. Simplified -> same turbulence intensities everywhere for all directions.
-include_modal_coupling = False  # True: CQC. False: SRSS. Off-diag of modal M, C and K in the Freq. Dom. (modal coupling).
+include_modal_coupling = True  # True: CQC. False: SRSS. Off-diag of modal M, C and K in the Freq. Dom. (modal coupling).
 include_SE_in_modal = False  # includes effects from Kse when calculating mode shapes (only relevant in Freq. Domain). True gives complex mode shapes!
 ########################################################################################################################
 # Frequency domain buffeting analysis:
@@ -405,11 +405,11 @@ include_SE_in_modal = False  # includes effects from Kse when calculating mode s
 # MULTIPLE CASES
 dtype_in_response_spectra_cases = ['float64']  # complex128, float64, float32. It doesn't make a difference in accuracy, nor in computational time (only when memory is an issue!).
 include_sw_cases = [True]  # include static wind effects or not (initial angle of attack and geometric stiffness)
-include_KG_cases = [False]  # include the effects of geometric stiffness (both in girder and columns)
+include_KG_cases = [True]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
-aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark"
+aero_coef_method_cases = ['table']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
 n_freq_cases = [2048*2]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
@@ -493,8 +493,8 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
                                       dt_cases, aero_coef_linearity_cases, SE_linearity_cases, geometric_linearity_cases, skew_approach_cases, beta_DB_cases)
 
 # Writing results
-parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T,
-                      wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
+# parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T,
+#                       wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 
 # # Plotting
 # import buffeting_plots
@@ -513,36 +513,56 @@ from buffeting import wind_field_3D_all_blocks_func, rad, deg
 beta_DB = rad(100)  # wind direction
 
 # Input (change the numbers only)
-cospec_type = 2
-wind_block_T = 600  # (s). Desired duration of each wind block. To be increased due to overlaps.
-wind_overlap_T = 8  # (s). Total overlapping duration between adjacent blocks.
-transient_T = 0 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
-ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
-wind_T = 18 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
-dt = 0.25  # s. Time step in the calculation
+where_to_get_wind = 'external'  # 'in-house' or 'external'
 
 # Wind speeds at each node, in Gw coordinates (XuYvZw).
 Ii_simplified_bool = True
-windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T,
+if where_to_get_wind == 'in-house':
+    windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T,
                                           cospec_type, Ii_simplified_bool, plots=False)
+    cospec_type = 2
+    wind_block_T = 600  # (s). Desired duration of each wind block. To be increased due to overlaps.
+    wind_overlap_T = 8  # (s). Total overlapping duration between adjacent blocks.
+    transient_T = 0 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
+    ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
+    wind_T = 18 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
+    dt = 0.25  # s. Time step in the calculation
+    # Validation
+    freq_array = np.arange(1 / wind_T, (1 / dt) / 2, 1 / wind_T)
+    f_min = np.min(freq_array)
+    f_max = np.max(freq_array)
+    n_freq = len(freq_array)
+    # n_freq = 128
+    # f_min = 0.002
+    # f_max = 0.5
+    n_nodes_validated = 10  # total number of nodes to assess wind speeds: STD, mean, co-spectra, correlation
+    node_test_S_a = 0  # node tested for auto-spectrum
+    n_nodes_val_coh = 5  # num nodes tested for assemblage of 2D correlation decay plots
+    wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block_T, beta_DB, arc_length, R,
+                                          Ii_simplified_bool, f_min, f_max,
+                                          n_freq, n_nodes_validated, node_test_S_a, n_nodes_val_coh)
 
-# Validation
-freq_array = np.arange(1 / wind_T, (1/dt) / 2, 1 / wind_T)
-f_min = np.min(freq_array)
-f_max = np.max(freq_array)
-n_freq = len(freq_array)
-# n_freq = 128
-# f_min = 0.002
-# f_max = 0.5
-n_nodes_validated = 10  # total number of nodes to assess wind speeds: STD, mean, co-spectra, correlation
-node_test_S_a = 0  # node tested for auto-spectrum
-n_nodes_val_coh = 5  # num nodes tested for assemblage of 2D correlation decay plots
+elif where_to_get_wind == 'external':
+    from AMC_wind_time_series_checks import get_h5_windsim_file_with_wind_time_series
+    filename = "wind_field/AMC_wind_time_series/wind_direction=0.h5"
+    time_arr, windspeed = get_h5_windsim_file_with_wind_time_series(filename)
+    dt_all = time_arr[1:] - time_arr[:-1]
+    assert np.max(dt_all) - np.min(dt_all) < 0.01
+    dt = dt_all[0]
+    wind_block_T = np.max(time_arr)
+    f_min = f_min_cases[0]
+    f_max = f_max_cases[0]
+    n_freq = n_freq_cases[0]
+    n_nodes_validated = 10  # total number of nodes to assess wind speeds: STD, mean, co-spectra, correlation
+    node_test_S_a = 0  # node tested for auto-spectrum
+    n_nodes_val_coh = 5  # num nodes tested for assemblage of 2D correlation decay plots
+    wind_field_3D_applied_validation_func(g_node_coor, windspeed=windspeed, dt=dt, wind_block_T=wind_block_T,
+                                          beta_DB=beta_DB, arc_length=arc_length, R=R, Ii_simplified_bool=False,
+                                          f_min=f_min, f_max=f_max, n_freq=n_freq, n_nodes_validated=n_nodes_validated,
+                                          node_test_S_a=node_test_S_a, n_nodes_val_coh=n_nodes_val_coh)
 
-wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block_T, beta_DB, arc_length, R, Ii_simplified_bool, f_min, f_max,
-                                      n_freq,  n_nodes_validated, node_test_S_a, n_nodes_val_coh)
+
 
 print('all is done')
 
 
-
-# %%

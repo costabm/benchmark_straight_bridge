@@ -12,7 +12,7 @@ beta = rad(np.arange(-180, 180+beta_step, beta_step))
 theta = rad(np.arange(-12, 12+theta_step, theta_step))
 
 method = "2D_fit_cons"
-coor_system = 'Gw'  # Ls or Gw
+coor_system = 'Ls'  # Ls or Gw
 
 if coor_system == 'Ls':
     d_keys = ['betas_deg', 'thetas_deg', 'Cx', 'Cy', 'Cz', 'Crx', 'Cry', 'Crz']
@@ -32,7 +32,7 @@ for t in list(reversed(theta)):
         assert 'C' in label
         d[label].append(Ci_row[i])
 
-writer = pd.ExcelWriter(r'other\BC_aero_coefs_'+f'{coor_system}_{method}'+'.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter(r'other\LstestBC_aero_coefs_'+f'{coor_system}_{method}'+'.xlsx', engine='xlsxwriter')
 for key in d:
     d[key] = np.array(d[key])
     df = pd.DataFrame(d[key])

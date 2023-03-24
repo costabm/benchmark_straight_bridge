@@ -281,6 +281,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
                                         f_array / ((U_bar[node_1] + U_bar[node_2]) / 2)), color='green', label='target w',
                          alpha=0.5, linestyle='dotted', linewidth=3)
                 plt.scatter(coh_freq_w, coh_w, alpha=0.6, s=4, color='green', label='generated w')
+                plt.xlim([-0.05, 2])
                 plt.xlabel('freq [Hz]')
                 plt.ylabel('Coherence')
                 plt.grid()
@@ -406,48 +407,48 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     plt.figure(dpi=400)
     plt.axis('off')
     plt.legend(legend_lines, ['Target','Generated'], ncol=2)
-    plt.show()
+    # plt.show()
     plt.savefig(r'wind_field\legend_normalized_co-spectrum')
     plt.close()
     return None
-
-## Validation:
-from buffeting import deg, rad, U_bar_func, Ai_func, Cij_func, Ii_func, iLj_func, beta_0_func
-from straight_bridge_geometry import g_node_coor, arc_length, R
-from wind_field.wind_field_3D import wind_field_3D_func
-from transformations import T_GsGw_func
-import numpy as np
-
-# Input parameters
-beta_DB = rad(100)
-theta_G = rad(0)
-T = 1200  # time domain
-dt = 0.5  # time domain. Best: 0.1 s when plotting auto-spectrum
-n_freq = 2048
-f_min = 0.005
-f_max = 6
-# g_node_coor = g_node_coor[:10]
-# Alternative manual coordinates
-n_nodes_validated = 11
-node_spacing = 5  # meters
-g_node_coor = np.transpose(np.array([np.arange(n_nodes_validated)*5, [0]*n_nodes_validated, [14.5]*n_nodes_validated]))
-
-# Other parameters
-beta_G = beta_0_func(beta_DB=beta_DB)
-T_GwGs = np.transpose(T_GsGw_func(beta_0=beta_G, theta_0=theta_G))
-g_node_coor_Gw = np.einsum('ij,nj->ni' , T_GwGs, g_node_coor)
-U_bar = U_bar_func(g_node_coor)
-Ai = Ai_func(cond_rand_A=False)
-Cij = Cij_func(cond_rand_C=False).flatten()  # [Cux,Cuy,Cuz,Cvx,Cvy,Cvz,Cwx,Cwy,Cwz]
-Ii = Ii_func(g_node_coor, beta_DB=False, Ii_simplified=True)
-iLj_bad_shape = iLj_func(g_node_coor)  # first node defines iLj (homogeneity required)
-iLj = np.transpose(np.array([i.flatten() for i in iLj_bad_shape]))
-wind_field = wind_field_3D_func(node_coor_wind=g_node_coor_Gw, V=U_bar, Ai=Ai, Cij=Cij, I=Ii, iLj=iLj, T=T, sample_freq=1/dt, spectrum_type=2)
-windspeed = wind_field['windspeed']
-
-
-wind_field_3D_applied_validation_func(g_node_coor=g_node_coor, windspeed=windspeed, dt=dt, wind_block_T=T, beta_DB=beta_DB, arc_length=arc_length, R=R,
-                                      Ii_simplified_bool=True, f_min=f_min, f_max=f_max, n_freq=n_freq, n_nodes_validated=n_nodes_validated, node_test_S_a=0, n_nodes_val_coh=3)
+#
+# ## Validation:
+# from buffeting import deg, rad, U_bar_func, Ai_func, Cij_func, Ii_func, iLj_func, beta_0_func
+# from straight_bridge_geometry import g_node_coor, arc_length, R
+# from wind_field.wind_field_3D import wind_field_3D_func
+# from transformations import T_GsGw_func
+# import numpy as np
+#
+# # Input parameters
+# beta_DB = rad(100)
+# theta_G = rad(0)
+# T = 1200  # time domain
+# dt = 0.5  # time domain. Best: 0.1 s when plotting auto-spectrum
+# n_freq = 2048
+# f_min = 0.005
+# f_max = 6
+# # g_node_coor = g_node_coor[:10]
+# # Alternative manual coordinates
+# n_nodes_validated = 11
+# node_spacing = 5  # meters
+# g_node_coor = np.transpose(np.array([np.arange(n_nodes_validated)*5, [0]*n_nodes_validated, [14.5]*n_nodes_validated]))
+#
+# # Other parameters
+# beta_G = beta_0_func(beta_DB=beta_DB)
+# T_GwGs = np.transpose(T_GsGw_func(beta_0=beta_G, theta_0=theta_G))
+# g_node_coor_Gw = np.einsum('ij,nj->ni' , T_GwGs, g_node_coor)
+# U_bar = U_bar_func(g_node_coor)
+# Ai = Ai_func(cond_rand_A=False)
+# Cij = Cij_func(cond_rand_C=False).flatten()  # [Cux,Cuy,Cuz,Cvx,Cvy,Cvz,Cwx,Cwy,Cwz]
+# Ii = Ii_func(g_node_coor, beta_DB=False, Ii_simplified=True)
+# iLj_bad_shape = iLj_func(g_node_coor)  # first node defines iLj (homogeneity required)
+# iLj = np.transpose(np.array([i.flatten() for i in iLj_bad_shape]))
+# wind_field = wind_field_3D_func(node_coor_wind=g_node_coor_Gw, V=U_bar, Ai=Ai, Cij=Cij, I=Ii, iLj=iLj, T=T, sample_freq=1/dt, spectrum_type=2)
+# windspeed = wind_field['windspeed']
+#
+#
+# wind_field_3D_applied_validation_func(g_node_coor=g_node_coor, windspeed=windspeed, dt=dt, wind_block_T=T, beta_DB=beta_DB, arc_length=arc_length, R=R,
+#                                       Ii_simplified_bool=True, f_min=f_min, f_max=f_max, n_freq=n_freq, n_nodes_validated=n_nodes_validated, node_test_S_a=0, n_nodes_val_coh=3)
 
 
 

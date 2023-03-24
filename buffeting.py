@@ -92,7 +92,7 @@ def delta_array_func(array):
     delta_array = np.zeros(n_array)
     delta_array[0] = (array[1]-array[0])/2
     delta_array[-1] = (array[-1]-array[-2])/2
-    delta_array[1:-1] = np.array([array[f+1]-array[f] for f in range(1, n_array-1)])
+    delta_array[1:-1] = np.array([(array[f]-array[f-1])/2 + (array[f+1]-array[f])/2 for f in range(1, n_array-1)])
     return delta_array
 
 ########################################################################################################################
@@ -167,8 +167,7 @@ def Cij_func(cond_rand_C):
     Cij = np.array([[Cux, Cuy, Cuz],
                     [Cvx, Cvy, Cvz],
                     [Cwx, Cwy, Cwz]])
-    print('Coherence !!!!')
-    return Cij / 10000
+    return Cij
 
 def iLj_func(g_node_coor):
     g_node_num = len(g_node_coor)
@@ -223,10 +222,9 @@ def Ii_func(g_node_coor, beta_DB, Ii_simplified):
     g_node_coor_z = g_node_coor[:, 2]  # m. Meters above sea level
     g_nodes = np.array(list(range(g_node_num)))  # starting at 0
 
-    Iu = np.ones(g_node_num) * 3.947 / 30 * 0 
-    Iv = np.ones(g_node_num) * 2.960 / 30 * 0 # Design basis rev 0, 2018, Chapter 2.2
-    Iw = np.ones(g_node_num) * 1.973 / 30 / 100 # Design basis rev 0, 2018, Chapter 2.2
-    print('Turbulence!!!')
+    Iu = np.ones(g_node_num) * 3.947 / 30
+    Iv = np.ones(g_node_num) * 2.960 / 30  # Design basis rev 0, 2018, Chapter 2.2
+    Iw = np.ones(g_node_num) * 1.973 / 30  # Design basis rev 0, 2018, Chapter 2.2
     #
     # else:
     #     if 150 <= beta_DB <= 210:
@@ -1473,7 +1471,7 @@ def buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, ske
     S_delta_local = np.diagonal(S_deltadelta_local, axis1=3, axis2=4)   # extracting the diagonal only (no interaction between dof??)
     S_delta_local = np.moveaxis(np.diagonal(S_delta_local, axis1=1, axis2=2), 1, -1)   # extracting the diagonal only (no interaction between g_nodes??). Apparently np.diagonal changes order of the dimensions so np.moveaxis is needed.
     # Root of sum of squares (RSS) of the 3 first components (displacement components, not rotations) of S_delta. Extracting the diagonal terms only
-    S_delta_norm_local = np.sqrt(np.sum(np.square(S_delta_local[:,:,:3]), axis=-1))  #
+    # S_delta_norm_local = np.sqrt(np.sum(np.square(S_delta_local[:,:,:3]), axis=-1))  #
     # std_delta: formulation with just diagonal of S_deltadelta
 
     std_delta_local = np.sqrt(np.einsum('wmv,w->vm', np.real(S_delta_local), delta_w_array))  # np.real(S_delta) is confirmed to be good since imag part is virtually 0!

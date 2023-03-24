@@ -279,9 +279,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
         Czz_Ls_2D_fit_cons = \
         cons_poly_fit(data_in_Czz_Ls, data_coor_out, data_bounds, constr_fit_degree_list[5], ineq_constraint_Czz, other_constraint_Czz,
                       degree_type='max')[1] * Czz_sign
-        # C_Ci_Ls_2D_fit_cons = np.array([Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,Czz_Ls_2D_fit_cons])
-        C_Ci_Ls_2D_fit_cons = np.array([0*Cx_Ls_2D_fit_cons, 0*Cy_Ls_2D_fit_cons, 0*Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, 0*Cyy_Ls_2D_fit_cons,0*Czz_Ls_2D_fit_cons])       
-        print('COEFFICIENTS !!!!!!!')
+        C_Ci_Ls_2D_fit_cons = np.array([Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,Czz_Ls_2D_fit_cons])
 
     # if method == '2D_fit_cons_2':
     #     # Ls coordinates.
@@ -326,6 +324,44 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     #     C_Ci_Ls_2D_fit_cons = np.array(
     #         [Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,
     #          Czz_Ls_2D_fit_cons])
+
+    if method == 'table':
+        from scipy import interpolate
+        betas_table = np.deg2rad(pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='betas_deg').to_numpy())
+        thetas_table = np.deg2rad(pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='thetas_deg').to_numpy())
+        C_Ci_Ls_table = np.array([
+            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Cx').to_numpy(),
+            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Cy').to_numpy(),
+            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Cz').to_numpy(),
+            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Crx').to_numpy(),
+            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Cry').to_numpy(),
+            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Crz').to_numpy()])
+
+        # testing:
+        # betas_extrap = np.array([np.deg2rad(0), np.deg2rad(0.5), np.deg2rad(-1)])
+        # thetas_extrap = np.array([np.deg2rad(0), np.deg2rad(0), np.deg2rad(0.5)])
+
+        # NOTE THAT THE TABLE SHOULD BE C_Ci_Ls_table[:,::-1,:] SINCE THE THETAS WERE, IN THE ORIGINAL TABLE, IN DESCENDING ORDER, BUT ARE FORCED BY RectBivariateSpline to be ascending
+        C_C0_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[0], kx=1, ky=1)
+        C_C1_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[1], kx=1, ky=1)
+        C_C2_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[2], kx=1, ky=1)
+        C_C3_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[3], kx=1, ky=1)
+        C_C4_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[4], kx=1, ky=1)
+        C_C5_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[5], kx=1, ky=1)
+
+        C_Ci_Ls_table_interp = np.array(
+            [C_C0_func.ev(betas_extrap, thetas_extrap),  # .ev means "evaluate" the interpolation, at given points
+             C_C1_func.ev(betas_extrap, thetas_extrap),
+             C_C2_func.ev(betas_extrap, thetas_extrap),
+             C_C3_func.ev(betas_extrap, thetas_extrap),
+             C_C4_func.ev(betas_extrap, thetas_extrap),
+             C_C5_func.ev(betas_extrap, thetas_extrap)])
+
+        print('Possibly NO MISTAKEEEEEE: THE INTERPOLATION OF THETA IS WRONG. SEE ASCENDING ORDER IS OPPOSITE')
+
+
+        return C_Ci_Ls_table_interp
+
 
     if method == 'benchmark1':
         # C_Ci_Ls_benchmark = np.zeros((6, size))
