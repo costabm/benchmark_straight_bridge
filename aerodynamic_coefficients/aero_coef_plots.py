@@ -28,13 +28,13 @@ C_SOH_Ls  = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['C
 #####################################################################################################################
 # ZOOM OUT GRAPH
 # Tested Domain
-beta_angle_step = 0.5  # in degrees.
-theta_angle_step = 1  # in degrees.
-betas = np.arange(rad(-2), rad(90)+rad(beta_angle_step)*0.012345, rad(beta_angle_step))
-thetas = np.arange(rad(-89.9), rad(89.9)+rad(theta_angle_step)*0.012345, rad(theta_angle_step))
+beta_angle_step = 2  # in degrees.
+theta_angle_step = 0.05  # in degrees.
+betas = np.arange(rad(-179), rad(179)+rad(beta_angle_step)*0.012345, rad(beta_angle_step))
+thetas = np.arange(rad(-3), rad(3)+rad(theta_angle_step)*0.012345, rad(theta_angle_step))
 xx, yy = np.meshgrid(betas, thetas)
 
-def colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5]):
+def colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], format='original'):
     # Extrapolated coefficients
     C_Ci_grid_flat_Ls = aero_coef(xx.flatten(), yy.flatten(), method=method, coor_system='Ls')
     # Assessing the fitting at the exact SOH points, to estimate R_squared
@@ -53,30 +53,36 @@ def colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,
         absmax = max(abs(C_Ci_grid_flat_Ls[i]))
         cmap_norm = matplotlib.colors.Normalize(vmin=-absmax, vmax=absmax)
         scalarMap = matplotlib.cm.ScalarMappable(norm=cmap_norm, cmap=cmap)
-        plt.scatter(xx.flatten() * 180 / np.pi, yy.flatten() * 180 / np.pi, s = np.ones(len(C_Ci_grid_flat_Ls[i]))*10, alpha=1,marker="o", c=scalarMap.to_rgba(C_Ci_grid_flat_Ls[i]))
-        plt.colorbar(matplotlib.cm.ScalarMappable(norm=cmap_norm, cmap=cmap), ax=ax, alpha=1)
-        plt.clim(vmin=0, vmax=0)
-        ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=2, color='black', label='Measurements')
-        ax.set_xlabel(r'$\beta\/[\degree]$')
-        ax.set_ylabel(r'$\theta\/[\degree]$')
-        handles,labels = ax.get_legend_handles_labels()
-        # handles = [handles[1], handles[0]]
-        # labels = [labels[1], labels[0]]
-        ax.set_xlim(deg(min(betas)), deg(max(betas)))
-        plt.xticks(np.arange(0, 91, 15))
-        plt.yticks(np.arange(-90, 91, 15))
-        ax.set_ylim(-90, 90)
+        if format=='original':
+            plt.scatter(xx.flatten() * 180 / np.pi, yy.flatten() * 180 / np.pi, s = np.ones(len(C_Ci_grid_flat_Ls[i]))*10, alpha=1,marker="o", c=scalarMap.to_rgba(C_Ci_grid_flat_Ls[i]))
+            plt.colorbar(matplotlib.cm.ScalarMappable(norm=cmap_norm, cmap=cmap), ax=ax, alpha=1)
+            plt.clim(vmin=0, vmax=0)
+            ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=2, color='black', label='Measurements')
+            ax.set_xlabel(r'$\beta\/[\degree]$')
+            ax.set_ylabel(r'$\theta\/[\degree]$')
+            # handles = [handles[1], handles[0]]
+            # labels = [labels[1], labels[0]]
+            ax.set_xlim(deg(min(betas)), deg(max(betas)))
+            plt.xticks(np.arange(0, 91, 15))
+            plt.yticks(np.arange(-90, 91, 15))
+            ax.set_ylim(-90, 90)
+        elif format=='TorMartin':
+            plt.scatter(yy.flatten() * 180 / np.pi, xx.flatten() * 180 / np.pi, s = np.ones(len(C_Ci_grid_flat_Ls[i]))*10, alpha=1,marker="o", c=scalarMap.to_rgba(C_Ci_grid_flat_Ls[i]))
+            plt.colorbar(matplotlib.cm.ScalarMappable(norm=cmap_norm, cmap=cmap), ax=ax, alpha=1)
+            plt.clim(vmin=0, vmax=0)
+            ax.scatter(thetas_SOH * 180 / np.pi, betas_SOH * 180 / np.pi, s=2, color='black', label='Measurements')
+            ax.set_xlabel(r'$\theta\/[\degree]$')
+            ax.set_ylabel(r'$\beta\/[\degree]$')
+        handles, labels = ax.get_legend_handles_labels()
         plt.legend(handles,labels,loc=1)
         plt.tight_layout()
         plt.savefig(r'aerodynamic_coefficients/plots/3D_ZoomOut'+method+'_'+str(i)+'.png')
         plt.close()
-colormap_2var_cons_fit_zoomout(method='2D_fit_free', idx_to_plot=[1])
 
-colormap_2var_cons_fit_zoomout(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
-colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
-# colormap_2var_cons_fit_zoomout(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5])
-colormap_2var_cons_fit_zoomout(method='2D', idx_to_plot=[1,2,3])
-colormap_2var_cons_fit_zoomout(method='cos_rule', idx_to_plot=[1,2,3])
+# colormap_2var_cons_fit_zoomout(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
+colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], format='TorMartin')
+# colormap_2var_cons_fit_zoomout(method='2D', idx_to_plot=[1,2,3])
+# colormap_2var_cons_fit_zoomout(method='cos_rule', idx_to_plot=[1,2,3])
 
 # ZOOM IN GRAPH
 # Tested Domain
