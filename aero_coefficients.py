@@ -357,9 +357,6 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
              C_C4_func.ev(betas_extrap, thetas_extrap),
              C_C5_func.ev(betas_extrap, thetas_extrap)])
 
-        print('Possibly NO MISTAKEEEEEE: THE INTERPOLATION OF THETA IS WRONG. SEE ASCENDING ORDER IS OPPOSITE')
-
-
         return C_Ci_Ls_table_interp
 
 
