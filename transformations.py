@@ -862,7 +862,6 @@ def discretize_S_delta_local_by_equal_energies(f_array_base, max_S_delta_local, 
         New solution is to add the horizontal and the other spectra together before doing the equal energy division
     """
     from scipy import integrate
-    import time
 
     n_freq = len(f_array_base)
     assert max_S_delta_local.shape == (n_freq, 6)
