@@ -58,7 +58,7 @@ from transformations import normalize, g_node_L_3D_func, g_elem_nodes_func, T_Gs
 from mass_and_stiffness_matrix import mass_matrix_func, stiff_matrix_func, geom_stiff_matrix_func
 from modal_analysis import modal_analysis_func, simplified_modal_analysis_func
 from damping_matrix import rayleigh_coefficients_func, rayleigh_damping_matrix_func, added_damping_global_matrix_func
-from AMC_wind_time_series_checks import get_h5_windsim_file_with_wind_time_series
+from AMC_wind_time_series_checks import get_h5_windsim_file_with_wind_time_series, clone_windspeeds_when_g_nodes_are_diff_from_wind_nodes
 from profiling import profile
 import os
 
@@ -2067,11 +2067,15 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
     elif where_to_get_wind == 'external':
         filename = "wind_field/AMC_wind_time_series/wind_direction_0_nodes_50.h5"
         time_arr, windspeed = get_h5_windsim_file_with_wind_time_series(filename)
+        windspeed = clone_windspeeds_when_g_nodes_are_diff_from_wind_nodes(copy.deepcopy(windspeed))
         dt_all = time_arr[1:] - time_arr[:-1]
         assert np.max(dt_all) - np.min(dt_all) < 0.01
-        dt = dt_all[0]
+        dt_external = dt_all[0]
+        wind_T_external = time_arr[-1]
+        assert dt == dt_external, f"dt={dt} is not the same as the dt_external={dt_external}"
+        assert wind_T == wind_T_external, f"wind_T={wind_T} is not the same as the wind_T_external={wind_T_external}"
         wind_block_T = np.max(time_arr)
-        U_bar = len(np.mean(windspeed[0], axis=1))
+        U_bar = np.mean(windspeed[0], axis=1)
 
     beta_bar, theta_bar = beta_and_theta_bar_func(g_node_coor, beta_0, theta_0, alpha)
 
@@ -2121,9 +2125,8 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
         # WIND FIELD
         # ------------------------------------------
         # Possible error:
-        assert (transient_T / wind_block_T).is_integer(), 'Error: transient_T should be multiple of wind_block_T'
-
         if where_to_get_wind == 'in-house':
+            assert (transient_T / wind_block_T).is_integer(), 'Error: transient_T should be multiple of wind_block_T'
             windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T, cospec_type, Ii_simplified, plots=False)
 
         # # TESTING WITH STATIC WIND @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

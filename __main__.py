@@ -453,7 +453,9 @@ wind_overlap_T = 8  # (s). Total overlapping duration between adjacent blocks.
 transient_T = 2 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
 ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
 # wind_T = 3 * 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
-wind_T = 4 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
+# wind_T = 4 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
+wind_T = 6559.8037  # to be used with the external function
+
 
 # # ONE CASE
 # include_sw = True
@@ -479,13 +481,13 @@ include_SE_cases = [True]  # include self-excited forces or not. If False, then 
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law' # todo: not working for aero_coef 'NL'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5'
-aero_coef_linearity_cases = ['L']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
-SE_linearity_cases = ['L']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
+aero_coef_linearity_cases = ['NL']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
+SE_linearity_cases = ['NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
 geometric_linearity_cases = ['L']  # 'L': Constant M,K in Newmark. 'NL': M,K are updated each time step from deformed node coordinates.
 where_to_get_wind_cases = ['external']  # 'in-house' or 'external'
 n_nodes_cases = [len(g_node_coor)]
-n_seeds_cases = [3]
-dt_cases = [0.2]  # Not all values possible! wind_overlap_size must be even!
+n_seeds_cases = [1]
+dt_cases = [0.2002]  # Not all values possible! wind_overlap_size must be even!
 beta_0_cases = np.array([rad(0)])
 beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
