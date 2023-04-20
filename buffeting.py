@@ -58,6 +58,7 @@ from transformations import normalize, g_node_L_3D_func, g_elem_nodes_func, T_Gs
 from mass_and_stiffness_matrix import mass_matrix_func, stiff_matrix_func, geom_stiff_matrix_func
 from modal_analysis import modal_analysis_func, simplified_modal_analysis_func
 from damping_matrix import rayleigh_coefficients_func, rayleigh_damping_matrix_func, added_damping_global_matrix_func
+from AMC_wind_time_series_checks import get_h5_windsim_file_with_wind_time_series
 from profiling import profile
 import os
 
@@ -1039,7 +1040,8 @@ def Fsw_func(g_node_coor, p_node_coor, alpha, U_bar, beta_bar, theta_bar, aero_c
     F_sw_Gs = np.concatenate((F_sw_Gs, np.zeros(p_node_num * 6)))  # adding Fb = 0 to all remaining dof at the pontoon nodes
     return F_sw_Gs
 
-def Fad_or_Fb_all_t_Taylor_hyp_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar, theta_bar, windspeed, aero_coef_method, n_aero_coef, skew_approach, which_to_get):
+def Fad_or_Fb_all_t_Taylor_hyp_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar, theta_bar, U_bar,
+                                    windspeed, aero_coef_method, n_aero_coef, skew_approach, which_to_get):
     """Get buffeting forces (without mean wind) in a full 2D global matrix shape:(time, dof_all),
     with Taylor's hyphotesis on the linearized C_Ci coefficients. SE excited forces are not included here as they
     are thus eventually included in K and C as Kse and Cse."""
@@ -2020,8 +2022,10 @@ def MDOF_TD_NL_wind_solver(g_node_coor, p_node_coor, beta_0, theta_0, aero_coef_
             'v': np.array(v_new),
             'a': np.array(a_new)}
 
-def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, flutter_derivatives_type, include_sw, include_KG, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, n_seeds, dt, wind_block_T,
-                      wind_overlap_T, wind_T, transient_T, ramp_T, beta_DB, aero_coef_linearity, SE_linearity, geometric_linearity, cospec_type=2, plots=False, save_txt=False):
+def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, flutter_derivatives_type, include_sw,
+                      include_KG, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, n_seeds, dt, wind_block_T,
+                      wind_overlap_T, wind_T, transient_T, ramp_T, beta_DB, aero_coef_linearity, SE_linearity,
+                      geometric_linearity, where_to_get_wind, cospec_type=2, plots=False, save_txt=False):
 
     g_node_num = len(g_node_coor)
     g_nodes = np.array(list(range(g_node_num)))  # starting at 0
@@ -2057,8 +2061,18 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
     #     c_N += copy.deepcopy(c_N_sw)
     #     alpha += copy.deepcopy(alpha_sw)
     # # delete??
+    if where_to_get_wind == 'in-house':
+        U_bar = U_bar_func(g_node_coor=g_node_coor)
 
-    U_bar = U_bar_func(g_node_coor=g_node_coor)
+    elif where_to_get_wind == 'external':
+        filename = "wind_field/AMC_wind_time_series/wind_direction_0_nodes_50.h5"
+        time_arr, windspeed = get_h5_windsim_file_with_wind_time_series(filename)
+        dt_all = time_arr[1:] - time_arr[:-1]
+        assert np.max(dt_all) - np.min(dt_all) < 0.01
+        dt = dt_all[0]
+        wind_block_T = np.max(time_arr)
+        U_bar = len(np.mean(windspeed[0], axis=1))
+
     beta_bar, theta_bar = beta_and_theta_bar_func(g_node_coor, beta_0, theta_0, alpha)
 
     # Transformation from all nodes in Global to Local
@@ -2109,8 +2123,8 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
         # Possible error:
         assert (transient_T / wind_block_T).is_integer(), 'Error: transient_T should be multiple of wind_block_T'
 
-        windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T, cospec_type, Ii_simplified, plots=False)
-
+        if where_to_get_wind == 'in-house':
+            windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T, cospec_type, Ii_simplified, plots=False)
 
         # # TESTING WITH STATIC WIND @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         # windspeed = np.zeros((4,g_node_num,len(time_array)))
@@ -2139,9 +2153,13 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
         if SE_linearity == 'L':  # also valid if include_SE = False, because K_tot and C_tot will not include SE
             if aero_coef_linearity == 'L':  # 'L' -> Linear aero_coef and derivates used, with Taylor's formula.
                 if include_sw:
-                    F = Fad_or_Fb_all_t_Taylor_hyp_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar, theta_bar, windspeed, aero_coef_method, n_aero_coef, skew_approach, which_to_get='Fad')
+                    F = Fad_or_Fb_all_t_Taylor_hyp_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar,
+                                                        theta_bar, U_bar, windspeed, aero_coef_method, n_aero_coef,
+                                                        skew_approach, which_to_get='Fad')
                 else:
-                    F = Fad_or_Fb_all_t_Taylor_hyp_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar, theta_bar, windspeed, aero_coef_method, n_aero_coef, skew_approach, which_to_get='Fb')
+                    F = Fad_or_Fb_all_t_Taylor_hyp_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar,
+                                                        theta_bar, U_bar, windspeed, aero_coef_method, n_aero_coef,
+                                                        skew_approach, which_to_get='Fb')
                 read_dict = MDOF_TD_solver(M=M, C=C_tot, K=K_tot, F=F, u0=u0, v0=v0, T=wind_T, dt=dt)
             elif aero_coef_linearity == 'NL':  # aero_coefficients used as functions of beta_tilde and theta_tilde
                 if include_sw:
@@ -2285,13 +2303,15 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
             'damping_Ti':damping_Ti,
             'damping_Tj':damping_Tj}
 
-def list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases, include_SE_cases, flutter_derivatives_type_cases, n_nodes_cases, include_sw_cases, include_KG_cases, n_seeds_cases, dt_cases,
-                          aero_coef_linearity_cases, SE_linearity_cases, geometric_linearity_cases, skew_approach_cases, beta_DB_cases):
+def list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases, include_SE_cases, flutter_derivatives_type_cases,
+                          n_nodes_cases, include_sw_cases, include_KG_cases, n_seeds_cases, dt_cases,
+                          aero_coef_linearity_cases, SE_linearity_cases, geometric_linearity_cases, skew_approach_cases,
+                          where_to_get_wind_cases, beta_DB_cases):
     # List of cases (parameter combinations) to be run:
-    list_of_cases = [(a,b,c,d,e,f,g,h,i,j,k,l,m,z) for a in aero_coef_method_cases for b in n_aero_coef_cases for c in include_SE_cases
+    list_of_cases = [(a,b,c,d,e,f,g,h,i,j,k,l,m,n,z) for a in aero_coef_method_cases for b in n_aero_coef_cases for c in include_SE_cases
                      for d in flutter_derivatives_type_cases for e in n_nodes_cases for f in include_sw_cases for g in include_KG_cases
                      for h in n_seeds_cases for i in dt_cases for j in aero_coef_linearity_cases for k in SE_linearity_cases
-                     for l in geometric_linearity_cases for m in skew_approach_cases for z in beta_DB_cases] # Note: new parameters should be added before beta_DB
+                     for l in geometric_linearity_cases for m in skew_approach_cases for n in where_to_get_wind_cases for z in beta_DB_cases] # Note: new parameters should be added before beta_DB
     list_of_cases = [list(case) for case in list_of_cases
                      if not (('3D' in case[3] and '2D' in case[11]) or ('2D' in case[3] and '3D' in case[11]) or (case[2]==False and case[3] in ['3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_in_plane']))]
     # if skew_approach is '3D' only '3D' flutter_derivatives accepted. If SE=False, only one dummy FD case is accepted: '3D_full' or '2D_full'
@@ -2301,17 +2321,20 @@ def parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
                       wind_T, transient_T, ramp_T, R_loc, D_loc, cospec_type=2, plots=False, save_txt=False):
     # Empty Dataframe to store results
     results_df = pd.DataFrame(list_of_cases)
-    results_df.columns = ['Method', 'n_aero_coef', 'SE', 'FD_type', 'g_node_num', 'SWind', 'KG', 'N_seeds', 'dt', 'C_Ci_linearity', 'SE_linearity', 'geometric_linearity', 'skew_approach', 'beta_DB']
+    results_df.columns = ['Method', 'n_aero_coef', 'SE', 'FD_type', 'g_node_num', 'SWind', 'KG', 'N_seeds', 'dt', 'C_Ci_linearity', 'SE_linearity', 'geometric_linearity', 'skew_approach', 'where_to_get_wind', 'beta_DB']
     for i in range(0, 6):
         results_df['std_max_dof_' + str(i)] = None
 
     case_idx = -1  # index of the case
     for aero_coef_method, n_aero_coef, include_SE, flutter_derivatives_type, g_node_num, include_sw, include_KG, n_seeds, dt, aero_coef_linearity,\
-        SE_linearity, geometric_linearity, skew_approach, beta_DB in list_of_cases:
+        SE_linearity, geometric_linearity, skew_approach, where_to_get_wind, beta_DB in list_of_cases:
         case_idx += 1  # starts at 0.
-        buffeting_results = buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, flutter_derivatives_type, include_sw, include_KG, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc,
-                                              n_seeds, dt, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, beta_DB, aero_coef_linearity, SE_linearity, geometric_linearity,
-                                              cospec_type, plots, save_txt)
+        buffeting_results = buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE,
+                                              flutter_derivatives_type, include_sw, include_KG, g_node_coor,
+                                              p_node_coor, Ii_simplified, R_loc, D_loc, n_seeds, dt, wind_block_T,
+                                              wind_overlap_T, wind_T, transient_T, ramp_T, beta_DB, aero_coef_linearity,
+                                              SE_linearity, geometric_linearity, where_to_get_wind, cospec_type, plots,
+                                              save_txt)
         # Reading results
         std_delta_local_mean = buffeting_results['std_delta_local_mean']
         std_delta_local_std = buffeting_results['std_delta_local_std']

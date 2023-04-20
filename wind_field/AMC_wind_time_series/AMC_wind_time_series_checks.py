@@ -47,3 +47,12 @@ def get_h5_windsim_file_with_wind_time_series(filename):
 #                                       node_test_S_a=node_test_S_a, n_nodes_val_coh=n_nodes_val_coh)
 
 
+def clone_windspeeds_when_g_nodes_are_diff_from_wind_nodes(windspeed, n_ws_nodes=25, desired_n_g_nodes=51):
+    """
+    Since AMC delivered a windsim file with half the nodes (25) as the FEM girder nodes (51), this function
+    aims to find the nodes which the windsim refer to, and then make nearest neighbor to the remaining nodes
+    """
+    assert n_ws_nodes == windspeed.shape[1], "This function only works specifically when n_ws_nodes=25"
+    desired_n_g_nodes
+
+

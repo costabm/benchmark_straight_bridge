@@ -439,12 +439,9 @@ list_of_cases = list_of_cases_FD_func(n_aero_coef_cases, include_SE_cases, aero_
 # pr = cProfile.Profile()
 # pr.enable()
 # Writing results
-parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
+# parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
 # pr.disable()
 # pr.print_stats(sort='cumtime')
-
-# raise Exception  # remove this (used to stop the code from reaching the time-domain calculations)
-
 
 ########################################################################################################################
 # Time domain buffeting analysis:
@@ -453,7 +450,7 @@ parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplif
 wind_block_T = 600  # (s). Desired duration of each wind block. To be increased due to overlaps.
 wind_overlap_T = 8  # (s). Total overlapping duration between adjacent blocks.
 # transient_T = 3 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
-transient_T = 1 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
+transient_T = 2 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
 ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
 # wind_T = 3 * 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
 wind_T = 4 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
@@ -475,34 +472,40 @@ wind_T = 4 * wind_block_T + transient_T  # (s). Total time-domain simulation dur
 #                                     cospec_type, plots=False, save_txt=True)['std_delta_local_mean']
 
 # LIST OF CASES
-include_sw_cases = [False]  # include static wind effects or not (initial angle of attack and geometric stiffness)
+include_sw_cases = [True]  # include static wind effects or not (initial angle of attack and geometric stiffness)
 include_KG_cases = [False]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz)
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law' # todo: not working for aero_coef 'NL'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5'
-aero_coef_linearity_cases = ['NL']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
-SE_linearity_cases = ['NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
+aero_coef_linearity_cases = ['L']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
+SE_linearity_cases = ['L']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
 geometric_linearity_cases = ['L']  # 'L': Constant M,K in Newmark. 'NL': M,K are updated each time step from deformed node coordinates.
+where_to_get_wind_cases = ['external']  # 'in-house' or 'external'
 n_nodes_cases = [len(g_node_coor)]
-n_seeds_cases = [2]
-dt_cases = [4]  # Not all values possible! wind_overlap_size must be even!
-beta_DB_cases = np.arange(rad(0), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
-list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases, include_SE_cases, flutter_derivatives_type_cases, n_nodes_cases, include_sw_cases, include_KG_cases, n_seeds_cases,
-                                      dt_cases, aero_coef_linearity_cases, SE_linearity_cases, geometric_linearity_cases, skew_approach_cases, beta_DB_cases)
+n_seeds_cases = [3]
+dt_cases = [0.2]  # Not all values possible! wind_overlap_size must be even!
+beta_0_cases = np.array([rad(0)])
+beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
+
+list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases, include_SE_cases,
+                                      flutter_derivatives_type_cases, n_nodes_cases, include_sw_cases, include_KG_cases,
+                                      n_seeds_cases, dt_cases, aero_coef_linearity_cases, SE_linearity_cases,
+                                      geometric_linearity_cases, skew_approach_cases, where_to_get_wind_cases,
+                                      beta_DB_cases)
 
 # Writing results
-# parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T,
-#                       wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
+parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 
 # # Plotting
 # import buffeting_plots
 # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
 # # # # # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'beta_DB'])
 
+raise Exception  # remove this
 
-# todo: to accelerate the code, calculate the polynomial coefficients of the constrained fits only once and save them in a separate file to be accessed for each mean wind direction.
+# todo: to accelerate the code, calculate the polynomial coefficients of the constrained fits only once and save them in a separate file to be accessed for each mean wind direction. Or use the analytical formula for each polynomial + symmetry transformations
 # #######################################################################################################################
 # Validating the wind field:
 # #######################################################################################################################
