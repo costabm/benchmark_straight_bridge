@@ -31,7 +31,7 @@ run_sw_for_modal = False # include Static wind for the modal_analysis_after_stat
 run_new_Nw_sw = False
 
 run_modal_analysis_after_static_loads = False
-generate_new_C_Ci_grid = False  # attention!!
+generate_new_C_Ci_grid = True  # attention!!
 
 ########################################################################################################################
 # Initialize structure:
@@ -412,7 +412,7 @@ make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses an
 aero_coef_method_cases = ['table']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [1024*16]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
+n_freq_cases = [1024]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
 f_min_cases = [0.002]  # Hz. Use 0.002
 f_max_cases = [10]  # Hz. Use 0.5! important to not overstretch this parameter
 f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins', 'logspace_base_n' where n is the base of the log
@@ -479,16 +479,16 @@ include_KG_cases = [True]  # include the effects of geometric stiffness (both in
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz)
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
-skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law' # todo: not working for aero_coef 'NL'
+skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law' # I had written "not working for aero_coef 'NL'", but it seems to be working well now right??
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5'
 aero_coef_linearity_cases = ['NL']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
-SE_linearity_cases = ['L, NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
+SE_linearity_cases = ['L', 'NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
 geometric_linearity_cases = ['L']  # 'L': Constant M,K in Newmark. 'NL': M,K are updated each time step from deformed node coordinates.
 where_to_get_wind_cases = ['in-house']  # 'in-house' or 'external'
 n_nodes_cases = [len(g_node_coor)]
-n_seeds_cases = [1]
+n_seeds_cases = [5]
 # dt_cases = [0.2002]  # Not all values possible! wind_overlap_size must be even!
-dt_cases = [0.05]
+dt_cases = [0.1]
 # beta_0_cases = np.array([rad(0)])
 beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
 beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
