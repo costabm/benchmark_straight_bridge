@@ -92,7 +92,6 @@ def added_damping_global_matrix_func(w_array=None, make_freq_dep=False):
         matrix = np.zeros(((g_node_num + n_pontoons) * 6, (g_node_num + n_pontoons) * 6))
         for p in range(n_pontoons):
             matrix[6*(g_node_num + p):6 * (g_node_num + p) + 6, 6 * (g_node_num + p):6 * (g_node_num + p) + 6] += p_damping_global[p]
-        return matrix
     else:
         assert make_freq_dep
         assert w_array is not None
@@ -104,5 +103,5 @@ def added_damping_global_matrix_func(w_array=None, make_freq_dep=False):
         matrix = np.zeros((n_freq, (g_node_num + n_pontoons) * 6, (g_node_num + n_pontoons) * 6))
         for p in range(n_pontoons):
             matrix[:, 6 * (g_node_num + p):6 * (g_node_num + p) + 6, 6 * (g_node_num + p):6 * (g_node_num + p) + 6] += p_damping_global[:,p,:,:]
-        return matrix
+    return matrix *0*0*0*0*0*0*0*0*0*0*0
 

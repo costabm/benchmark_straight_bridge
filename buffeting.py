@@ -224,8 +224,8 @@ def Ii_func(g_node_coor, beta_DB, Ii_simplified):
     g_nodes = np.array(list(range(g_node_num)))  # starting at 0
 
     Iu = np.ones(g_node_num) * 3.947 / 30
-    Iv = np.ones(g_node_num) * 2.960 / 30  # Design basis rev 0, 2018, Chapter 2.2
-    Iw = np.ones(g_node_num) * 1.973 / 30  # Design basis rev 0, 2018, Chapter 2.2
+    Iv = np.ones(g_node_num) * 2.960 / 30   # Design basis rev 0, 2018, Chapter 2.2
+    Iw = np.ones(g_node_num) * 1.973 / 30   # Design basis rev 0, 2018, Chapter 2.2
     #
     # else:
     #     if 150 <= beta_DB <= 210:
@@ -1141,7 +1141,7 @@ def Fad_one_t_C_Ci_NL_with_SE(g_node_coor, p_node_coor, alpha, beta_0, theta_0, 
 
     # Windspeeds without the time dimension!
     U_and_u = windspeed_i[0, :]  # U+u
-    windspeed_v = windspeed_i[2, :] # todo: NO NEED FOR THE WHOLE WINDSPEED TIME, ONLY AT TIME i
+    windspeed_v = windspeed_i[2, :] # NO NEED FOR THE WHOLE WINDSPEED TIME, ONLY AT TIME i
     windspeed_w = windspeed_i[3, :]
 
     # Variables, calculated every time step
@@ -1165,7 +1165,7 @@ def Fad_one_t_C_Ci_NL_with_SE(g_node_coor, p_node_coor, alpha, beta_0, theta_0, 
     # Projection of V_Lr in local bridge xy plane (same as qp in L.D.Zhu). See L.D.Zhu eq. (4-44)
     V_rel_qp = np.sqrt(V_rel_q ** 2 + V_rel_p ** 2)  # SRSS of Vq and Vp
     V_rel_tot = np.sqrt(V_rel_q ** 2 + V_rel_p ** 2 + V_rel_h ** 2)
-    theta_tilde = np.arccos(V_rel_qp / V_rel_tot)  * np.sign(V_h)  # positive if V_h is positive!
+    theta_tilde = np.arccos(V_rel_qp / V_rel_tot) * np.sign(V_h)  # positive if V_h is positive!
     beta_tilde = np.arccos(V_rel_p / V_rel_qp) * -np.sign(V_q)  # negative if V_q is positive!
     T_LrLwtilde_6 = T_LsLw_func(beta_tilde, theta_tilde, dim='6x6')  # shape:(g,6,6)
     C_Ci_tilde = np.array([C_C0_func.ev(beta_tilde, theta_tilde),  # .ev means "evaluate" the interpolation, at given points
@@ -2163,18 +2163,18 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
                     F = Fad_or_Fb_all_t_Taylor_hyp_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar,
                                                         theta_bar, U_bar, windspeed, aero_coef_method, n_aero_coef,
                                                         skew_approach, which_to_get='Fb')
-                read_dict = MDOF_TD_solver(M=M, C=C_tot, K=K_tot, F=F, u0=u0, v0=v0, T=wind_T, dt=dt)
             elif aero_coef_linearity == 'NL':  # aero_coefficients used as functions of beta_tilde and theta_tilde
                 if include_sw:
                     F = Fad_or_Fb_all_t_C_Ci_NL_no_SE_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar, theta_bar, windspeed, aero_coef_method, n_aero_coef, skew_approach, which_to_get='Fad')
                 else:
                     F = Fad_or_Fb_all_t_C_Ci_NL_no_SE_func(g_node_coor, p_node_coor, alpha, beta_0, theta_0, beta_bar, theta_bar, windspeed, aero_coef_method, n_aero_coef, skew_approach, which_to_get='Fb')
-                read_dict = MDOF_TD_solver(M=M, C=C_tot, K=K_tot, F=F, u0=u0, v0=v0, T=wind_T, dt=dt)
+            read_dict = MDOF_TD_solver(M=M, C=C_tot, K=K_tot, F=F, u0=u0, v0=v0, T=wind_T, dt=dt)
         elif SE_linearity == 'NL' and include_SE:
-            if include_KG:
-                C_tot = rayleigh_damping_matrix_func(M, K - KG + Kse_full_mat_0, damping_ratio, damping_Ti, damping_Tj)  # KG effects on C_tot are pre-determined here, but are not included in K. todo: INCLUDE OR EXCLUDE SE??
+            if include_KG:  # During the PhD, C_added was not included in the following two C_tot definitions. I don't remember what I used as damping for the validation purpose of fig. 38 in my thesis.
+                # I have later added C_added to the two following lines. Regarding considering Kse or not when obtaining the Rayleigh, it sounds OK both with and without.
+                C_tot = rayleigh_damping_matrix_func(M, K - KG + Kse_full_mat_0, damping_ratio, damping_Ti, damping_Tj) + C_added  # KG effects on C_tot are pre-determined here, but are not included in K. INCLUDE OR EXCLUDE C_added ??????????????????????????????!!!!
             else:
-                C_tot = rayleigh_damping_matrix_func(M, K + Kse_full_mat_0, damping_ratio, damping_Ti, damping_Tj) #todo: INCLUDE OR EXCLUDE SE??
+                C_tot = rayleigh_damping_matrix_func(M, K + Kse_full_mat_0, damping_ratio, damping_Ti, damping_Tj) + C_added  # INCLUDE OR EXCLUDE C_added ??????????????????????????????!!!!
             u0 = np.array([0] * len(M))  # 0 initial displacement at every dof
             v0 = np.array([0] * len(M))  # 0 initial velocity at every dof
             read_dict = MDOF_TD_NL_wind_solver(g_node_coor, p_node_coor, beta_0, theta_0, aero_coef_method, n_aero_coef, include_KG, geometric_linearity, R_loc, D_loc, M, C_tot, K, windspeed, u0=u0, v0=v0, T=wind_T, dt=dt)
