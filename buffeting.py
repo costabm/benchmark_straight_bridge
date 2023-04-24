@@ -2112,6 +2112,7 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
     # Modal analysis:
     _, _, w_eigen, _ = simplified_modal_analysis_func(M, K_tot)
 
+    mean_delta_local_all_seeds = []
     std_delta_local_all_seeds = []
 
     transient_resp_error = np.e ** (-damping_ratio * w_eigen[0] * transient_T)  # (amplitude of transient response / total response), at the end of the transient (ramp-up) period. In a damped free vibration (decaying response), the response amplitude = e**(-zeta*omega*t)
@@ -2288,6 +2289,7 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
         #             '_zeta-' + str(damping_ratio) +'_Ti-' + str(damping_Ti) +'_Tj-' + str(damping_Tj) +'_Nodes-' + str(g_node_num) + \
         #             '_FD-f-' + str(f_array[0]) +'-' + str(f_array[-1]) + '_iter-' + str(seed+1) + '.png')
 
+        mean_delta_local_all_seeds.append(mean_delta_local)
         std_delta_local_all_seeds.append(std_delta_local)
         # Saving std of displacements
         if save_txt:
@@ -2296,10 +2298,15 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
             np.savetxt(r'results\mean_delta_local_TD_all_seeds_B-' + str(np.round(deg(beta_DB))) + '_T-' + str(wind_T - transient_T) + '_dt-' + str(dt) + '_Spec-' + str(cospec_type) + \
                        '_zeta-' + str(damping_ratio) + '_Ti-' + str(damping_Ti) + '_Tj-' + str(damping_Tj) + '_Nodes-' + str(g_node_num) + '_iter-' + str(seed+1) + '.txt', mean_delta_local)
 
+    mean_delta_local_mean = np.mean(mean_delta_local_all_seeds, axis=0)
+    mean_delta_local_std = np.std(mean_delta_local_all_seeds, axis=0)
+
     std_delta_local_mean = np.mean(std_delta_local_all_seeds, axis=0)
     std_delta_local_std = np.std(std_delta_local_all_seeds, axis=0)
 
-    return {'std_delta_local_mean': std_delta_local_mean,
+    return {'mean_delta_local_mean': mean_delta_local_mean,
+            'mean_delta_local_std': mean_delta_local_std,
+            'std_delta_local_mean': std_delta_local_mean,
             'std_delta_local_std': std_delta_local_std,
             'cospec_type':cospec_type,
             'damping_ratio':damping_ratio,
@@ -2322,16 +2329,22 @@ def list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases, include_SE_
 
 def parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T,
                       wind_T, transient_T, ramp_T, R_loc, D_loc, cospec_type=2, plots=False, save_txt=False):
+    n_g_nodes = len(g_node_coor)
     # Empty Dataframe to store results
-    results_df = pd.DataFrame(list_of_cases)
+    results_df             = pd.DataFrame(list_of_cases)
+    results_df_all_g_nodes = pd.DataFrame(list_of_cases)
     results_df.columns = ['Method', 'n_aero_coef', 'SE', 'FD_type', 'g_node_num', 'SWind', 'KG', 'N_seeds', 'dt', 'C_Ci_linearity', 'SE_linearity', 'geometric_linearity', 'skew_approach', 'where_to_get_wind', 'beta_DB']
+    results_df_all_g_nodes.columns = copy.deepcopy(results_df.columns)
     for i in range(0, 6):
         results_df['std_max_dof_' + str(i)] = None
+        col_list = [f'g_node_{n}_std_dof_{i}' for n in range(n_g_nodes)]
+        results_df_all_g_nodes = pd.concat([results_df_all_g_nodes, pd.DataFrame(columns=col_list)]).replace({np.nan: None})
 
     case_idx = -1  # index of the case
     for aero_coef_method, n_aero_coef, include_SE, flutter_derivatives_type, g_node_num, include_sw, include_KG, n_seeds, dt, aero_coef_linearity,\
         SE_linearity, geometric_linearity, skew_approach, where_to_get_wind, beta_DB in list_of_cases:
         case_idx += 1  # starts at 0.
+        print('beta_DB = ' + str(round(deg(beta_DB))))
         buffeting_results = buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE,
                                               flutter_derivatives_type, include_sw, include_KG, g_node_coor,
                                               p_node_coor, Ii_simplified, R_loc, D_loc, n_seeds, dt, wind_block_T,
@@ -2339,6 +2352,8 @@ def parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
                                               SE_linearity, geometric_linearity, where_to_get_wind, cospec_type, plots,
                                               save_txt)
         # Reading results
+        mean_delta_local_mean = buffeting_results['mean_delta_local_mean']
+        mean_delta_local_std  = buffeting_results['mean_delta_local_std']
         std_delta_local_mean = buffeting_results['std_delta_local_mean']
         std_delta_local_std = buffeting_results['std_delta_local_std']
         cospec_type = buffeting_results['cospec_type']
@@ -2350,12 +2365,29 @@ def parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
         results_df.at[case_idx, 'damping_ratio'] = damping_ratio
         results_df.at[case_idx, 'damping_Ti'] = damping_Ti
         results_df.at[case_idx, 'damping_Tj'] = damping_Tj
+        results_df_all_g_nodes.at[case_idx, 'cospec_type'] = cospec_type
+        results_df_all_g_nodes.at[case_idx, 'damping_ratio'] = damping_ratio
+        results_df_all_g_nodes.at[case_idx, 'damping_Ti'] = damping_Ti
+        results_df_all_g_nodes.at[case_idx, 'damping_Tj'] = damping_Tj
+
         for i in range(0,6):
             results_df.at[case_idx, 'std_max_dof_'+str(i)] = np.max(std_delta_local_mean[i])
             results_df.at[case_idx, 'std_std_max_dof_'+str(i)] = np.max(std_delta_local_std[i])
-        print('beta_DB = ' + str(round(deg(beta_DB))))
+            col_list = [        f'g_node_{n}_std_dof_{i}' for n in range(n_g_nodes)]
+            col_list_std = [f'std_g_node_{n}_std_dof_{i}' for n in range(n_g_nodes)]
+            results_df_all_g_nodes.loc[case_idx, col_list] = std_delta_local_mean[i]
+            results_df_all_g_nodes.loc[case_idx, col_list_std] = std_delta_local_std[i]
+        # New 4 lines of code to include the mean value of the loads in the results (equivalent to static loads)
+        for i in range(0, 6):
+            results_df.at[case_idx, 'static_max_dof_'+str(i)] = np.max(mean_delta_local_mean[i])
+            results_df.at[case_idx, 'std_static_max_dof_' + str(i)] = np.max(mean_delta_local_std[i])
+            col_list = [        f'g_node_{n}_static_dof_{i}' for n in range(n_g_nodes)]
+            col_list_std = [f'std_g_node_{n}_static_dof_{i}' for n in range(n_g_nodes)]
+            results_df_all_g_nodes.loc[case_idx, col_list] = mean_delta_local_mean[i]
+            results_df_all_g_nodes.loc[case_idx, col_list_std] = mean_delta_local_std[i]
 
     # Exporting the results to a table
     from time import gmtime, strftime
     results_df.to_csv(r'results\TD_std_delta_max_'+strftime("%Y-%m-%d_%H-%M-%S", gmtime())+'.csv')
+    results_df_all_g_nodes.to_csv(r'results\TD_all_nodes_std_delta' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
     return None
