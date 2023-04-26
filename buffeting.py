@@ -1790,6 +1790,8 @@ def wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_o
     iLj_reshape = np.reshape(np.moveaxis(iLj, 0, -1), (9, g_node_num))  # to adapt to the wind_field_3D_function
 
     # Alert for possible mistakes:
+    if n_wind_blocks == 1:
+        assert wind_overlap_T == 0, 'Error: wind_overlap_T must by 0 when only one wind block is used'
     assert (wind_T / wind_block_T).is_integer(), 'Error: wind_T should be multiple of wind_block_T!!'
     assert (wind_T / dt).is_integer(), 'Error: wind_T should be multiple of dt!!'
     assert (ramp_T / dt).is_integer(), 'Error: ramp_T should be multiple of dt!!'
@@ -1806,20 +1808,19 @@ def wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_o
                                           wind_freq, spectrum_type=cospec_type)]
     print("--- %s seconds. Generated wind block number 1" % np.round_(time.time() - start_time))
 
-    # Next blocks
-    for n in range(1, n_wind_blocks - 1):
-        wind_field_data.append(wind_field_3D_func(node_coor_wind[:n_nodes_wind], U_bar[:n_nodes_wind], Ai, Cij.flatten(),
-                                                  Ii[:n_nodes_wind], iLj_reshape[:, :n_nodes_wind], wind_block_T_raw,
-                                                  wind_freq,
-                                                  spectrum_type=cospec_type))
-        print("--- %s seconds. Generated wind block number " % np.round_(time.time() - start_time) + str(n + 1))
+    if n_wind_blocks != 1:
+        # Next blocks
+        for n in range(1, n_wind_blocks - 1):
+            wind_field_data.append(wind_field_3D_func(node_coor_wind[:n_nodes_wind], U_bar[:n_nodes_wind], Ai, Cij.flatten(),
+                                                      Ii[:n_nodes_wind], iLj_reshape[:, :n_nodes_wind], wind_block_T_raw,
+                                                      wind_freq, spectrum_type=cospec_type))
+            print("--- %s seconds. Generated wind block number " % np.round_(time.time() - start_time) + str(n + 1))
 
-    # Last block
-    wind_field_data.append(wind_field_3D_func(node_coor_wind[:n_nodes_wind], U_bar[:n_nodes_wind], Ai, Cij.flatten(),
-                                              Ii[:n_nodes_wind], iLj_reshape[:, :n_nodes_wind], wind_block_T_raw_last,
-                                              wind_freq,
-                                              spectrum_type=cospec_type))
-    print("--- %s seconds in total to generate wind ---" % np.round_(time.time() - start_time))
+        # Last block
+        wind_field_data.append(wind_field_3D_func(node_coor_wind[:n_nodes_wind], U_bar[:n_nodes_wind], Ai, Cij.flatten(),
+                                                  Ii[:n_nodes_wind], iLj_reshape[:, :n_nodes_wind], wind_block_T_raw_last,
+                                                  wind_freq, spectrum_type=cospec_type))
+        print("--- %s seconds in total to generate wind ---" % np.round_(time.time() - start_time))
 
     # Retrieving wind speeds (discarding first value of all blocks except the first one)
     windspeed_raw = [wind_field_data[0]["windspeed"]]
@@ -1847,21 +1848,23 @@ def wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_o
 
     # OVERLAPPING
     # First block
-    windspeed = np.array(windspeed_raw[0][:, :, :-wind_overlap_size])  # first clean part
-    windspeed_overlap = smooth_func(windspeed_raw[0][:, :, -wind_overlap_size:],
-                                    windspeed_raw[1][:, :, :wind_overlap_size])  # first overlapped part
-    windspeed = np.concatenate((windspeed, windspeed_overlap), axis=-1)  # concatenating
+    if n_wind_blocks == 1:
+        windspeed = np.array(windspeed_raw[0])
+    else:
+        windspeed = np.array(windspeed_raw[0][:, :, :-wind_overlap_size])  # first clean part
+        windspeed_overlap = smooth_func(windspeed_raw[0][:, :, -wind_overlap_size:],
+                                        windspeed_raw[1][:, :, :wind_overlap_size])  # first overlapped part
+        windspeed = np.concatenate((windspeed, windspeed_overlap), axis=-1)  # concatenating
 
-    # Following blocks
-    for n in range(1, n_wind_blocks - 1):
-        windspeed = np.concatenate((windspeed, windspeed_raw[n][:, :, wind_overlap_size:-wind_overlap_size]),
-                                   axis=-1)  # concatenating next clean part
-        windspeed_overlap = smooth_func(windspeed_raw[n][:, :, -wind_overlap_size:],
-                                        windspeed_raw[n + 1][:, :, :wind_overlap_size])  # next overlapped part
-        windspeed = np.concatenate((windspeed, windspeed_overlap), axis=-1)  # concatenation
+        # Following blocks
+        for n in range(1, n_wind_blocks - 1):
+            windspeed = np.concatenate((windspeed, windspeed_raw[n][:, :, wind_overlap_size:-wind_overlap_size]), axis=-1)  # concatenating next clean part
+            windspeed_overlap = smooth_func(windspeed_raw[n][:, :, -wind_overlap_size:],
+                                            windspeed_raw[n + 1][:, :, :wind_overlap_size])  # next overlapped part
+            windspeed = np.concatenate((windspeed, windspeed_overlap), axis=-1)  # concatenation
 
-    # Last block
-    windspeed = np.concatenate((windspeed, windspeed_raw[-1][:, :, wind_overlap_size:]), axis=-1)  # concatenating next clean part
+        # Last block
+        windspeed = np.concatenate((windspeed, windspeed_raw[-1][:, :, wind_overlap_size:]), axis=-1)  # concatenating next clean part
 
     # Ramping up windspeeds during the first half of the transient_T, instead of starting full speed
     if ramp_T != 0:

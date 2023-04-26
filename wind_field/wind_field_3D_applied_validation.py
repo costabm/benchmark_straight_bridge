@@ -246,7 +246,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     from wind_field.coherence import coherence
 
     fig = plt.figure(figsize=(6 * n_nodes_val_coh, 6 * n_nodes_val_coh), dpi=100)
-    nperseg = 256  # Welch's method. Length of each segment.
+    nperseg = 1024  # Welch's method. Length of each segment.
     counter = 0
     for node_1 in range(n_nodes_val_coh):
         for node_2 in range(n_nodes_val_coh):
