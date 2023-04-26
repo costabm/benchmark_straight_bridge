@@ -8,9 +8,10 @@ Updated 11-2019
 import numpy as np
 import math
 import scipy
+import pandas as pd
 
 
-def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spectrum_type, method='fft'):
+def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spectrum_type, method='fft', export_results=True):
     """
     Return the 3 components of the wind speed at each node. shape:(4,num_nodes,num_time_points). U,u,v,w respectively, with U=V+u \n
     Return non-dimensional auto-spectra. shape:(3,num_nodes,num_freq) \n
@@ -39,9 +40,7 @@ def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spect
     nodes_z = node_coor_wind[:, 2]  # in wind flow coordinates! (usually-vertical flow)
 
     Au, Av, Aw = Ai
-
     Cux, Cuy, Cuz, Cvx, Cvy, Cvz, Cwx, Cwy, Cwz = Cij
-
     xLu, yLu, zLu, xLv, yLv, zLv, xLw, yLw, zLw = iLj
 
     series_N = int(T * sample_freq + 1)  # Total number of time points
@@ -260,28 +259,42 @@ def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spect
         for f in range(num_freq):
             S = np.block([[S_aa_reshaped[0, 0, f], S_aa_reshaped[0, 1, f], S_aa_reshaped[0, 2, f]],
                           [S_aa_reshaped[1, 0, f], S_aa_reshaped[1, 1, f], S_aa_reshaped[1, 2, f]],
-                          [S_aa_reshaped[2, 0, f], S_aa_reshaped[2, 1, f], S_aa_reshaped[
-                              2, 2, f]]])  # todo: replace this matrix with some np.concatenate or similar perhaps?
+                          [S_aa_reshaped[2, 0, f], S_aa_reshaped[2, 1, f], S_aa_reshaped[2, 2, f]]])  # todo: replace this matrix with some np.concatenate or similar perhaps?
             L, D, _ = scipy.linalg.ldl(S, lower=True)
             G = L @ np.sqrt(D)
             A[f, :] = G @ np.exp(1j * 2 * np.pi * np.random.random(num_nodes * 3))
-        Nu = np.block([[np.zeros((1, num_nodes * 3))], [A[:num_freq - 1, :]], [np.real(A[num_freq - 1, :])],
-                       [np.conj(np.flipud(A[:num_freq - 1, :]))]])
-        speed = np.real(np.fft.ifft(Nu, axis=0) * np.sqrt(num_freq / dt))
-        series_u = speed[:, :num_nodes]
-        series_v = speed[:, num_nodes:2 * num_nodes]
-        series_w = -speed[:, 2 * num_nodes:]
 
-        print('DIRTY TRICK to increase number of wind time points, from Nyquist-restricted to the desired ones, by copying backwards the last missing points!!')
-        n_miss = len(series_t) - len(series_u)  # number of missing points
-        print(f'({n_miss} missing data points are being generated)')
-        series_u = np.append(series_u, series_u[-(n_miss+1):-1, :][::-1], axis=0).T
-        series_v = np.append(series_v, series_v[-(n_miss+1):-1, :][::-1], axis=0).T
-        series_w = np.append(series_w, series_w[-(n_miss+1):-1, :][::-1], axis=0).T
+        #Working version:
+        # Nu = np.block([[np.zeros((1, num_nodes * 3))], [A[:num_freq - 1, :]], [np.real(A[num_freq - 1, :])], [np.conj(np.flipud(A[:num_freq - 1, :]))]])
+        Nu = np.block([[np.zeros((1, num_nodes * 3))], [A[:num_freq, :]], [np.real(A[num_freq-1, :])], [np.conj(np.flipud(A[:num_freq, :]))]])
+        speed = np.real(np.fft.ifft(Nu, axis=0) * np.sqrt(num_freq / dt))
+        series_u = np.transpose(speed[:, :num_nodes])
+        series_v = np.transpose(speed[:, num_nodes:2 * num_nodes])
+        series_w = np.transpose(-speed[:, 2 * num_nodes:])
+
+        n_miss = len(series_t) - series_u.shape[1]  # number of missing points
+        len(scipy.fft.fftfreq(series_N, d=dt))
+        assert n_miss in [-1, 0, 1], "Difficult error. More than 1 datapoint is missing in the time series. 1 can be understood due to fft.freq (odd != even), but more than that cannot, so something else is missing in the mathematic formulation of Nu."
+        if n_miss == 1:
+            # print(f'(Artificially adding {n_miss} missing data point to the wind field)')
+            series_u = np.append(series_u[:,1][:,None], series_u, axis=1)  # we copy the 2nd point of the series and append it at the beginning. The extra point should then respect the coherence & spectrum
+            series_v = np.append(series_v[:,1][:,None], series_v, axis=1)  # we copy the 2nd point of the series and append it at the beginning. The extra point should then respect the coherence & spectrum
+            series_w = np.append(series_w[:,1][:,None], series_w, axis=1)  # we copy the 2nd point of the series and append it at the beginning. The extra point should then respect the coherence & spectrum
+        if n_miss ==-1:
+            # print(f'(Subtracting {n_miss} data point from the wind field)')
+            series_u = series_u[:,:-1]
+            series_v = series_v[:,:-1]
+            series_w = series_w[:,:-1]
+
         series_U = V[:, None] + series_u
 
     else:
         raise NotImplementedError
+
+    if export_results:
+        np.save(r"wind_field\data\windspeed_tiny.csv", np.array([series_U, series_u, series_v, series_w]))
+        np.save(r"wind_field\data\timepoints_tiny.csv", series_t)
+        np.save(r"wind_field\data\delta_xyz_tiny.csv", np.array([delta_x, delta_y, delta_z]))
 
     return {'windspeed': np.array([series_U, series_u, series_v, series_w]),
             'timepoints': series_t,

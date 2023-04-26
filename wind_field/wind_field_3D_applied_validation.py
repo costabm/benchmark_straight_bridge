@@ -246,7 +246,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     from wind_field.coherence import coherence
 
     fig = plt.figure(figsize=(6 * n_nodes_val_coh, 6 * n_nodes_val_coh), dpi=100)
-    nperseg = 1024  # Welch's method. Length of each segment.
+    nperseg = 256  # Welch's method. Length of each segment.
     counter = 0
     for node_1 in range(n_nodes_val_coh):
         for node_2 in range(n_nodes_val_coh):
@@ -298,15 +298,9 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     corrcoef_w_target = np.zeros((n_nodes_validated, n_nodes_validated))
     for n in range(n_nodes_validated):
         for m in range(n_nodes_validated):
-            corrcoef_u_target[n, m] = np.exp(-np.sqrt(
-                (delta_x[n, m] / iLj_avg[m, n, 0, 0]) ** 2 + (delta_y[n, m] / iLj_avg[m, n, 0, 1]) ** 2 + (
-                            delta_z[n, m] / iLj_avg[m, n, 0, 2]) ** 2))
-            corrcoef_v_target[n, m] = np.exp(-np.sqrt(
-                (delta_x[n, m] / iLj_avg[m, n, 1, 0]) ** 2 + (delta_y[n, m] / iLj_avg[m, n, 1, 1]) ** 2 + (
-                            delta_z[n, m] / iLj_avg[m, n, 1, 2]) ** 2))
-            corrcoef_w_target[n, m] = np.exp(-np.sqrt(
-                (delta_x[n, m] / iLj_avg[m, n, 2, 0]) ** 2 + (delta_y[n, m] / iLj_avg[m, n, 2, 1]) ** 2 + (
-                            delta_z[n, m] / iLj_avg[m, n, 2, 2]) ** 2))
+            corrcoef_u_target[n, m] = np.exp(-np.sqrt((delta_x[n, m] / iLj_avg[m, n, 0, 0]) ** 2 + (delta_y[n, m] / iLj_avg[m, n, 0, 1]) ** 2 + (delta_z[n, m] / iLj_avg[m, n, 0, 2]) ** 2))
+            corrcoef_v_target[n, m] = np.exp(-np.sqrt((delta_x[n, m] / iLj_avg[m, n, 1, 0]) ** 2 + (delta_y[n, m] / iLj_avg[m, n, 1, 1]) ** 2 + (delta_z[n, m] / iLj_avg[m, n, 1, 2]) ** 2))
+            corrcoef_w_target[n, m] = np.exp(-np.sqrt((delta_x[n, m] / iLj_avg[m, n, 2, 0]) ** 2 + (delta_y[n, m] / iLj_avg[m, n, 2, 1]) ** 2 + (delta_z[n, m] / iLj_avg[m, n, 2, 2]) ** 2))
     corrcoef_u = np.corrcoef(windspeed_u[:n_nodes_validated])
     corrcoef_v = np.corrcoef(windspeed_v[:n_nodes_validated])
     corrcoef_w = np.corrcoef(windspeed_w[:n_nodes_validated])

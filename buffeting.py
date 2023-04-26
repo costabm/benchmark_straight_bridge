@@ -224,8 +224,8 @@ def Ii_func(g_node_coor, beta_DB, Ii_simplified):
     g_nodes = np.array(list(range(g_node_num)))  # starting at 0
 
     Iu = np.ones(g_node_num) * 3.947 / 30
-    Iv = np.ones(g_node_num) * 2.960 / 30   # Design basis rev 0, 2018, Chapter 2.2
-    Iw = np.ones(g_node_num) * 1.973 / 30   # Design basis rev 0, 2018, Chapter 2.2
+    Iv = np.ones(g_node_num) * 2.960 / 30  # Design basis rev 0, 2018, Chapter 2.2
+    Iw = np.ones(g_node_num) * 1.973 / 30  # Design basis rev 0, 2018, Chapter 2.2
     #
     # else:
     #     if 150 <= beta_DB <= 210:
@@ -2068,7 +2068,7 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
         U_bar = U_bar_func(g_node_coor=g_node_coor)
 
     elif where_to_get_wind == 'external':
-        filename = "wind_field/AMC_wind_time_series/wind_direction_0_nodes_50.h5"
+        filename = "wind_field/AMC_wind_time_series/wind_fine_direction=0.h5"
         time_arr, windspeed = get_h5_windsim_file_with_wind_time_series(filename)
         windspeed = clone_windspeeds_when_g_nodes_are_diff_from_wind_nodes(copy.deepcopy(windspeed))
         dt_all = time_arr[1:] - time_arr[:-1]
