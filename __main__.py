@@ -377,7 +377,6 @@ cospec_type_cases = [2]  # Best choices: 2, or 5.... 1: L.D.Zhu (however, the Ci
 Ii_simplified = True  # Turbulence intensities. Simplified -> same turbulence intensities everywhere for all directions.
 include_modal_coupling = True  # True: CQC. False: SRSS. Off-diag of modal M, C and K in the Freq. Dom. (modal coupling).
 include_SE_in_modal = True  # includes effects from Kse when calculating mode shapes (only relevant in Freq. Domain). True gives complex mode shapes!
-print('Bernardo I included SE in modal today. I used equal bins, instead of energy') # todo: DELETE THIS
 ########################################################################################################################
 # Frequency domain buffeting analysis:
 # ######################################################################################################################
@@ -414,7 +413,7 @@ make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses an
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [1024]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
+n_freq_cases = [1024*16]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
 f_min_cases = [0.002]  # Hz. Use 0.002
 f_max_cases = [10]  # Hz. Use 0.5! important to not overstretch this parameter
 f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins', 'logspace_base_n' where n is the base of the log
@@ -425,7 +424,7 @@ n_nodes_cases = [len(g_node_coor)]
 Nw_idxs = [None]  # Use: [None] or np.arange(positive integer) (e.g. np.arange(n_Nw_sw_cases)). [None] -> Homogeneous wind only (as in Paper 2). Do not use np.arange(0)
 Nw_or_equiv_Hw_cases = [None]  # Use [Nw] to analyse Nw only. Use ['Nw', 'Hw'] to analyse both Nw and the equivalent Hw!
 beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
-# beta_0_cases = np.array([rad(0)])
+# beta_0_cases = np.array([rad(-100)])
 beta_DB_cases = np.array([beta_DB_func(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
 if Nw_idxs != [None]:
@@ -445,7 +444,8 @@ parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplif
 # pr.disable()
 # pr.print_stats(sort='cumtime')
 
-print('WARNIIIIIIING: Using "table" for aero_coef_method most likely is WRONG. The symmetry transformations are probably being applied twice!!!!')
+if 'table' in aero_coef_method_cases:
+    print('WARNIIIIIIING: Using "table" for aero_coef_method is WRONG. The symmetry transformations are probably being applied twice!!!!')
 
 ########################################################################################################################
 # Time domain buffeting analysis:
@@ -454,7 +454,7 @@ print('WARNIIIIIIING: Using "table" for aero_coef_method most likely is WRONG. T
 wind_block_T = 600  # (s). Desired duration of each wind block. To be increased due to overlaps.
 wind_overlap_T = 8  # (s). Total overlapping duration between adjacent blocks.
 # transient_T = 3 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
-transient_T = 1 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
+transient_T = 2 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
 ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
 # wind_T = 3 * 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
 wind_T = 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
@@ -474,7 +474,7 @@ wind_T = 6 * wind_block_T + transient_T  # (s). Total time-domain simulation dur
 # dt = 4  # s. Time step in the calculation
 # std_delta_local = buffeting_TD_func(aero_coef_method, n_aero_coef, include_SE, flutter_derivatives_type, include_sw,
 #                                     include_KG, g_node_coor, p_node_coor, Ii_simplified_bool, R_loc, D_loc, n_seeds, dt,
-#                                     wind_block_T, wind_overlap_T, wind_T, transient_T, beta_DB, aero_coef_linearity,
+#                                     wind_block_T, wind_overlap_T, wind_T, transient_T, beta_DB, aero_coef_linearity,+
 #                                     cospec_type, plots=False, save_txt=True)['std_delta_local_mean']
 
 # LIST OF CASES
@@ -488,12 +488,12 @@ flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Sca
 aero_coef_linearity_cases = ['NL']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
 SE_linearity_cases = ['L', 'NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
 geometric_linearity_cases = ['L']  # 'L': Constant M,K in Newmark. 'NL': M,K are updated each time step from deformed node coordinates.
-where_to_get_wind_cases = ['in-house']  # 'in-house' or 'external'
+where_to_get_wind_cases = ['in-house']  # 'in-house' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0\windspeed.csv.npy'
 n_nodes_cases = [len(g_node_coor)]
-n_seeds_cases = [2]
+n_seeds_cases = [10]
 # dt_cases = [0.2002]  # Not all values possible! wind_overlap_size must be even!
-dt_cases = [0.1]  # use 0.1
-# beta_0_cases = np.array([rad(0)])
+dt_cases = [0.05]  # use 0.1
+# beta_0_cases = np.array([rad(-100)])
 beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
 beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
@@ -510,6 +510,8 @@ parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplif
 # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
 # # # # # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'beta_DB'])
 # Note: to accelerate the code, calculate the polynomial coefficients of the constrained fits only once and save them in a separate file to be accessed for each mean wind direction. Or use the analytical formula for each polynomial + symmetry transformations
+if 'table' in aero_coef_method_cases:
+    print('WARNIIIIIIING: Using "table" for aero_coef_method is WRONG. The symmetry transformations are probably being applied twice!!!!')
 
 # #######################################################################################################################
 # Validating the wind field:
@@ -556,10 +558,14 @@ if validate_wind_field:
                                               Ii_simplified_bool, f_min, f_max,
                                               n_freq, n_nodes_validated, node_test_S_a, n_nodes_val_coh)
 
-    elif where_to_get_wind == 'external':
+    elif where_to_get_wind == r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5':
         from AMC_wind_time_series_checks import get_h5_windsim_file_with_wind_time_series
-        filename = "wind_field/AMC_wind_time_series/wind_direction=0.h5"
-        time_arr, windspeed = get_h5_windsim_file_with_wind_time_series(filename)
+        if '.h5' in where_to_get_wind:
+            time_arr, windspeed = get_h5_windsim_file_with_wind_time_series(where_to_get_wind)
+            windspeed = clone_windspeeds_when_g_nodes_are_diff_from_wind_nodes(copy.deepcopy(windspeed))
+        elif '.npy' in where_to_get_wind:
+            windspeed = np.load(where_to_get_wind)
+            time_arr = np.load(where_to_get_wind.replace('windspeed', 'timepoints'))
         dt_all = time_arr[1:] - time_arr[:-1]
         assert np.max(dt_all) - np.min(dt_all) < 0.01
         dt = dt_all[0]

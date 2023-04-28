@@ -2067,10 +2067,13 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
     if where_to_get_wind == 'in-house':
         U_bar = U_bar_func(g_node_coor=g_node_coor)
 
-    elif where_to_get_wind == 'external':
-        filename = "wind_field/AMC_wind_time_series/wind_fine_direction=0.h5"
-        time_arr, windspeed = get_h5_windsim_file_with_wind_time_series(filename)
-        windspeed = clone_windspeeds_when_g_nodes_are_diff_from_wind_nodes(copy.deepcopy(windspeed))
+    else:
+        if '.h5' in where_to_get_wind:
+            time_arr, windspeed = get_h5_windsim_file_with_wind_time_series(where_to_get_wind)
+            windspeed = clone_windspeeds_when_g_nodes_are_diff_from_wind_nodes(copy.deepcopy(windspeed))
+        elif '.npy' in where_to_get_wind:
+            windspeed = np.load(where_to_get_wind)
+            time_arr = np.load(where_to_get_wind.replace('windspeed', 'timepoints'))
         dt_all = time_arr[1:] - time_arr[:-1]
         assert np.max(dt_all) - np.min(dt_all) < 0.01
         dt_external = dt_all[0]
@@ -2079,6 +2082,7 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
         assert wind_T == wind_T_external, f"wind_T={wind_T} is not the same as the wind_T_external={wind_T_external}"
         wind_block_T = np.max(time_arr)
         U_bar = np.mean(windspeed[0], axis=1)
+
 
     beta_bar, theta_bar = beta_and_theta_bar_func(g_node_coor, beta_0, theta_0, alpha)
 

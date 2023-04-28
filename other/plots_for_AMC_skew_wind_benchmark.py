@@ -46,7 +46,7 @@ for a, analysis_type in enumerate(['static', 'std']):
         for d, dof in enumerate([1,2,3]):
             # Frequency domain results:
             # Organizing results
-            df_one_beta = df_FD.loc[df_FD['beta_DB'] == beta_DB]
+            df_one_beta = df_FD.loc[np.isclose(df_FD['beta_DB'], beta_DB)]
             mask = df_one_beta.columns[[f'{analysis_type}_dof_{dof}' in c for c in df_one_beta.columns]]  # for analysis and dof
             results = np.squeeze(np.array(df_one_beta[mask]))
             # Plotting
@@ -56,8 +56,8 @@ for a, analysis_type in enumerate(['static', 'std']):
                 results = np.rad2deg(results)
             ax.plot(x_coords, results, c=color_list[b], label=r'$\beta = $' + f'{round(deg(beta_0_func(beta_DB)))}' if a==d==0 else None)
             if plt_TD:
-                for s, SE_l in enumerate(['NL']):
-                    df_one_beta = df_TD.loc[(df_TD['beta_DB'] == beta_DB) & (df_TD['SE_linearity'] == SE_l)]
+                for SE_l in ['L']:
+                    df_one_beta = df_TD.loc[np.isclose(df_TD['beta_DB'], beta_DB) & (df_TD['SE_linearity'] == SE_l)]
                     mean_mask = df_one_beta.columns[[f'{analysis_type}_dof_{dof}' in c and c[:3]!='std' for c in df_one_beta.columns]]
                     std_mask = df_one_beta.columns[[f'{analysis_type}_dof_{dof}' in c and c[:3]=='std' for c in df_one_beta.columns]]
                     mean_results = np.squeeze(np.array(df_one_beta[mean_mask]))  # mean of all seeds
@@ -70,13 +70,10 @@ for a, analysis_type in enumerate(['static', 'std']):
                     # ax.plot(x_coords, mean_results - std_results, c=color_list[b], linestyle='dashdot', alpha=0.3, linewidth=3)
                     ax.fill_between(x_coords, mean_results - std_results, mean_results + std_results, facecolor=color_list[b], alpha=0.3)
 
-
 fig.legend(loc=8, ncol=len(beta_DBs))
 fig.tight_layout()
 fig.subplots_adjust(bottom=0.08)  # play with this number to adjust legend placement
-
 U_check = U_bar_func(g_node_coor)[0]
-
 plt.savefig(r'results\benchmark' + f'_U_{int(U_check)}_' + f"SW_{str(df_FD['SWind'][0])[0]}_KG_{str(df_FD['KG'][0])[0]}_SE_{str(df_FD['SE'][0])[0]}"
                                   + f"_nfreq_{df_FD['n_freq'][0]}_fmin_{df_FD['f_min'][0]}_fmax_{df_FD['f_max'][0]}_zeta_{df_FD['damping_ratio'][0]}_ModalDamping.jpg")
 plt.close()
