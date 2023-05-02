@@ -33,6 +33,9 @@ def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spect
     [2] https://se.mathworks.com/matlabcentral/fileexchange/50041-wind-field-simulation \n
     [3] reference from "Theory of Bridge Aerodynamics - Einar Strommen. 2nd ed."
     """
+    if method=='fft':
+        suggest_new_duration_for_fft(duration=T, dt=1/sample_freq)
+
     num_nodes = len(node_coor_wind)
 
     nodes_x = node_coor_wind[:, 0]  # in wind flow coordinates! (along flow)
@@ -292,9 +295,9 @@ def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spect
         raise NotImplementedError
 
     if export_results:
-        np.save(r"wind_field\data\windspeed_tiny.csv", np.array([series_U, series_u, series_v, series_w]))
-        np.save(r"wind_field\data\timepoints_tiny.csv", series_t)
-        np.save(r"wind_field\data\delta_xyz_tiny.csv", np.array([delta_x, delta_y, delta_z]))
+        np.save(r"wind_field\data\windspeed.csv", np.array([series_U, series_u, series_v, series_w]))
+        np.save(r"wind_field\data\timepoints.csv", series_t)
+        np.save(r"wind_field\data\delta_xyz.csv", np.array([delta_x, delta_y, delta_z]))
 
     return {'windspeed': np.array([series_U, series_u, series_v, series_w]),
             'timepoints': series_t,
@@ -302,6 +305,29 @@ def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spect
             'cospec': S_aa_reshaped,
             'freq': freq,
             'delta_xyz': np.array([delta_x, delta_y, delta_z])}
+
+
+def suggest_new_duration_for_fft(duration, dt):
+    """
+    Suggest a new simulation duration, for the same dt, that gives a number of timepoints that is a power of 2,
+    to improve the performance of the inverse FFT (Fast Fourier Transform)
+    the
+    """
+    n_timepoints = duration / dt
+    log2 = np.log2(n_timepoints)
+    power_below = int(log2)
+    power_above = power_below + 1
+    if log2 == power_below:
+        print(f'Nice, the chosen number of timepoints is a power of 2 (2**{log2})')
+    else:
+        print(f'Consider changing T from {duration} to {2**power_below * dt} or'
+              f' {2**power_above * dt}... or the dt from {dt} to {duration/(2**power_below)} or'
+              f' {duration/(2**power_above)} (to improve the speed of the fft)')
+    return None
+
+
+
+
 
 
 #######################################################################################################################

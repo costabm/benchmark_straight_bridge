@@ -440,7 +440,7 @@ list_of_cases = list_of_cases_FD_func(n_aero_coef_cases, include_SE_cases, aero_
 # pr = cProfile.Profile()
 # pr.enable()
 # Writing results
-parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
+# parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
 # pr.disable()
 # pr.print_stats(sort='cumtime')
 
@@ -504,7 +504,7 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
                                       beta_DB_cases)
 
 # Writing results
-parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
+# parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 # # Plotting
 # import buffeting_plots
 # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
@@ -516,7 +516,7 @@ if 'table' in aero_coef_method_cases:
 # #######################################################################################################################
 # Validating the wind field:
 # #######################################################################################################################
-validate_wind_field = False
+validate_wind_field = True
 
 if validate_wind_field:
     from wind_field.wind_field_3D_applied_validation import wind_field_3D_applied_validation_func
@@ -524,7 +524,8 @@ if validate_wind_field:
     from straight_bridge_geometry import arc_length, R
     from buffeting import wind_field_3D_all_blocks_func, rad, deg
 
-    beta_DB = rad(100)  # wind direction
+    beta_0 = rad(0)
+    beta_DB = beta_DB_func_2(beta_0)  # wind direction according to the Design Basis
 
     # Input (change the numbers only)
     # where_to_get_wind = 'nowhere'  # 'in-house' or 'external'
@@ -534,11 +535,11 @@ if validate_wind_field:
     Ii_simplified_bool = True
     if where_to_get_wind == 'in-house':
         cospec_type = 2
-        wind_block_T = 600  # (s). Desired duration of each wind block. To be increased due to overlaps.
-        wind_overlap_T = 8  # (s). Total overlapping duration between adjacent blocks.
+        wind_block_T = 3600+600  # (s). Desired duration of each wind block. To be increased due to overlaps.
+        wind_overlap_T = 0  # (s). Total overlapping duration between adjacent blocks.
         transient_T = 0 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
         ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
-        wind_T = 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
+        wind_T = 1 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
         dt = 0.05  # s. Time step in the calculation
         windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T,
                                               cospec_type, Ii_simplified_bool, plots=False)
