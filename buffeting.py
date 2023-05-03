@@ -1313,23 +1313,8 @@ def buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_aero_coef, ske
         beta_bar, theta_bar = np.array(Nw_1_case[f'{Nw_or_equiv_Hw}_beta_bar']), np.array(Nw_1_case[f'{Nw_or_equiv_Hw}_theta_bar'])
 
     # Transformation matrices.
-    T_LsGs_3 = T_LsGs_3g_func(g_node_coor, alpha)  # to be used for the bridge girder elements
     T_LsGs_6 = T_LsGs_6g_func(g_node_coor, alpha)
-    T_GsLs_3 = np.transpose(T_LsGs_3, axes=(0, 2, 1))  # (transpose from (0,1,2) to (0,2,1))
     T_GsLs_6 = np.transpose(T_LsGs_6, axes=(0, 2, 1))  # (transpose from (0,1,2) to (0,2,1))
-
-    T_LrLs = T_LrLs_func(g_node_coor)  # to be used for the bridge girder elements
-    T_LrLs_T = np.transpose(T_LrLs, axes=(0, 2, 1))  # (transpose from (0,1,2) to (0,2,1))
-    # T_LrGw = T_LrLs @ T_LsGs_3 @ T_GsGw  # matrix multiplication
-    T_LrLwbar = T_LsLw_func(beta_bar, theta_bar, dim='3x3')
-    T_LwbarLr = np.transpose(T_LrLwbar, axes=(0, 2, 1))  # (transpose from (0,1,2) to (0,2,1))
-    T_LwbarLr_6 = np.zeros((g_node_num, 6, 6))
-    T_LwbarLr_6[:, :3, :3] = T_LwbarLr
-    T_LwbarLr_6[:, 3:, 3:] = T_LwbarLr
-    T_GsLw = T_GsLs_3 @ T_LrLs_T @ T_LrLwbar
-    T_GsLw_6 = np.zeros((g_node_num, 6, 6))
-    T_GsLw_6[:, :3, :3] = T_GsLw
-    T_GsLw_6[:, 3:, 3:] = T_GsLw
 
     # reduc_coef_sector = reduc_coef_sector_func(beta_DB) # NOT BEING USED
 
