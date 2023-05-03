@@ -317,9 +317,7 @@ def suggest_new_duration_for_fft(duration, dt):
     log2 = np.log2(n_timepoints)
     power_below = int(log2)
     power_above = power_below + 1
-    if log2 == power_below:
-        print(f'Nice, the chosen number of timepoints is a power of 2 (2**{log2})')
-    else:
+    if not log2 == power_below:
         print(f'Consider changing T from {duration} to {2**power_below * dt} or'
               f' {2**power_above * dt}... or the dt from {dt} to {duration/(2**power_below)} or'
               f' {duration/(2**power_above)} (to improve the speed of the fft)')
