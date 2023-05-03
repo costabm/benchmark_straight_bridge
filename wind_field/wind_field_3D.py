@@ -295,9 +295,9 @@ def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spect
         raise NotImplementedError
 
     if export_results:
-        np.save(r"wind_field\data\windspeed.csv", np.array([series_U, series_u, series_v, series_w]))
-        np.save(r"wind_field\data\timepoints.csv", series_t)
-        np.save(r"wind_field\data\delta_xyz.csv", np.array([delta_x, delta_y, delta_z]))
+        np.save(r"wind_field\data\windspeed", np.array([series_U, series_u, series_v, series_w]))
+        np.save(r"wind_field\data\timepoints", series_t)
+        np.save(r"wind_field\data\delta_xyz", np.array([delta_x, delta_y, delta_z]))
 
     return {'windspeed': np.array([series_U, series_u, series_v, series_w]),
             'timepoints': series_t,

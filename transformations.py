@@ -661,6 +661,10 @@ def T_LsGw_func(betas, thetas, dim='3x3'):
         return M_3x3_to_M_6x6(T)
 
 def T_LsLw_func(betas, thetas, dim='3x3'):
+    """
+    THE Lw in this function is from LD Zhu qph (bar or tilde) system, so very different from my inhomogeneous paper Lw!
+    See LD Zhu PhD thesis, eq. (4-28b)
+    """
     assert len(betas) == len(thetas)
     size = len(betas)
     T_LrLw_3 = np.array([

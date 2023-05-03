@@ -551,7 +551,7 @@ def C_Ci_func(beta, theta, aero_coef_method, n_aero_coef, coor_system):
         C_Ci_Gw = np.einsum('nij,jn->in', T_GwLs, C_Ci_Ls, optimize=True)
         return C_Ci_Gw
     elif coor_system == 'Lw':
-        # From Local structural to Local wind coordinates.
+        # From Local structural to Local wind coordinates (LD ZHU COORDINATES).
         T_LwLs = np.transpose(T_LsLw_func(beta, theta, dim='6x6'), axes=(0, 2, 1))
         C_Ci_Lw = np.einsum('nij,jn->in', T_LwLs, C_Ci_Ls, optimize=True)  # See L.D.Zhu thesis eq(4-25b).
         return C_Ci_Lw
@@ -1150,6 +1150,7 @@ def Fad_one_t_C_Ci_NL_with_SE(g_node_coor, p_node_coor, alpha, beta_0, theta_0, 
     T_GsLs_6 = np.transpose(T_LsGs_6, axes=(0, 2, 1))  # (transpose from (0,1,2) to (0,2,1))
     T_GsGw = T_GsGw_func(beta_0, theta_0)
     T_LrGw = T_LsGs_3 @ T_GsGw
+    print('THE FOLLOWING CODE CAN BE FASTER IF IMPROVED AND (!!!) HAS A SERIOUS PROBLEM. E.g. BETA=0deg gives Fx always with same sign. Either wrong implementation or just wrong to use LD Zhu formulas for 360deg assessments')
     t11, t12, t13, t21, t22, t23, t31, t32, t33 = T_LrGw[:,0,0], T_LrGw[:,0,1], T_LrGw[:,0,2], \
                                                   T_LrGw[:,1,0], T_LrGw[:,1,1], T_LrGw[:,1,2], \
                                                   T_LrGw[:,2,0], T_LrGw[:,2,1], T_LrGw[:,2,2]
@@ -1165,8 +1166,62 @@ def Fad_one_t_C_Ci_NL_with_SE(g_node_coor, p_node_coor, alpha, beta_0, theta_0, 
     # Projection of V_Lr in local bridge xy plane (same as qp in L.D.Zhu). See L.D.Zhu eq. (4-44)
     V_rel_qp = np.sqrt(V_rel_q ** 2 + V_rel_p ** 2)  # SRSS of Vq and Vp
     V_rel_tot = np.sqrt(V_rel_q ** 2 + V_rel_p ** 2 + V_rel_h ** 2)
-    theta_tilde = np.arccos(V_rel_qp / V_rel_tot) * np.sign(V_h)  # positive if V_h is positive!
-    beta_tilde = np.arccos(V_rel_p / V_rel_qp) * -np.sign(V_q)  # negative if V_q is positive!
+    theta_tilde = np.arccos(V_rel_qp / V_rel_tot) * np.sign(V_rel_h)  #
+    beta_tilde = np.arccos(V_rel_p / V_rel_qp) * -np.sign(V_rel_q)  #
+    C_Ci_tilde_Ls = np.array([C_C0_func.ev(beta_tilde, theta_tilde),  # .ev means "evaluate" the interpolation, at given points
+                           C_C1_func.ev(beta_tilde, theta_tilde),
+                           C_C2_func.ev(beta_tilde, theta_tilde),
+                           C_C3_func.ev(beta_tilde, theta_tilde),
+                           C_C4_func.ev(beta_tilde, theta_tilde),
+                           C_C5_func.ev(beta_tilde, theta_tilde)])
+    F_ad_tilde_Ls = 0.5 * rho * np.einsum('n,n,ij,jn->ni', g_node_L_3D, V_rel_tot ** 2, B_diag, C_Ci_tilde_Ls, optimize=True)  # in instantaneous local Lw_tilde coordinates
+    F_ad_tilde_Gs = np.einsum('nij,nj->ni', T_GsLs_6, F_ad_tilde_Ls)  # Global structural
+    F_ad_tilde_Gs = np.reshape(F_ad_tilde_Gs, (g_node_num * 6))  # reshaping from 'nd' (2D) to '(n*d)' (1D) so it resembles the stiffness matrix shape of (n*d)*(n*d)
+    F_ad_tilde_Gs = np.concatenate((F_ad_tilde_Gs, np.zeros((p_node_num * 6))), axis=0)  # adding Fb = 0 to all remaining dof at the pontoon g_nodes
+    return F_ad_tilde_Gs
+
+
+def Fad_one_t_C_Ci_NL_with_SE_WRONG(g_node_coor, p_node_coor, alpha, beta_0, theta_0, windspeed_i, v_new,
+                              C_C0_func, C_C1_func, C_C2_func, C_C3_func, C_C4_func, C_C5_func):
+    """
+    windspeed_i: windspeed at time instant i == windspeed[:,:,i]
+    v_new: structural velocities, from previous time step
+    """
+
+    g_node_num = len(g_node_coor)
+    p_node_num = len(p_node_coor)
+    g_node_L_3D = g_node_L_3D_func(g_node_coor)
+    B_diag = np.diag((CS_width, CS_width, CS_width, CS_width ** 2, CS_width ** 2, CS_width ** 2))
+
+    # Windspeeds without the time dimension!
+    U_and_u = windspeed_i[0, :]  # U+u
+    windspeed_v = windspeed_i[2, :] # NO NEED FOR THE WHOLE WINDSPEED TIME, ONLY AT TIME i
+    windspeed_w = windspeed_i[3, :]
+
+    # Variables, calculated every time step
+    T_LsGs_3 = T_LsGs_3g_func(g_node_coor, alpha)
+    T_LsGs_6 = T_LsGs_6g_func(g_node_coor, alpha)
+    T_GsLs_6 = np.transpose(T_LsGs_6, axes=(0, 2, 1))  # (transpose from (0,1,2) to (0,2,1))
+    T_GsGw = T_GsGw_func(beta_0, theta_0)
+    T_LrGw = T_LsGs_3 @ T_GsGw
+    print('THE FOLLOWING CODE HAS A SERIOUS PROBLEM. E.g. BETA=0deg gives Fx always with same sign. Either wrong implementation or just wrong to use LD Zhu formulas for 360deg assessments')
+    t11, t12, t13, t21, t22, t23, t31, t32, t33 = T_LrGw[:,0,0], T_LrGw[:,0,1], T_LrGw[:,0,2], \
+                                                  T_LrGw[:,1,0], T_LrGw[:,1,1], T_LrGw[:,1,2], \
+                                                  T_LrGw[:,2,0], T_LrGw[:,2,1], T_LrGw[:,2,2]
+    T_LsGs_full_2D_node_matrix = T_LsGs_full_2D_node_matrix_func(g_node_coor, p_node_coor, alpha)
+    # Total relative windspeed vector, in local structural Ls (same as Lr) coordinates. See eq. (4-36) from L.D.Zhu thesis. shape: (3,n_nodes,time)
+    v_Ls = T_LsGs_full_2D_node_matrix @ v_new[-1]  # Initial structural speeds
+    V_q = t11 * U_and_u + t12 * windspeed_v + t13 * windspeed_w
+    V_p = t21 * U_and_u + t22 * windspeed_v + t23 * windspeed_w
+    V_h = t31 * U_and_u + t32 * windspeed_v + t33 * windspeed_w
+    V_rel_q = V_q - v_Ls[0:g_node_num * 6:6]  # including structural motion. shape:(g_node_num).
+    V_rel_p = V_p - v_Ls[1:g_node_num * 6:6]
+    V_rel_h = V_h - v_Ls[2:g_node_num * 6:6]
+    # Projection of V_Lr in local bridge xy plane (same as qp in L.D.Zhu). See L.D.Zhu eq. (4-44)
+    V_rel_qp = np.sqrt(V_rel_q ** 2 + V_rel_p ** 2)  # SRSS of Vq and Vp
+    V_rel_tot = np.sqrt(V_rel_q ** 2 + V_rel_p ** 2 + V_rel_h ** 2)
+    theta_tilde = np.arccos(V_rel_qp / V_rel_tot) * np.sign(V_h)  # todo: change to V_rel_h ??? # positive if V_h is positive!
+    beta_tilde = np.arccos(V_rel_p / V_rel_qp) * -np.sign(V_q)  # todo: change to V_rel_q ?? # negative if V_q is positive!
     T_LrLwtilde_6 = T_LsLw_func(beta_tilde, theta_tilde, dim='6x6')  # shape:(g,6,6)
     C_Ci_tilde = np.array([C_C0_func.ev(beta_tilde, theta_tilde),  # .ev means "evaluate" the interpolation, at given points
                            C_C1_func.ev(beta_tilde, theta_tilde),
@@ -1925,7 +1980,7 @@ def MDOF_TD_NL_wind_solver(g_node_coor, p_node_coor, beta_0, theta_0, aero_coef_
     # Creating linear interpolation functions of aerodynamic coefficients, from an extensive grid of possible angles:
     grid_inc = rad(0.05)  # grid angle increments
     beta_grid = np.arange(-np.pi, np.pi + grid_inc*0.9, grid_inc)  # change the grid discretization here, as desired! IT NEEDS TO INCLUDE THE END POINT, therefore + grid_inc !! /100 is to simply have something bigger
-    theta_grid = np.arange(-np.pi / 4, np.pi / 4 + grid_inc*0.9, grid_inc)  # change the grid interval and discretization here, as desired!  # todo: 0.1 INSTEAD OF 0.5. BETTER?
+    theta_grid = np.arange(-np.pi / 4, np.pi / 4 + grid_inc*0.9, grid_inc)  # change the grid interval and discretization here, as desired!
 
     # If a C_Ci_grid file already exists containing all coefficients in an extensive grid
     if os.path.isfile(os.getcwd()+r'\aerodynamic_coefficients\C_Ci_grid.npy'):
@@ -1933,7 +1988,7 @@ def MDOF_TD_NL_wind_solver(g_node_coor, p_node_coor, beta_0, theta_0, aero_coef_
         print('Using previously existing grid of aerodynamic coefficients for interpolation')
     else:
         xx, yy = np.meshgrid(beta_grid, theta_grid)
-        C_Ci_grid_flat = C_Ci_func(xx.flatten(), yy.flatten(), aero_coef_method, n_aero_coef, coor_system='Lw')
+        C_Ci_grid_flat = C_Ci_func(xx.flatten(), yy.flatten(), aero_coef_method, n_aero_coef, coor_system='Ls')
         C_Ci_grid = C_Ci_grid_flat.reshape((6, len(theta_grid), len(beta_grid)))
         np.save(os.getcwd()+r'\aerodynamic_coefficients\C_Ci_grid.npy', C_Ci_grid)
         print('Created extensive grid of aerodynamic coefficients for interpolation')

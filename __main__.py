@@ -31,7 +31,7 @@ run_sw_for_modal = False # include Static wind for the modal_analysis_after_stat
 run_new_Nw_sw = False
 
 run_modal_analysis_after_static_loads = False
-generate_new_C_Ci_grid = False
+generate_new_C_Ci_grid = True
 print(f'generate_new_C_Ci_grid is set to {generate_new_C_Ci_grid} !')
 
 ########################################################################################################################
@@ -210,7 +210,7 @@ if run_DL:
 ########################################################################################################################
 # Aerodynamic coefficients grid
 ########################################################################################################################
-project_path = sys.path[1]  # To be used in Python Console! When a console is opened, the current project path should be automatically added to sys.path.
+project_path = sys.path[0]  # To be used in Python Console! When a console is opened, the current project path should be automatically added to sys.path.
 C_Ci_grid_path = project_path + r'\\aerodynamic_coefficients\\C_Ci_grid.npy'
 # Deleting aerodynamic coefficient grid input file, for a new one to be created.
 if not os.path.exists(C_Ci_grid_path):
@@ -454,7 +454,7 @@ if 'table' in aero_coef_method_cases:
 wind_block_T = 600  # (s). Desired duration of each wind block. To be increased due to overlaps.
 wind_overlap_T = 8  # (s). Total overlapping duration between adjacent blocks.
 # transient_T = 3 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
-transient_T = 2 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
+transient_T = 1 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
 ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
 # wind_T = 3 * 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
 wind_T = 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
@@ -486,15 +486,15 @@ aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolat
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law' # I had written "not working for aero_coef 'NL'", but it seems to be working well now right??
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5'
 aero_coef_linearity_cases = ['NL']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
-SE_linearity_cases = ['L', 'NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
+SE_linearity_cases = ['NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
 geometric_linearity_cases = ['L']  # 'L': Constant M,K in Newmark. 'NL': M,K are updated each time step from deformed node coordinates.
-where_to_get_wind_cases = ['in-house']  # 'in-house' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0\windspeed.csv.npy'
+where_to_get_wind_cases = [r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0_dt_0p05s\windspeed.npy']  # 'in-house' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0\windspeed.npy'
 n_nodes_cases = [len(g_node_coor)]
 n_seeds_cases = [10]
 # dt_cases = [0.2002]  # Not all values possible! wind_overlap_size must be even!
 dt_cases = [0.05]  # use 0.1
-# beta_0_cases = np.array([rad(-100)])
-beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
+beta_0_cases = np.array([rad(0)])
+# beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
 beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
 list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases, include_SE_cases,
@@ -502,9 +502,9 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
                                       n_seeds_cases, dt_cases, aero_coef_linearity_cases, SE_linearity_cases,
                                       geometric_linearity_cases, skew_approach_cases, where_to_get_wind_cases,
                                       beta_DB_cases)
-
+print('NL')
 # Writing results
-# parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
+parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 # # Plotting
 # import buffeting_plots
 # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
@@ -516,7 +516,7 @@ if 'table' in aero_coef_method_cases:
 # #######################################################################################################################
 # Validating the wind field:
 # #######################################################################################################################
-validate_wind_field = True
+validate_wind_field = False
 
 if validate_wind_field:
     from wind_field.wind_field_3D_applied_validation import wind_field_3D_applied_validation_func
