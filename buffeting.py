@@ -1040,7 +1040,7 @@ def Fsw_func(g_node_coor, p_node_coor, alpha, U_bar, beta_bar, theta_bar, aero_c
     return F_sw_Gs
 
 
-# def Fsw_func_STUPID_TRANSFORMATION(g_node_coor, p_node_coor, alpha, U_bar, beta_bar, theta_bar, aero_coef_method, n_aero_coef):
+# def Fsw_func_OLD_TRANSFORMATION(g_node_coor, p_node_coor, alpha, U_bar, beta_bar, theta_bar, aero_coef_method, n_aero_coef):
 #     """Get static wind forces in a full 1D global vector, shape:(dof_all)"""
 #     g_node_num = len(g_node_coor)
 #     p_node_num = len(p_node_coor)
