@@ -413,7 +413,7 @@ make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses an
 aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [1024*16]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
+n_freq_cases = [1024]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
 f_min_cases = [0.002]  # Hz. Use 0.002
 f_max_cases = [10]  # Hz. Use 0.5! important to not overstretch this parameter
 f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins', 'logspace_base_n' where n is the base of the log
@@ -451,13 +451,11 @@ if 'table' in aero_coef_method_cases:
 # Time domain buffeting analysis:
 ########################################################################################################################
 # Input (change the numbers only)
-wind_block_T = 600  # (s). Desired duration of each wind block. To be increased due to overlaps.
-wind_overlap_T = 8  # (s). Total overlapping duration between adjacent blocks.
-# transient_T = 3 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
-transient_T = 1 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
+transient_T = 600  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
+wind_block_T = 3600 + transient_T  # (s). Desired duration of each wind block. To be increased due to overlaps. Must include transient_T
+wind_overlap_T = 0  # (s). Total overlapping duration between adjacent blocks.
 ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
-# wind_T = 3 * 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
-wind_T = 6 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
+wind_T = 1 * wind_block_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
 # wind_T = 6559.8037  # to be used with the external function
 
 
@@ -486,15 +484,16 @@ aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolat
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law' # I had written "not working for aero_coef 'NL'", but it seems to be working well now right??
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5'
 aero_coef_linearity_cases = ['NL']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
-SE_linearity_cases = ['NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
+SE_linearity_cases = ['L', 'NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
 geometric_linearity_cases = ['L']  # 'L': Constant M,K in Newmark. 'NL': M,K are updated each time step from deformed node coordinates.
-where_to_get_wind_cases = [r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0_dt_0p05s\windspeed.npy']  # 'in-house' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0\windspeed.npy'
+# where_to_get_wind_cases = [r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0_dt_0p05s\windspeed.npy']  # 'in-house' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0\windspeed.npy'
+where_to_get_wind_cases = ['in-house']
 n_nodes_cases = [len(g_node_coor)]
-n_seeds_cases = [10]
+n_seeds_cases = [3]
 # dt_cases = [0.2002]  # Not all values possible! wind_overlap_size must be even!
-dt_cases = [0.05]  # use 0.1
-beta_0_cases = np.array([rad(0)])
-# beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
+dt_cases = [0.05]
+# beta_0_cases = np.array([rad(0)])
+beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
 beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
 
 list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases, include_SE_cases,
@@ -502,7 +501,7 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
                                       n_seeds_cases, dt_cases, aero_coef_linearity_cases, SE_linearity_cases,
                                       geometric_linearity_cases, skew_approach_cases, where_to_get_wind_cases,
                                       beta_DB_cases)
-print('NL')
+
 # Writing results
 parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 # # Plotting

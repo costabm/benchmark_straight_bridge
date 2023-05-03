@@ -1171,7 +1171,6 @@ def Fad_one_t_C_Ci_NL_with_SE(g_node_coor, p_node_coor, alpha, beta_0, theta_0, 
     T_GsLs_6 = np.transpose(T_LsGs_6, axes=(0, 2, 1))  # (transpose from (0,1,2) to (0,2,1))
     T_GsGw = T_GsGw_func(beta_0, theta_0)
     T_LrGw = T_LsGs_3 @ T_GsGw
-    print('THE FOLLOWING CODE CAN BE FASTER IF IMPROVED AND (!!!) HAS A SERIOUS PROBLEM. E.g. BETA=0deg gives Fx always with same sign. Either wrong implementation or just wrong to use LD Zhu formulas for 360deg assessments')
     t11, t12, t13, t21, t22, t23, t31, t32, t33 = T_LrGw[:,0,0], T_LrGw[:,0,1], T_LrGw[:,0,2], \
                                                   T_LrGw[:,1,0], T_LrGw[:,1,1], T_LrGw[:,1,2], \
                                                   T_LrGw[:,2,0], T_LrGw[:,2,1], T_LrGw[:,2,2]
@@ -1853,8 +1852,9 @@ def wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_o
     # Alert for possible mistakes:
     if n_wind_blocks == 1:
         assert wind_overlap_T == 0, 'Error: wind_overlap_T must by 0 when only one wind block is used'
+    elif n_wind_blocks > 1:
+        assert (wind_T / dt).is_integer(), 'Error: wind_T should be multiple of dt!!'
     assert (wind_T / wind_block_T).is_integer(), 'Error: wind_T should be multiple of wind_block_T!!'
-    assert (wind_T / dt).is_integer(), 'Error: wind_T should be multiple of dt!!'
     assert (ramp_T / dt).is_integer(), 'Error: ramp_T should be multiple of dt!!'
     assert (wind_overlap_T / dt).is_integer(), 'Error: smooth_transition_T should be multiple of dt!!'
     assert (wind_overlap_size / 2).is_integer(), 'Error: smooth_transition_size must be even!!'
@@ -2195,7 +2195,7 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
         # ------------------------------------------
         # Possible error:
         if where_to_get_wind == 'in-house':
-            assert (transient_T / wind_block_T).is_integer(), 'Error: transient_T should be multiple of wind_block_T'
+            # assert (transient_T / wind_block_T).is_integer(), 'Error: transient_T should be multiple of wind_block_T'  # I removed this assertion on 03.05.2023. Seems unnecessary
             windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T, cospec_type, Ii_simplified, plots=False)
 
         # # TESTING WITH STATIC WIND @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
