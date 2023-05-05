@@ -148,8 +148,8 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     # Plotting the means of wind velocities
     # =============================================================================
     plt.figure()
-    plt.plot(list(range(n_nodes_validated)), np.mean(windspeed[0, :n_nodes_validated, :], axis=1), 'ro', color='red', label='mean(U)', alpha=0.4, linewidth=2)
-    plt.plot(U_bar[:n_nodes_validated], 'ro', color='green', label='target', alpha=0.5)
+    plt.plot(list(range(n_nodes_validated)), np.mean(windspeed[0, :n_nodes_validated, :], axis=1), 'o', color='red', label='mean(U)', alpha=0.4, linewidth=2)
+    plt.plot(U_bar[:n_nodes_validated], 'o', color='green', label='target', alpha=0.5)
     plt.xlabel('Node number')
     plt.ylabel('Wind speed [m/s]')
     # plt.ylim([min(U_bar) * 0.99, max(U_bar) * 1.01])
@@ -191,9 +191,9 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     plt.plot(f_array, S_a_nondim[:, node_test_S_a, 1], color='orange', label='v', alpha=0.6)
     plt.plot(f_array, S_a_nondim[:, node_test_S_a, 2], color='brown', label='w', alpha=0.6)
     # the last scatter point is always smaller (somehow) so it is discared
-    plt.plot(u_1_freq[:-1], u_1_ps[:-1] / ((Ii[:, 0][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * u_1_freq[:-1], 'r--', color='blue', alpha=0.3, linewidth=0.4)
-    plt.plot(v_1_freq[:-1], v_1_ps[:-1] / ((Ii[:, 1][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * v_1_freq[:-1], 'r--', color='orange',alpha=0.3, linewidth=0.4)
-    plt.plot(w_1_freq[:-1], w_1_ps[:-1] / ((Ii[:, 2][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * w_1_freq[:-1], 'r--', color='brown',alpha=0.3, linewidth=0.4)
+    plt.plot(u_1_freq[:-1], u_1_ps[:-1] / ((Ii[:, 0][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * u_1_freq[:-1], '--', color='blue', alpha=0.3, linewidth=0.4)
+    plt.plot(v_1_freq[:-1], v_1_ps[:-1] / ((Ii[:, 1][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * v_1_freq[:-1], '--', color='orange',alpha=0.3, linewidth=0.4)
+    plt.plot(w_1_freq[:-1], w_1_ps[:-1] / ((Ii[:, 2][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * w_1_freq[:-1], '--', color='brown',alpha=0.3, linewidth=0.4)
     plt.scatter(u_1_freq[:-1], u_1_ps[:-1] / ((Ii[:, 0][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * u_1_freq[:-1], marker='o',edgecolors='none', color='blue',label='Measur. u', alpha=0.6, s=6)
     plt.scatter(v_1_freq[:-1], v_1_ps[:-1] / ((Ii[:, 1][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * v_1_freq[:-1], marker='>',edgecolors='none', color='orange', label='Measur. v', alpha=0.6, s=6)
     plt.scatter(w_1_freq[:-1], w_1_ps[:-1] / ((Ii[:, 2][node_test_S_a] * U_bar[node_test_S_a]) ** 2) * w_1_freq[:-1], marker='v',edgecolors='none', color='brown', label='generated w', alpha=0.6, s=6)
@@ -229,9 +229,9 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
              color='orange', label='target v')
     plt.plot(f_array, S_a_nondim[:, node_test_S_a, 2] * ((Ii[:, 2][node_test_S_a] * U_bar[node_test_S_a]) ** 2) / f_array,
              color='green', label='target w')
-    plt.plot(u_1_freq, u_1_ps, 'r--', color='blue', alpha=0.4, linewidth=0.5)
-    plt.plot(v_1_freq, v_1_ps, 'r--', color='orange', alpha=0.4, linewidth=0.5)
-    plt.plot(w_1_freq, w_1_ps, 'r--', color='green', alpha=0.4, linewidth=0.5)
+    plt.plot(u_1_freq, u_1_ps, '--', color='blue', alpha=0.4, linewidth=0.5)
+    plt.plot(v_1_freq, v_1_ps, '--', color='orange', alpha=0.4, linewidth=0.5)
+    plt.plot(w_1_freq, w_1_ps, '--', color='green', alpha=0.4, linewidth=0.5)
     plt.scatter(u_1_freq, u_1_ps, color='blue', label='generated u', alpha=0.6, s=2)
     plt.scatter(v_1_freq, v_1_ps, color='orange', label='generated v', alpha=0.6, s=2)
     plt.scatter(w_1_freq, w_1_ps, color='green', label='generated w', alpha=0.6, s=2)

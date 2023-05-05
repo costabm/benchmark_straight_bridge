@@ -523,8 +523,7 @@ if validate_wind_field:
     from straight_bridge_geometry import arc_length, R
     from buffeting import wind_field_3D_all_blocks_func, rad, deg
 
-    beta_0 = rad(0)
-    beta_DB = beta_DB_func_2(beta_0)  # wind direction according to the Design Basis
+
 
     where_to_get_wind = 'in-house'
 
@@ -538,23 +537,27 @@ if validate_wind_field:
         wind_overlap_T = 0  # (s). Total overlapping duration between adjacent blocks.
         ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
         wind_T = 1 * wind_block_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
-        dt = 0.05*20  # s. Time step in the calculation
-        for seed in range(1, n_seeds+1):
-            # Getting windspeeds
-            windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T,
-                                                      ramp_T, cospec_type, Ii_simplified_bool, plots=False,
-                                                      export_results=True, export_folder=rf"wind_field\data\seed_{seed}")
-            # Validation
-            freq_array = np.arange(1 / wind_T, (1 / dt) / 2, 1 / wind_T)
-            f_min = np.min(freq_array)  # 0.002
-            f_max = np.max(freq_array)  # 0.5
-            n_freq = len(freq_array)  # 128
-            n_nodes_validated = 10  # total number of nodes to assess wind speeds: STD, mean, co-spectra, correlation
-            node_test_S_a = 0  # node tested for auto-spectrum
-            n_nodes_val_coh = 5  # num nodes tested for assemblage of 2D correlation decay plots
-            wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block_T, beta_DB, arc_length, R,
-                                                  Ii_simplified_bool, f_min, f_max, n_freq, n_nodes_validated,
-                                                  node_test_S_a, n_nodes_val_coh, export_folder=rf"wind_field\data\seed_{seed}\plots")
+        dt = 0.05  # s. Time step in the calculation
+
+        for beta_0 in [rad(-100), rad(-40), rad(0), rad(60), rad(160)]:
+            for seed in range(1, n_seeds+1):
+                beta_DB = beta_DB_func_2(beta_0)  # wind direction according to the Design Basis
+
+                # Getting windspeeds
+                windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T,
+                                                          ramp_T, cospec_type, Ii_simplified_bool, plots=False,
+                                                          export_results=True, export_folder=rf"wind_field\data\beta_{int(np.rad2deg(beta_0))}\seed_{seed}")
+                # Validation
+                freq_array = np.arange(1 / wind_T, (1 / dt) / 2, 1 / wind_T)
+                f_min = np.min(freq_array)  # 0.002
+                f_max = np.max(freq_array)  # 0.5
+                n_freq = len(freq_array)  # 128
+                n_nodes_validated = 10  # total number of nodes to assess wind speeds: STD, mean, co-spectra, correlation
+                node_test_S_a = 0  # node tested for auto-spectrum
+                n_nodes_val_coh = 5  # num nodes tested for assemblage of 2D correlation decay plots
+                wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block_T, beta_DB, arc_length, R,
+                                                      Ii_simplified_bool, f_min, f_max, n_freq, n_nodes_validated,
+                                                      node_test_S_a, n_nodes_val_coh, export_folder=rf"wind_field\data\beta_{int(np.rad2deg(beta_0))}\seed_{seed}\plots")
 
     elif where_to_get_wind == r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5':
         from AMC_wind_time_series_checks import get_h5_windsim_file_with_wind_time_series
