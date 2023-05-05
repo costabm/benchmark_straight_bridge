@@ -503,7 +503,7 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
                                       beta_DB_cases)
 
 # Writing results
-parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
+# parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 # # Plotting
 # import buffeting_plots
 # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
@@ -515,7 +515,7 @@ if 'table' in aero_coef_method_cases:
 # #######################################################################################################################
 # Validating the wind field:
 # #######################################################################################################################
-validate_wind_field = False
+validate_wind_field = True
 
 if validate_wind_field:
     from wind_field.wind_field_3D_applied_validation import wind_field_3D_applied_validation_func
@@ -526,37 +526,35 @@ if validate_wind_field:
     beta_0 = rad(0)
     beta_DB = beta_DB_func_2(beta_0)  # wind direction according to the Design Basis
 
-    # Input (change the numbers only)
-    # where_to_get_wind = 'nowhere'  # 'in-house' or 'external'
-    where_to_get_wind = 'in-house'  # 'in-house' or 'external'
+    where_to_get_wind = 'in-house'
 
     # Wind speeds at each node, in Gw coordinates (XuYvZw).
     Ii_simplified_bool = True
+    n_seeds = 5
     if where_to_get_wind == 'in-house':
         cospec_type = 2
-        wind_block_T = 3600+600  # (s). Desired duration of each wind block. To be increased due to overlaps.
+        transient_T = 600  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
+        wind_block_T = 3600 + transient_T  # (s). Desired duration of each wind block. To be increased due to overlaps. Must include transient_T
         wind_overlap_T = 0  # (s). Total overlapping duration between adjacent blocks.
-        transient_T = 0 * wind_block_T  # (s). Transient time due to initial conditions, to be later discarded in the response analysis.
         ramp_T = 0  # (s). Ramp up time, inside the transient_T, where windspeeds are linearly increased.
-        wind_T = 1 * wind_block_T + transient_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
-        dt = 0.05  # s. Time step in the calculation
-        windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T,
-                                              cospec_type, Ii_simplified_bool, plots=False)
-
-        # Validation
-        freq_array = np.arange(1 / wind_T, (1 / dt) / 2, 1 / wind_T)
-        f_min = np.min(freq_array)
-        f_max = np.max(freq_array)
-        n_freq = len(freq_array)
-        # n_freq = 128
-        # f_min = 0.002
-        # f_max = 0.5
-        n_nodes_validated = 10  # total number of nodes to assess wind speeds: STD, mean, co-spectra, correlation
-        node_test_S_a = 0  # node tested for auto-spectrum
-        n_nodes_val_coh = 5  # num nodes tested for assemblage of 2D correlation decay plots
-        wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block_T, beta_DB, arc_length, R,
-                                              Ii_simplified_bool, f_min, f_max,
-                                              n_freq, n_nodes_validated, node_test_S_a, n_nodes_val_coh)
+        wind_T = 1 * wind_block_T  # (s). Total time-domain simulation duration, including transient time, after overlapping. Keep it in this format (multiple of each wind block time).
+        dt = 0.05*20  # s. Time step in the calculation
+        for seed in range(1, n_seeds+1):
+            # Getting windspeeds
+            windspeed = wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T,
+                                                      ramp_T, cospec_type, Ii_simplified_bool, plots=False,
+                                                      export_results=True, export_folder=rf"wind_field\data\seed_{seed}")
+            # Validation
+            freq_array = np.arange(1 / wind_T, (1 / dt) / 2, 1 / wind_T)
+            f_min = np.min(freq_array)  # 0.002
+            f_max = np.max(freq_array)  # 0.5
+            n_freq = len(freq_array)  # 128
+            n_nodes_validated = 10  # total number of nodes to assess wind speeds: STD, mean, co-spectra, correlation
+            node_test_S_a = 0  # node tested for auto-spectrum
+            n_nodes_val_coh = 5  # num nodes tested for assemblage of 2D correlation decay plots
+            wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block_T, beta_DB, arc_length, R,
+                                                  Ii_simplified_bool, f_min, f_max, n_freq, n_nodes_validated,
+                                                  node_test_S_a, n_nodes_val_coh, export_folder=rf"wind_field\data\seed_{seed}\plots")
 
     elif where_to_get_wind == r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5':
         from AMC_wind_time_series_checks import get_h5_windsim_file_with_wind_time_series

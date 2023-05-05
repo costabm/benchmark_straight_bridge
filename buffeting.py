@@ -61,6 +61,8 @@ from damping_matrix import rayleigh_coefficients_func, rayleigh_damping_matrix_f
 from AMC_wind_time_series_checks import get_h5_windsim_file_with_wind_time_series, clone_windspeeds_when_g_nodes_are_diff_from_wind_nodes
 from profiling import profile
 import os
+from pathlib import Path
+
 
 ########################################################################################################################
 # Global variables
@@ -1815,7 +1817,7 @@ def parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
 # Time Domain Buffeting Analysis:
 ########################################################################################################################
 def wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_overlap_T, wind_T, ramp_T, cospec_type,
-                                  Ii_simplified, plots=False):
+                                  Ii_simplified, plots=False, export_results=False, export_folder=r"wind_field\data"):
     """
     Generates wind speed time series [U+u, u, v, w] for each g_node, in global wind Gw coordinates (XuYvZw),
     with shape: (4,g,t) by concatenating wind blocks with duration wind_block_T each, overlapped by wind_overlap_T,
@@ -1947,6 +1949,12 @@ def wind_field_3D_all_blocks_func(g_node_coor, beta_DB, dt, wind_block_T, wind_o
         plt.ylabel('Wind speed [m/s]')
         plt.xlabel('Time [s]')
         plt.show()
+
+    if export_results:
+        Path(rf"{export_folder}").mkdir(parents=True, exist_ok=True)  # create folder if it doesn't exist
+        np.save(rf"{export_folder}\windspeed", windspeed)
+        np.save(rf"{export_folder}\timepoints", time_array)
+        np.save(rf"{export_folder}\node_coordinates_in_Gw_system", node_coor_wind[:n_nodes_wind])
 
     return windspeed
 

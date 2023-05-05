@@ -10,13 +10,16 @@ To reduce the calculation time / memory, reduce: num_nodes, T, sample_freq.
 
 def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block_T, beta_DB, arc_length, R,
                                           Ii_simplified_bool, f_min, f_max, n_freq, n_nodes_validated, node_test_S_a,
-                                          n_nodes_val_coh):
+                                          n_nodes_val_coh, export_folder=r"wind_field\data\plots"):
 
     import numpy as np
     from scipy import signal
     import matplotlib.pyplot as plt
     from buffeting import beta_0_func, theta_0, U_bar_func, g_elem_nodes_func, Ii_func, S_a_nondim_func, Cij_func, iLj_func
     from transformations import T_GsGw_func
+    from pathlib import Path
+
+    Path(rf"{export_folder}").mkdir(parents=True, exist_ok=True)  # create folder if it doesn't exist
 
     # Time domain
     n_windpoints = len(windspeed[0,0])
@@ -123,7 +126,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     plt.annotate("", xy=(0, 0), xytext=(0, 0), arrowprops=dict(arrowstyle="->"))
     plt.xlim([0, chord])
     plt.ylim([-chord / 2, chord / 2])
-    plt.savefig('wind_field\wind_direction')
+    plt.savefig(rf'{export_folder}\wind_direction')
     plt.close()
 
     # =============================================================================
@@ -138,7 +141,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     plt.ylabel('Wind speed [m/s]')
     plt.xlim([0, 120])
     plt.grid()
-    plt.savefig('wind_field\wind_speed_at_3_nodes')
+    plt.savefig(rf'{export_folder}\wind_speed_at_3_nodes')
     plt.close()
 
     # =============================================================================
@@ -152,7 +155,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     # plt.ylim([min(U_bar) * 0.99, max(U_bar) * 1.01])
     plt.legend()
     plt.grid()
-    plt.savefig('wind_field\wind_speed_means')
+    plt.savefig(rf'{export_folder}\wind_speed_means')
     plt.close()
 
     # =============================================================================
@@ -170,7 +173,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     plt.xlabel('Node number [-]')
     plt.ylabel('std.(wind speed) [m/s]')
     plt.grid()
-    plt.savefig('wind_field\wind_speed_standard-deviations')
+    plt.savefig(rf'{export_folder}\wind_speed_standard-deviations')
     plt.close()
 
     # =============================================================================
@@ -200,13 +203,13 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     plt.grid(which='both')
     plt.tight_layout()
     handles, labels = plt.gca().get_legend_handles_labels()
-    plt.savefig(r"wind_field\non-dim-auto-spectrum_standard_VS_measurements_at_node_" + str(node_test_S_a))
+    plt.savefig(rf"{export_folder}\non-dim-auto-spectrum_standard_VS_measurements_at_node_" + str(node_test_S_a))
     plt.close()
     from matplotlib.legend_handler import HandlerTuple
     plt.figure(dpi=500)
     plt.axis('off')
     plt.legend(handles[:3]+[tuple(handles[3:])], labels[:3] + ['Generated'], handler_map={tuple: HandlerTuple(ndivide=None)}, ncol=4, markerscale=1.8)
-    plt.savefig(r"wind_field\legend_non-dim-auto-spectrum_standard_VS_measurements_at_node_" + str(node_test_S_a))
+    plt.savefig(rf"{export_folder}\legend_non-dim-auto-spectrum_standard_VS_measurements_at_node_" + str(node_test_S_a))
     plt.tight_layout()
     plt.close()
 
@@ -237,7 +240,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     plt.xlim([1 / wind_T / 1.2, wind_freq / 2 * 1.2])  # 1.2 zoom-out ratio
     plt.legend()
     plt.grid(which='both')
-    plt.savefig(r"wind_field\dim-auto-spectrum_standard_VS_measurements_at_node_" + str(node_test_S_a))
+    plt.savefig(rf"{export_folder}\dim-auto-spectrum_standard_VS_measurements_at_node_" + str(node_test_S_a))
     plt.close()
 
     # =============================================================================
@@ -287,7 +290,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
                 plt.grid()
                 plt.legend()
     plt.tight_layout()
-    plt.savefig('wind_field\co-coherence')
+    plt.savefig(rf'{export_folder}\co-coherence')
     plt.close()
 
     # =============================================================================
@@ -341,7 +344,7 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
         ax.set_xlabel('Node Number')
         ax.set_ylabel('Node Number')
         cbar.set_label('$\Delta$ corr. coeff.')
-    plt.savefig('wind_field\correlation_coefficients')
+    plt.savefig(rf'{export_folder}\correlation_coefficients')
     plt.close()
 
     # =============================================================================
@@ -396,13 +399,13 @@ def wind_field_3D_applied_validation_func(g_node_coor, windspeed, dt, wind_block
     ax.view_init(30,60)
     plt.tight_layout()
     legend_lines = [Line2D([0], [0], color='black'),Line2D([0], [0], color='black', marker='o', linestyle='--', alpha=0.5)]
-    plt.savefig(r'wind_field\normalized_co-spectrum.pdf')
+    plt.savefig(rf'{export_folder}\normalized_co-spectrum.pdf')
     plt.close()
     plt.figure(dpi=400)
     plt.axis('off')
     plt.legend(legend_lines, ['Target','Generated'], ncol=2)
     # plt.show()
-    plt.savefig(r'wind_field\legend_normalized_co-spectrum')
+    plt.savefig(rf'{export_folder}\legend_normalized_co-spectrum')
     plt.close()
     return None
 #

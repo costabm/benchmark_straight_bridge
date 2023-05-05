@@ -9,9 +9,10 @@ import numpy as np
 import math
 import scipy
 import pandas as pd
+from pathlib import Path
 
 
-def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spectrum_type, method='fft', export_results=True):
+def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spectrum_type, method='fft', export_results=False):
     """
     Return the 3 components of the wind speed at each node. shape:(4,num_nodes,num_time_points). U,u,v,w respectively, with U=V+u \n
     Return non-dimensional auto-spectra. shape:(3,num_nodes,num_freq) \n
@@ -295,6 +296,7 @@ def wind_field_3D_func(node_coor_wind, V, Ai, Cij, I, iLj, T, sample_freq, spect
         raise NotImplementedError
 
     if export_results:
+        Path(r"wind_field\data").mkdir(parents=True, exist_ok=True)  # create folder if it doesn't exist
         np.save(r"wind_field\data\windspeed", np.array([series_U, series_u, series_v, series_w]))
         np.save(r"wind_field\data\timepoints", series_t)
         np.save(r"wind_field\data\delta_xyz", np.array([delta_x, delta_y, delta_z]))

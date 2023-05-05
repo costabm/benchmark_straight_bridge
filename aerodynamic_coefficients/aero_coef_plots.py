@@ -29,9 +29,9 @@ C_SOH_Ls  = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['C
 # ZOOM OUT GRAPH
 # Tested Domain
 beta_angle_step = 2  # in degrees.
-theta_angle_step = 0.05  # in degrees.
+theta_angle_step = 0.1  # in degrees.
 betas = np.arange(rad(-179), rad(179)+rad(beta_angle_step)*0.012345, rad(beta_angle_step))
-thetas = np.arange(rad(-3), rad(3)+rad(theta_angle_step)*0.012345, rad(theta_angle_step))
+thetas = np.arange(rad(-10), rad(10)+rad(theta_angle_step)*0.012345, rad(theta_angle_step))
 xx, yy = np.meshgrid(betas, thetas)
 
 def colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], format='original'):
@@ -63,8 +63,8 @@ def colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,
             # handles = [handles[1], handles[0]]
             # labels = [labels[1], labels[0]]
             ax.set_xlim(deg(min(betas)), deg(max(betas)))
-            plt.xticks(np.arange(0, 91, 15))
-            plt.yticks(np.arange(-90, 91, 15))
+            plt.xticks(np.arange(-180, 180.001, 45))
+            plt.yticks(np.arange(-15, 15.001, 3))
             ax.set_ylim(-90, 90)
         elif format=='TorMartin':
             plt.scatter(yy.flatten() * 180 / np.pi, xx.flatten() * 180 / np.pi, s = np.ones(len(C_Ci_grid_flat_Ls[i]))*10, alpha=1,marker="o", c=scalarMap.to_rgba(C_Ci_grid_flat_Ls[i]))
@@ -73,13 +73,18 @@ def colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,
             ax.scatter(thetas_SOH * 180 / np.pi, betas_SOH * 180 / np.pi, s=2, color='black', label='Measurements')
             ax.set_xlabel(r'$\theta\/[\degree]$')
             ax.set_ylabel(r'$\beta\/[\degree]$')
+            ax.set_xlim(-10, 10)
+            ax.set_xticks(np.arange(-10, 10.001, 2.5))
+            ax.set_ylim(-180, 180)
+            ax.set_yticks(np.arange(-180, 180.001, 30))
         handles, labels = ax.get_legend_handles_labels()
         plt.legend(handles,labels,loc=1)
         plt.tight_layout()
-        plt.savefig(r'aerodynamic_coefficients/plots/3D_ZoomOut'+method+'_'+str(i)+'.png')
+        plt.savefig(r'aerodynamic_coefficients/plots/3D_ZoomOut'+method+'_'+format+'_'+str(i)+'.png')
         plt.close()
 
 # colormap_2var_cons_fit_zoomout(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], format='TorMartin')
 colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], format='TorMartin')
 # colormap_2var_cons_fit_zoomout(method='2D', idx_to_plot=[1,2,3])
 # colormap_2var_cons_fit_zoomout(method='cos_rule', idx_to_plot=[1,2,3])

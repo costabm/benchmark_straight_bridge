@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 from static_loads import static_wind_func, R_loc_func
 from buffeting import U_bar_func
 from straight_bridge_geometry import g_node_coor, p_node_coor, g_node_coor_func, R, arc_length, zbridge, bridge_shape, g_s_3D_func
@@ -36,10 +37,10 @@ if plt_TD:
 
 x_coords = g_node_coor[:,0]
 beta_DBs = df_FD['beta_DB']
-dof_string = ['x', 'y', 'z', 'rx [deg]', 'ry', 'rz']
+dof_string = ['x [m]', 'y [m]', 'z [m]', 'rx [deg]', 'ry [deg]', 'rz [deg]']
 analysis_string = ['mean', 'std']
 color_list = ['blue', 'orange', 'green', 'red', 'purple']
-
+handles, labels = [], []
 fig, axs = plt.subplots(3, 2, figsize=(8, 10), dpi=300, constrained_layout=False)
 for a, analysis_type in enumerate(['static', 'std']):
     for b, beta_DB in enumerate(beta_DBs):
@@ -54,9 +55,9 @@ for a, analysis_type in enumerate(['static', 'std']):
             ax.set_title(f'{analysis_string[a]} of {dof_string[dof]}')
             if dof in [3,4,5]:
                 results = np.rad2deg(results)
-            ax.plot(x_coords, results, c=color_list[b], label=r'$\beta = $' + f'{round(deg(beta_0_func(beta_DB)))}' if a==d==0 else None)
+            ax.plot(x_coords, results, c=color_list[b], alpha=0.75, label=r'$\beta = $' + f'{round(deg(beta_0_func(beta_DB)))}' + r'$\degree$' if a==d==0 else None)
             if plt_TD:
-                for SE_l in ['L']:
+                for SE_l in ['NL']:
                     df_one_beta = df_TD.loc[np.isclose(df_TD['beta_DB'], beta_DB) & (df_TD['SE_linearity'] == SE_l)]
                     mean_mask = df_one_beta.columns[[f'{analysis_type}_dof_{dof}' in c and c[:3]!='std' for c in df_one_beta.columns]]
                     std_mask = df_one_beta.columns[[f'{analysis_type}_dof_{dof}' in c and c[:3]=='std' for c in df_one_beta.columns]]
@@ -69,14 +70,25 @@ for a, analysis_type in enumerate(['static', 'std']):
                     # ax.plot(x_coords, mean_results + std_results, c=color_list[b], linestyle='dashdot', alpha=0.3, linewidth=3)
                     # ax.plot(x_coords, mean_results - std_results, c=color_list[b], linestyle='dashdot', alpha=0.3, linewidth=3)
                     ax.fill_between(x_coords, mean_results - std_results, mean_results + std_results, facecolor=color_list[b], alpha=0.3)
+            ax.grid(visible=True, which='major', alpha=0.6)
+            ax.minorticks_on()
+            ax.grid(visible=True, which='minor', alpha=0.15)
+            handles.append(ax.get_legend_handles_labels()[0])
+            labels.append(ax.get_legend_handles_labels()[1])
 
-fig.legend(loc=8, ncol=len(beta_DBs))
+legend1 = fig.legend(loc=8, ncol=len(beta_DBs), frameon=False)
+
+black_line = matplotlib.lines.Line2D([0], [0], color='black', alpha=0.5, label=r'Frequency-domain')
+black_patch = matplotlib.patches.Patch(facecolor='black', alpha=0.3, label=r'Time-domain ($\mu \pm \sigma$)')
+legend2 = fig.legend(handles=[black_line, black_patch], loc='center', bbox_to_anchor=[0.5,0.05], ncol=2, frameon=False)
+
 fig.tight_layout()
-fig.subplots_adjust(bottom=0.08)  # play with this number to adjust legend placement
+fig.subplots_adjust(bottom=0.1)  # play with this number to adjust legend placement
 U_check = U_bar_func(g_node_coor)[0]
 plt.savefig(r'results\benchmark' + f'_U_{int(U_check)}_' + f"SW_{str(df_FD['SWind'][0])[0]}_KG_{str(df_FD['KG'][0])[0]}_SE_{str(df_FD['SE'][0])[0]}"
                                   + f"_nfreq_{df_FD['n_freq'][0]}_fmin_{df_FD['f_min'][0]}_fmax_{df_FD['f_max'][0]}_zeta_{df_FD['damping_ratio'][0]}_ModalDamping.jpg")
 plt.close()
+
 
 
 # #%% Benchmark of different simpler cases
