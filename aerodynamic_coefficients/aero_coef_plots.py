@@ -14,7 +14,17 @@ betas_uncorrected_SOH = rad(df['SOH_beta_uncorrected[deg]'].to_numpy()) # SOH in
 alphas_SOH = rad(df['alpha[deg]'].to_numpy()) # Alpha: rotation about the bridge x-axis, which differs from the theta definition from L.D.Zhu and from SOH alpha (opposite direction).
 betas_SOH = rad(df['beta[deg]'].to_numpy())
 thetas_SOH = rad(df['theta[deg]'].to_numpy())
-C_SOH_Ls  = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
+C_SOH_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
+
+#####################################################################################################################
+# Raw Data from CFD
+#####################################################################################################################
+path_df_CFD = os.path.join(os.getcwd(), r'aerodynamic_coefficients', 'aero_coef_CFD_data.csv')
+df_CFD = pd.read_csv(path_df_CFD)  # raw original values
+betas_CFD = rad(df_CFD['beta[deg]'].to_numpy())
+thetas_CFD = rad(df_CFD['theta[deg]'].to_numpy())
+C_CFD_Ls = np.array([df_CFD['Cx_Ls'], df_CFD['Cy_Ls'], df_CFD['Cz_Ls'], df_CFD['Cxx_Ls'], df_CFD['Cyy_Ls'], df_CFD['Czz_Ls']])
+
 
 #####################################################################################################################
 # Confirming some Mathematical equations
@@ -85,7 +95,7 @@ def colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,
 
 # colormap_2var_cons_fit_zoomout(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], format='TorMartin')
-colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], format='TorMartin')
+# colormap_2var_cons_fit_zoomout(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], format='TorMartin')
 # colormap_2var_cons_fit_zoomout(method='2D', idx_to_plot=[1,2,3])
 # colormap_2var_cons_fit_zoomout(method='cos_rule', idx_to_plot=[1,2,3])
 
@@ -157,7 +167,10 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
             title_str = [r'$C_{x}^{Free}$', r'$C_{y}^{Free}$', r'$C_{z}^{Free}$', r'$C_{rx}^{Free}$', r'$C_{ry}^{Free}$', r'$C_{rz}^{Free}$'][i]
         elif method == '2D_fit_cons':
             title_str = [r'$C_{x}^{Constrained}$', r'$C_{y}^{Constrained}$', r'$C_{z}^{Constrained}$', r'$C_{rx}^{Constrained}$', r'$C_{ry}^{Constrained}$', r'$C_{rz}^{Constrained}$'][i]
-         # Finding the coefficient of determination R_squared
+        elif method == '2D_fit_cons_w_CFD':
+            title_str = [r'$C_{x}^{SOH&CFD}$', r'$C_{y}^{SOH&CFD}$', r'$C_{z}^{SOH&CFD}$', r'$C_{rx}^{SOH&CFD}$', r'$C_{ry}^{SOH&CFD}$', r'$C_{rz}^{SOH&CFD}$'][i]
+
+        # Finding the coefficient of determination R_squared
         SSres = sum((C_SOH_Ls[i] - C_Ci_fit_at_SOH[i])**2)
         SStot = sum((C_SOH_Ls[i] - np.mean(C_SOH_Ls[i])*np.ones(C_SOH_Ls[i].shape))**2)
         r_squared = 1 - SSres / SStot
@@ -180,7 +193,9 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         plt.colorbar(matplotlib.cm.ScalarMappable(norm=cmap_norm, cmap=cmap), ax=ax, alpha=1)
         plt.clim(vmin=0, vmax=0)
         markersize = 60
-        scatter = ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_SOH_Ls[i]), label='Measurements', edgecolors='black')
+        ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_SOH_Ls[i]), label='Measurements', edgecolors='black')
+        if method == '2D_fit_cons_w_CFD':
+            ax.scatter(betas_CFD * 180 / np.pi, thetas_CFD * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_CFD_Ls[i]), label='Measurements', edgecolors='black')
         ax.set_xlabel(r'$\beta\/[\degree]$')
         ax.set_ylabel(r'$\theta\/[\degree]$')
         handles, labels = ax.get_legend_handles_labels()
@@ -192,11 +207,12 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         plt.tight_layout()
         plt.savefig(r'aerodynamic_coefficients/plots/3D_'+method+'_'+str(i)+'.jpg')
         plt.close()
-colormap_2var_cons_fit_zoomin(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
-colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomin(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
+colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5])
-colormap_2var_cons_fit_zoomin(method='2D', idx_to_plot=[1,2,3])
-colormap_2var_cons_fit_zoomin(method='cos_rule', idx_to_plot=[1,2,3])
+# colormap_2var_cons_fit_zoomin(method='2D', idx_to_plot=[1,2,3])
+# colormap_2var_cons_fit_zoomin(method='cos_rule', idx_to_plot=[1,2,3])
 
 # def plot_2D_at_beta_fixed_OLD(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False):
 #     if plot_other_bridges:
@@ -296,6 +312,9 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             title_str = [r'$C_{x}^{Free}$', r'$C_{y}^{Free}$', r'$C_{z}^{Free}$', r'$C_{rx}^{Free}$', r'$C_{ry}^{Free}$', r'$C_{rz}^{Free}$'][i]
         elif method == '2D_fit_cons':
             title_str = [r'$C_{x}^{Constrained}$', r'$C_{y}^{Constrained}$', r'$C_{z}^{Constrained}$', r'$C_{rx}^{Constrained}$', r'$C_{ry}^{Constrained}$', r'$C_{rz}^{Constrained}$'][i]
+        elif method == '2D_fit_cons_w_CFD':
+            title_str = [r'$C_{x}^{SOH&CFD}$', r'$C_{y}^{SOH&CFD}$', r'$C_{z}^{SOH&CFD}$', r'$C_{rx}^{SOH&CFD}$', r'$C_{ry}^{SOH&CFD}$', r'$C_{rz}^{SOH&CFD}$'][i]
+
         # Plotting:
         plt.figure(figsize=(5, 4), dpi=300)
         ax = plt.axes()
@@ -350,11 +369,12 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
     plt.tight_layout()
     plt.savefig(r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '_' + str(i) + '.jpg')
     plt.close()
-plot_2D_at_beta_fixed(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
-plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
+# plot_2D_at_beta_fixed(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
+# plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
+plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
-plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
-plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)
+# plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
+# plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)
 
 def plot_2D_at_theta_0(idx_to_plot=[0,1,2,3,4,5], plot_for_EACWE2022=False):
     beta_angle_step = 0.1  # in degrees.

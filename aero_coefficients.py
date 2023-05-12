@@ -97,6 +97,18 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     Cyy_Ls = df['Cyy_Ls'].to_numpy()
     Czz_Ls = df['Czz_Ls'].to_numpy()
 
+    if method == '2D_fit_cons_w_CFD':
+        # Import and append the results from NablaFlow 3D CFD
+        df_CFD = pd.read_csv(project_path + r'\\aerodynamic_coefficients\\aero_coef_CFD_data.csv')  # raw original values
+        betas_SOH = np.append(betas_SOH, rad(df_CFD['beta[deg]'].to_numpy()))
+        thetas_SOH = np.append(thetas_SOH, rad(df_CFD['theta[deg]'].to_numpy()))
+        Cx_Ls = np.append(Cx_Ls, df_CFD['Cx_Ls'].to_numpy())
+        Cy_Ls = np.append(Cy_Ls, df_CFD['Cy_Ls'].to_numpy())
+        Cz_Ls = np.append(Cz_Ls, df_CFD['Cz_Ls'].to_numpy())
+        Cxx_Ls = np.append(Cxx_Ls, df_CFD['Cxx_Ls'].to_numpy())
+        Cyy_Ls = np.append(Cyy_Ls, df_CFD['Cyy_Ls'].to_numpy())
+        Czz_Ls = np.append(Czz_Ls, df_CFD['Czz_Ls'].to_numpy())
+
     # Converting all [-180,180] angles into equivalent [0,90] angles. The sign information outside [0,90] is lost and stored manually for each coefficient. Assumes symmetric cross-section.
     Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = np.zeros((6, size))
     # Signs for axes in Ls.
@@ -240,7 +252,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
         # Ca_hyb = -0.011  * np.sin(betas_extrap)**2  # Alternative: Ca_hyb = -0.011 * np.sin( (betas_extrap/rad(90))**(1/1.5)*rad(90) )**2
         pass
 
-    if method == '2D_fit_cons':
+    if '2D_fit_cons' in method:
         # Ls coordinates.
         # The constraints are reasoned for a 0-90 deg interval, but applicable to a -180 to 180 deg interval when the symmetry signs (defined above) are also used.
         # Cx
@@ -409,7 +421,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     if coor_system == 'Ls':
         if method == '2D_fit_free':
             return C_Ci_Ls_2D_fit_free
-        elif method in ['2D_fit_cons', '2D_fit_cons_2']:
+        elif method in ['2D_fit_cons', '2D_fit_cons_2', '2D_fit_cons_w_CFD']:
             return C_Ci_Ls_2D_fit_cons
         elif method in ['cos_rule','2D']:
             return C_Ci_Ls_cos

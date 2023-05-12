@@ -75,7 +75,7 @@ plt.title(r'Probability density function of $\~{\theta}$')
 plt.xlabel(r'$\~{\theta}$ [deg]')
 plt.tight_layout()
 plt.show()
-
+plt.close()
 
 
 # # Plotting
@@ -105,7 +105,7 @@ from my_utils import find_nearest
 import numpy as np
 cdf = np.cumsum(probabilities) / np.cumsum(probabilities)[-1]
 
-percentiles = [0.5, 0.6, 0.7, 0.8, 0.9, 0.965, 0.988]
+percentiles = [0.5, 0.6, 0.7, 0.8, 0.9, 0.965, 0.988, 0.9965]
 idxs = np.array([np.where(cdf == find_nearest(cdf, p))[0][0] for p in percentiles])
 
 desired_angles = np.round(np.array(values)[idxs], 1)  # desired to be tested in a wind tunnel, given they're equally spaced in PDF

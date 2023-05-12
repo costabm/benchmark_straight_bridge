@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-n_freq = 100
+n_freq = 1000
 n_nodes = 200
 n_dof = 6
 

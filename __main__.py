@@ -410,7 +410,7 @@ include_KG_cases = [True]  # include the effects of geometric stiffness (both in
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
-aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
+aero_coef_method_cases = ['2D_fit_cons_w_CFD']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
 n_freq_cases = [1024]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
@@ -440,7 +440,7 @@ list_of_cases = list_of_cases_FD_func(n_aero_coef_cases, include_SE_cases, aero_
 # pr = cProfile.Profile()
 # pr.enable()
 # Writing results
-# parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
+parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
 # pr.disable()
 # pr.print_stats(sort='cumtime')
 
@@ -515,7 +515,7 @@ if 'table' in aero_coef_method_cases:
 # #######################################################################################################################
 # Validating the wind field:
 # #######################################################################################################################
-validate_wind_field = True
+validate_wind_field = False
 
 if validate_wind_field:
     from wind_field.wind_field_3D_applied_validation import wind_field_3D_applied_validation_func
