@@ -209,7 +209,7 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         plt.close()
 # colormap_2var_cons_fit_zoomin(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
-colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D', idx_to_plot=[1,2,3])
 # colormap_2var_cons_fit_zoomin(method='cos_rule', idx_to_plot=[1,2,3])
@@ -301,6 +301,8 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
     theta_angle_step = 0.1  # in degrees.
     thetas = np.arange(rad(-10), rad(10) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
     beta_fixed_list = rad(np.array([0,10.1,19.9,30.1,41.2,50.9]))
+    beta_extra_list = rad(np.array([60, 70, 80, 90]))
+    n_betas = len(beta_fixed_list) if not plot_extra_lines else len(beta_fixed_list)+len(beta_extra_list)
     from matplotlib.rcsetup import cycler
 
     for i in idx_to_plot:
@@ -320,7 +322,7 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
         ax = plt.axes()
         ax.set_prop_cycle('color',plt.cm.plasma(np.linspace(0.05,0.95,len(beta_fixed_list))))  # choos a range within colormap. e.g. [0.05,0.95] within [0,1]
         plt.title(title_str +r'$(\beta,\theta)$ fit (sectional views)')
-        empty_ax = [None]*len(beta_fixed_list)
+        empty_ax = [None]*n_betas
         for b_i,beta_fixed in enumerate(beta_fixed_list):
             marker_str = ["^","v","s","p","h","8"]
             markersize_plt = np.array([1.8,1.8,1.8,2.3,2.3,2.3])
@@ -332,9 +334,9 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             measured_label = 'Measurements' if b_i == 1 else ''
             empty_ax[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta_fixed,atol=rad(2)))]), C_SOH_Ls[i,np.where(np.isclose(betas_SOH,beta_fixed,atol=rad(2)))],alpha=0.8, s=markersize_scatter[b_i], label=measured_label,marker=marker_str[b_i], edgecolors='none')
         if plot_extra_lines:
-            for beta_fixed in [rad(60), rad(70), rad(80), rad(90)]:
+            for a, beta_fixed in zip([0.05, 0.35, 0.65, 0.95], beta_extra_list):
                 C_Ci_grid_flat_Ls = aero_coef(np.ones(len(thetas)) * beta_fixed, thetas, method=method, coor_system='Ls')
-                plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], alpha=0.8, color='grey', linestyle='--')
+                plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], alpha=a, color='black', label=r'$\beta=$'+str(round(deg(beta_fixed),1))+'$\degree$',)  #, linestyle='--')
         ax.set_xlabel(r'$\theta\/[\degree]$')
         y_label_str = [r'$C_{x}$', r'$C_{y}$', r'$C_{z}$', r'$C_{rx}$', r'$C_{ry}$', r'$C_{rz}$'][i]
         ax.set_ylabel(y_label_str)
@@ -342,8 +344,8 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             for j in range(3):  # 3 other bridges
                 plt.plot(df_list[j]['angle(deg)'], df_list[j]['Cy'], label=str_bridges[j]+r' ($\beta=0\degree$)', linestyle=linestyles[j], c='grey', alpha=0.7,linewidth=1)
         handles,labels = ax.get_legend_handles_labels()
-        # handles = [handles[1], handles[0]]
-        # labels = [labels[1], labels[0]]
+        handles = [handles[2], handles[0], handles[1], handles[3], handles[4], handles[5], handles[6], handles[7], handles[8], handles[9], handles[10]]
+        labels = [labels[2], labels[0], labels[1], labels[3], labels[4], labels[5], labels[6], labels[7], labels[8], labels[9], labels[10]]
         if not plot_other_bridges:
             C_limits = [None,None,None,None,None,None]
             plt.ylim(C_limits[i])
@@ -365,13 +367,14 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
     else:
         plt.figure(figsize=(2, 3), dpi=1000)
         plt.axis("off")
-        plt.legend(handles[:6]+[tuple(empty_ax)],labels, handler_map={tuple: HandlerTuple(ndivide=None)})
+        plt.legend(handles[:n_betas+1]+[tuple(empty_ax)],labels, handler_map={tuple: HandlerTuple(ndivide=None)})
     plt.tight_layout()
     plt.savefig(r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '_' + str(i) + '.jpg')
     plt.close()
+
 # plot_2D_at_beta_fixed(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
-plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
+plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False, plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)
