@@ -166,7 +166,7 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         elif method == '2D_fit_free':
             title_str = [r'$C_{x}^{Free}$', r'$C_{y}^{Free}$', r'$C_{z}^{Free}$', r'$C_{rx}^{Free}$', r'$C_{ry}^{Free}$', r'$C_{rz}^{Free}$'][i]
         elif method == '2D_fit_cons':
-            title_str = [r'$C_{x}^{Constrained}$', r'$C_{y}^{Constrained}$', r'$C_{z}^{Constrained}$', r'$C_{rx}^{Constrained}$', r'$C_{ry}^{Constrained}$', r'$C_{rz}^{Constrained}$'][i]
+            title_str = [r'$C_{x}^{SOH}$', r'$C_{y}^{SOH}$', r'$C_{z}^{SOH}$', r'$C_{rx}^{SOH}$', r'$C_{ry}^{SOH}$', r'$C_{rz}^{SOH}$'][i]
         elif method == '2D_fit_cons_w_CFD':
             title_str = [r'$C_{x}^{SOH&CFD}$', r'$C_{y}^{SOH&CFD}$', r'$C_{z}^{SOH&CFD}$', r'$C_{rx}^{SOH&CFD}$', r'$C_{ry}^{SOH&CFD}$', r'$C_{rz}^{SOH&CFD}$'][i]
 
@@ -208,8 +208,8 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         plt.savefig(r'aerodynamic_coefficients/plots/3D_'+method+'_'+str(i)+'.jpg')
         plt.close()
 # colormap_2var_cons_fit_zoomin(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
-# colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
-# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5])
+colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
+colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D', idx_to_plot=[1,2,3])
 # colormap_2var_cons_fit_zoomin(method='cos_rule', idx_to_plot=[1,2,3])
@@ -290,7 +290,7 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
     if plot_other_bridges:
         import os
         import pandas as pd
-        path_raw_data = os.path.join(os.getcwd(), r'other', 'Langenuen and other bridges - static coefficients.xlsx')
+        path_raw_data = os.path.join(os.getcwd(), r'other', 'Langenuen and other bridges - static coefficients - v5.xlsx')
         str_bridges = ['Langenuen', 'Julsundet', 'Sotrabru']
         linestyles = ['dotted','dashed','dashdot']
         df_list = [pd.read_excel(io=path_raw_data, sheet_name='Langenuen_table_only'),
@@ -314,7 +314,7 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
         elif method == '2D_fit_free':
             title_str = [r'$C_{x}^{Free}$', r'$C_{y}^{Free}$', r'$C_{z}^{Free}$', r'$C_{rx}^{Free}$', r'$C_{ry}^{Free}$', r'$C_{rz}^{Free}$'][i]
         elif method == '2D_fit_cons':
-            title_str = [r'$C_{x}^{Constrained}$', r'$C_{y}^{Constrained}$', r'$C_{z}^{Constrained}$', r'$C_{rx}^{Constrained}$', r'$C_{ry}^{Constrained}$', r'$C_{rz}^{Constrained}$'][i]
+            title_str = [r'$C_{x}^{SOH}$', r'$C_{y}^{SOH}$', r'$C_{z}^{SOH}$', r'$C_{rx}^{SOH}$', r'$C_{ry}^{SOH}$', r'$C_{rz}^{SOH}$'][i]
         elif method == '2D_fit_cons_w_CFD':
             title_str = [r'$C_{x}^{SOH&CFD}$', r'$C_{y}^{SOH&CFD}$', r'$C_{z}^{SOH&CFD}$', r'$C_{rx}^{SOH&CFD}$', r'$C_{ry}^{SOH&CFD}$', r'$C_{rz}^{SOH&CFD}$'][i]
 
@@ -322,67 +322,84 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
         plt.figure(figsize=(5, 4), dpi=300)
         ax = plt.axes()
         color_list = plt.cm.plasma(np.linspace(0.05, 0.95, len(beta_fixed_list))).tolist() + plt.cm.Greys( np.linspace( 0.2, 0.95, len(beta_extra_list))).tolist()
-        marker_list = ["^", "v", "s", "p", "h", "8", "2", "+", "x", "*"]
+        marker_list = ["^", "v", "s", "p", "h", "8", "D", "X", "P", "*"]
         markersize_list = np.array([1.8, 1.8, 1.8, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3]) * 28
-        ax.set_prop_cycle(color=color_list, marker=marker_list, markersize=markersize_list)
+        empty_ax_SOH = [None] * n_betas
+        empty_ax_CFD = [None] * n_betas
 
         plt.title(title_str +r'$(\beta,\theta)$ fit ($\beta$-fixed views)')
-        empty_ax = [None]*n_betas
+
         for b_i, beta in enumerate(beta_all_list):
             C_Ci_grid_flat_Ls = aero_coef(np.ones(len(thetas)) * beta, thetas, method=method, coor_system='Ls')
-            # markevery = [0] # Alternative: markevery = len(thetas)-1  # could be the same as [0,-1] ?
-            plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], label=r'$\beta=$'+str(round(deg(beta),1))+'$\degree$', alpha=0.8)  # , marker=marker_str_SOH[b_i],markevery=markevery, markersize=markersize_plt[b_i]*4, fillstyle='none')
-            measured_label = 'Measurements' if b_i == 1 else ''
-            # if plot_CFD:  # then the unfilled scatter markers shall represent CFD results, instead of being just a visual aid
-            #     empty_ax[b_i] = plt.scatter(deg(thetas_CFD[np.where(np.isclose(betas_CFD,beta, atol=rad(2)))]).tolist() + deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(),
-            #                                 C_CFD_Ls[i,np.where(np.isclose(betas_CFD,beta, atol=rad(2)))][0].tolist() + deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(),
-            #                                 alpha=0.8, label=measured_label, edgecolors='none')
-            # else:  # then just plot these unfilled markers as a visual aid as in my PhD
-            #     empty_ax[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]), C_SOH_Ls[i,np.where(np.isclose(betas_SOH,beta, atol=rad(2)))], alpha=0.8, label=measured_label, edgecolors='none')
-
-            # TRASH
-            # if plot_extra_lines:
-            #     plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], alpha=0.8, color='black', label=r'$\beta=$'+str(round(deg(beta),1))+'$\degree$',)  #, linestyle='--')
-            #     if plot_CFD:
-            #         empty_ax[b_i] = plt.scatter(deg(thetas_CFD[np.where(np.isclose(betas_CFD, beta, atol=rad(2)))]), C_CFD_Ls[i, np.where(np.isclose(betas_CFD, beta, atol=rad(2)))], edgecolors='none')
+            # markevery = [0] # Alternative: markevery = len(thetas)-1  # could be the same as [0,-1] ? This is to use the marker as a visual aid as in my PhD
+            # Line plots
+            plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], color=color_list[b_i], label=r'$\beta=$'+str(int(round(deg(beta),0)))+'$\degree$', alpha=0.8)  # , marker=marker_str_SOH[b_i],markevery=markevery, markersize=markersize_plt[b_i]*4, fillstyle='none')
+            measured_SOH_label = 'Measured (SOH)' if b_i == 1 else ''
+            measured_CFD_label = 'Measured (CFD)' if b_i == 1 else ''
+            # Scatter points
+            empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(), C_SOH_Ls[i,np.where(np.isclose(betas_SOH,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
+            if plot_CFD:  # then the unfilled scatter markers shall represent CFD results, instead of being just a visual aid
+                empty_ax_CFD[b_i] = plt.scatter(deg(thetas_CFD[np.where(np.isclose(betas_CFD,beta, atol=rad(2)))]).tolist(), C_CFD_Ls[i,np.where(np.isclose(betas_CFD,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_CFD_label, facecolor='none', marker=marker_list[b_i], s=markersize_list[b_i], edgecolors=color_list[b_i])
         ax.set_xlabel(r'$\theta\/[\degree]$')
         y_label_str = [r'$C_{x}$', r'$C_{y}$', r'$C_{z}$', r'$C_{rx}$', r'$C_{ry}$', r'$C_{rz}$'][i]
         ax.set_ylabel(y_label_str)
         if plot_other_bridges:
-            for j in range(3):  # 3 other bridges
-                plt.plot(df_list[j]['angle(deg)'], df_list[j]['Cy'], label=str_bridges[j]+r' ($\beta=0\degree$)', linestyle=linestyles[j], c='grey', alpha=0.7,linewidth=1)
-        handles,labels = ax.get_legend_handles_labels()
-        handles = [handles[2], handles[0], handles[1], handles[3], handles[4], handles[5], handles[6], handles[7], handles[8], handles[9], handles[10]]
-        labels = [labels[2], labels[0], labels[1], labels[3], labels[4], labels[5], labels[6], labels[7], labels[8], labels[9], labels[10]]
+            other_bridge_coef_strings = ['Cx', 'Cy', 'Cz', 'Crx', 'Cry', 'Crz']
+            for j in [1]:  # 1, 2, or 3 other bridges
+                try:
+                    ax.plot(df_list[j]['angle(deg)'], df_list[j][other_bridge_coef_strings[i]], label=str_bridges[j]+r' ($\beta=0\degree$)', linestyle=linestyles[j], color=color_list[0], alpha=0.7,linewidth=1)
+                except:
+                    pass
+        handles, labels = ax.get_legend_handles_labels()
+        if plot_CFD:
+            handles[0], handles[1], handles[2], handles[3] = handles[2], handles[3], handles[0], handles[1]  # swapping
+            labels[0], labels[1], labels[2], labels[3] = labels[2], labels[3], labels[0], labels[1]  # swapping
+        else:
+            handles[0], handles[1], handles[2] = handles[2], handles[0], handles[1]  # swapping
+            labels[0], labels[1], labels[2] = labels[2], labels[0], labels[1]  # swapping
+
+
+        # handles = [handles0[2], handles0[3], handles0[0], handles0[1], handles0[4], handles0[5], handles0[6], handles0[7], handles0[8], handles0[9], handles0[10], handles0[11], handles0[12]]
+        # labels = [labels0[2], labels0[3], labels0[0], labels0[1], labels0[4], labels0[5], labels0[6], labels0[7], labels0[8], labels0[9], labels0[10], labels0[11], labels0[12]]
+        # if plot_other_bridges:
+        #     handles += handles0[13]
+        #     labels += labels0[13]
         if not plot_other_bridges:
             C_limits = [None,None,None,None,None,None]
             plt.ylim(C_limits[i])
         plt.xticks(np.arange(-10, 10+0.01, 2))
-        if plot_extra_lines:
-            ylims = [[-0.05,0.002], [-0.04,0.08], [-0.8,0.7], [-0.2,0.2], [None,None], [None,None]]
-            if i in [0,1,2,3]:
-                plt.ylim(ylims[i])
+        # if plot_extra_lines:
+        #     # ylims = [[-0.05,0.002], [-0.04,0.08], [-0.8,0.7], [-0.2,0.2], [None,None], [None,None]]
+        #     ylims = [[-0.05, 0.002], [-0.04, 0.09], [-0.8, 0.7], [-0.2, 0.2], [None, None], [None, None]]
+        #     if i in [0,1,2,3]:
+        #         plt.ylim(ylims[i])
+        ylims = [[-0.046, 0.002], [-0.04, 0.11], [-1.0, 0.6], [-0.16, 0.21], [None, None], [None, None]]
+        plt.ylim(ylims[i])
         plt.tight_layout()
         plt.savefig(r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg')
         plt.close()
 
-    # Plotting legend
-    from matplotlib.legend_handler import HandlerTuple
-    if plot_other_bridges:
-        plt.figure(figsize=(2.5, 3), dpi=1000)
-        plt.axis("off")
-        plt.legend(handles[:-1]+[tuple(empty_ax)],labels, handler_map={tuple: HandlerTuple(ndivide=None)})
-    else:
-        plt.figure(figsize=(2, 3), dpi=1000)
-        plt.axis("off")
-        plt.legend(handles[:n_betas+1]+[tuple(empty_ax)],labels, handler_map={tuple: HandlerTuple(ndivide=None)})
-    plt.tight_layout()
-    plt.savefig(r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '_' + str(i) + '.jpg')
-    plt.close()
+        # Plotting legend
+        if i == 1:
+            from matplotlib.legend_handler import HandlerTuple
+            if plot_other_bridges:
+                plt.figure(figsize=(2.3, 3.2), dpi=1000)
+                plt.axis("off")
+                if plot_CFD:
+                    plt.legend([tuple(empty_ax_SOH)] + [tuple(empty_ax_CFD)] + handles[2:], labels, handler_map={tuple: HandlerTuple(ndivide=None)})
+                else:
+                    plt.legend([tuple(empty_ax_SOH)] + handles[1:], labels, handler_map={tuple: HandlerTuple(ndivide=None)})
+            else:
+                plt.figure(figsize=(2, 3), dpi=1000)
+                plt.axis("off")
+                plt.legend(handles, labels) #, handler_map={tuple: HandlerTuple(ndivide=None)})
+            plt.tight_layout()
+            plt.savefig(r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg')
+            plt.close()
 
 # plot_2D_at_beta_fixed(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
-# plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
-plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[1], plot_other_bridges=False, plot_CFD=True, plot_extra_lines=True)
+plot_2D_at_beta_fixed(method=      '2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
+plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)
