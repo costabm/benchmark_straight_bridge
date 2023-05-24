@@ -1796,7 +1796,7 @@ def parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
             results_df_all_g_nodes.loc[case_idx, col_list] = std_delta_local[i]
         # New 4 lines of code to include static loads (dead loads and/or static wind) in the results
         for i in range(0, 6):
-            results_df.at[case_idx, 'static_max_dof_'+str(i)] = np.max(static_delta_local[i])
+            results_df.at[case_idx, 'static_max_dof_'+str(i)] = np.max(np.abs(static_delta_local[i]))
             col_list = [f'g_node_{n}_static_dof_{i}' for n in range(n_g_nodes)]
             results_df_all_g_nodes.loc[case_idx, col_list] = static_delta_local[i]
 
@@ -2380,10 +2380,10 @@ def buffeting_TD_func(aero_coef_method, skew_approach, n_aero_coef, include_SE, 
     std_delta_local_mean = np.mean(std_delta_local_all_seeds, axis=0)
     std_delta_local_std = np.std(std_delta_local_all_seeds, axis=0)
 
-    return {'mean_delta_local_mean': mean_delta_local_mean,
-            'mean_delta_local_std': mean_delta_local_std,
-            'std_delta_local_mean': std_delta_local_mean,
-            'std_delta_local_std': std_delta_local_std,
+    return {'mean_delta_local_mean': mean_delta_local_mean,  # static response (mean of seeds)
+            'mean_delta_local_std': mean_delta_local_std,  # static response (std of seeds)
+            'std_delta_local_mean': std_delta_local_mean,  # buffeting response (mean of seed)
+            'std_delta_local_std': std_delta_local_std,  # buffeting response (std of seeds)
             'cospec_type':cospec_type,
             'damping_ratio':damping_ratio,
             'damping_Ti':damping_Ti,
@@ -2448,15 +2448,15 @@ def parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_sim
 
         for i in range(0,6):
             results_df.at[case_idx, 'std_max_dof_'+str(i)] = np.max(std_delta_local_mean[i])
-            results_df.at[case_idx, 'std_std_max_dof_'+str(i)] = np.max(std_delta_local_std[i])
+            results_df.at[case_idx, 'std_std_max_dof_'+str(i)] = std_delta_local_std[i][np.argmax(std_delta_local_mean[i])]  # Previously used: np.max(std_delta_local_std[i]). But now it returns the std at the node with max response.
             col_list = [        f'g_node_{n}_std_dof_{i}' for n in range(n_g_nodes)]
             col_list_std = [f'std_g_node_{n}_std_dof_{i}' for n in range(n_g_nodes)]
             results_df_all_g_nodes.loc[case_idx, col_list] = std_delta_local_mean[i]
             results_df_all_g_nodes.loc[case_idx, col_list_std] = std_delta_local_std[i]
         # New 4 lines of code to include the mean value of the loads in the results (equivalent to static loads)
         for i in range(0, 6):
-            results_df.at[case_idx, 'static_max_dof_'+str(i)] = np.max(mean_delta_local_mean[i])
-            results_df.at[case_idx, 'std_static_max_dof_' + str(i)] = np.max(mean_delta_local_std[i])
+            results_df.at[case_idx, 'static_max_dof_'+str(i)] = np.max(np.abs(mean_delta_local_mean[i]))
+            results_df.at[case_idx, 'std_static_max_dof_' + str(i)] = mean_delta_local_std[i][np.argmax(np.abs(mean_delta_local_mean[i]))]  # std from all seeds of the static respone at the node with absmax mean_delta_local_mean
             col_list = [        f'g_node_{n}_static_dof_{i}' for n in range(n_g_nodes)]
             col_list_std = [f'std_g_node_{n}_static_dof_{i}' for n in range(n_g_nodes)]
             results_df_all_g_nodes.loc[case_idx, col_list] = mean_delta_local_mean[i]
