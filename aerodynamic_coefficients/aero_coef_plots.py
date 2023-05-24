@@ -1,6 +1,8 @@
+import copy
+
 import pandas as pd
 import numpy as np
-from aero_coefficients import aero_coef, aero_coef_derivatives, rad, deg
+from aero_coefficients import aero_coef, aero_coef_derivatives, rad, deg, Cx_factor, Cy_factor
 import matplotlib.pyplot as plt
 import matplotlib
 import os
@@ -15,6 +17,8 @@ alphas_SOH = rad(df['alpha[deg]'].to_numpy()) # Alpha: rotation about the bridge
 betas_SOH = rad(df['beta[deg]'].to_numpy())
 thetas_SOH = rad(df['theta[deg]'].to_numpy())
 C_SOH_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
+# Adjusted Data
+C_SOH_adjusted_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'] * Cy_factor, df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
 
 #####################################################################################################################
 # Raw Data from CFD
@@ -24,6 +28,8 @@ df_CFD = pd.read_csv(path_df_CFD)  # raw original values
 betas_CFD = rad(df_CFD['beta[deg]'].to_numpy())
 thetas_CFD = rad(df_CFD['theta[deg]'].to_numpy())
 C_CFD_Ls = np.array([df_CFD['Cx_Ls'], df_CFD['Cy_Ls'], df_CFD['Cz_Ls'], df_CFD['Cxx_Ls'], df_CFD['Cyy_Ls'], df_CFD['Czz_Ls']])
+# Adjusted Data
+C_CFD_adjusted_Ls = np.array([df_CFD['Cx_Ls'] * Cx_factor, df_CFD['Cy_Ls'] * Cy_factor, df_CFD['Cz_Ls'], df_CFD['Cxx_Ls'], df_CFD['Cyy_Ls'], df_CFD['Czz_Ls']])
 
 
 #####################################################################################################################
@@ -169,10 +175,17 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
             title_str = [r'$C_{x}^{SOH}$', r'$C_{y}^{SOH}$', r'$C_{z}^{SOH}$', r'$C_{rx}^{SOH}$', r'$C_{ry}^{SOH}$', r'$C_{rz}^{SOH}$'][i]
         elif method == '2D_fit_cons_w_CFD':
             title_str = [r'$C_{x}^{SOH&CFD}$', r'$C_{y}^{SOH&CFD}$', r'$C_{z}^{SOH&CFD}$', r'$C_{rx}^{SOH&CFD}$', r'$C_{ry}^{SOH&CFD}$', r'$C_{rz}^{SOH&CFD}$'][i]
+        elif method == '2D_fit_cons_w_CFD_adjusted':
+            title_str = [r'$C_{x}^{SOH&CFD&Jul.}$', r'$C_{y}^{SOH&CFD&Jul.}$', r'$C_{z}^{SOH&CFD&Jul.}$', r'$C_{rx}^{SOH&CFD&Jul.}$', r'$C_{ry}^{SOH&CFD&Jul.}$', r'$C_{rz}^{SOH&CFD&Jul.}$'][i]
+
 
         # Finding the coefficient of determination R_squared
-        SSres = sum((C_SOH_Ls[i] - C_Ci_fit_at_SOH[i])**2)
-        SStot = sum((C_SOH_Ls[i] - np.mean(C_SOH_Ls[i])*np.ones(C_SOH_Ls[i].shape))**2)
+        if method == '2D_fit_cons_w_CFD_adjusted':
+            SSres = sum((C_SOH_adjusted_Ls[i] - C_Ci_fit_at_SOH[i]) ** 2)
+            SStot = sum((C_SOH_adjusted_Ls[i] - np.mean(C_SOH_adjusted_Ls[i]) * np.ones(C_SOH_adjusted_Ls[i].shape)) ** 2)
+        else:
+            SSres = sum((C_SOH_Ls[i] - C_Ci_fit_at_SOH[i])**2)
+            SStot = sum((C_SOH_Ls[i] - np.mean(C_SOH_Ls[i])*np.ones(C_SOH_Ls[i].shape))**2)
         r_squared = 1 - SSres / SStot
         # Plotting:
         plt.figure(figsize=(5, 4), dpi=400)
@@ -193,9 +206,14 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         plt.colorbar(matplotlib.cm.ScalarMappable(norm=cmap_norm, cmap=cmap), ax=ax, alpha=1)
         plt.clim(vmin=0, vmax=0)
         markersize = 60
-        ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_SOH_Ls[i]), label='Measurements', edgecolors='black')
+        if method == '2D_fit_cons_w_CFD_adjusted':
+            ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_SOH_adjusted_Ls[i]), label='Measurements', edgecolors='black')
+        else:
+            ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(         C_SOH_Ls[i]), label='Measurements', edgecolors='black')
         if method == '2D_fit_cons_w_CFD':
             ax.scatter(betas_CFD * 180 / np.pi, thetas_CFD * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_CFD_Ls[i]), label='Measurements', edgecolors='black')
+        elif method == '2D_fit_cons_w_CFD_adjusted':
+            ax.scatter(betas_CFD * 180 / np.pi, thetas_CFD * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_CFD_adjusted_Ls[i]), label='Measurements', edgecolors='black')
         ax.set_xlabel(r'$\beta\/[\degree]$')
         ax.set_ylabel(r'$\theta\/[\degree]$')
         handles, labels = ax.get_legend_handles_labels()
@@ -208,8 +226,9 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         plt.savefig(r'aerodynamic_coefficients/plots/3D_'+method+'_'+str(i)+'.jpg')
         plt.close()
 # colormap_2var_cons_fit_zoomin(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
-colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
-colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5])
+colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_adjusted', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D', idx_to_plot=[1,2,3])
 # colormap_2var_cons_fit_zoomin(method='cos_rule', idx_to_plot=[1,2,3])
@@ -317,6 +336,8 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             title_str = [r'$C_{x}^{SOH}$', r'$C_{y}^{SOH}$', r'$C_{z}^{SOH}$', r'$C_{rx}^{SOH}$', r'$C_{ry}^{SOH}$', r'$C_{rz}^{SOH}$'][i]
         elif method == '2D_fit_cons_w_CFD':
             title_str = [r'$C_{x}^{SOH&CFD}$', r'$C_{y}^{SOH&CFD}$', r'$C_{z}^{SOH&CFD}$', r'$C_{rx}^{SOH&CFD}$', r'$C_{ry}^{SOH&CFD}$', r'$C_{rz}^{SOH&CFD}$'][i]
+        elif method == '2D_fit_cons_w_CFD_adjusted':
+            title_str = [r'$C_{x}^{SOH&CFD&Jul.}$', r'$C_{y}^{SOH&CFD&Jul.}$', r'$C_{z}^{SOH&CFD&Jul.}$', r'$C_{rx}^{SOH&CFD&Jul.}$', r'$C_{ry}^{SOH&CFD&Jul.}$', r'$C_{rz}^{SOH&CFD&Jul.}$'][i]
 
         # Plotting:
         plt.figure(figsize=(5, 4), dpi=300)
@@ -334,12 +355,18 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             # markevery = [0] # Alternative: markevery = len(thetas)-1  # could be the same as [0,-1] ? This is to use the marker as a visual aid as in my PhD
             # Line plots
             plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], color=color_list[b_i], label=r'$\beta=$'+str(int(round(deg(beta),0)))+'$\degree$', alpha=0.8)  # , marker=marker_str_SOH[b_i],markevery=markevery, markersize=markersize_plt[b_i]*4, fillstyle='none')
-            measured_SOH_label = 'Measured (SOH)' if b_i == 1 else ''
-            measured_CFD_label = 'Measured (CFD)' if b_i == 1 else ''
+            measured_SOH_label = 'Measured' if b_i == 1 else ''
+            measured_CFD_label = 'CFD' if b_i == 1 else ''
             # Scatter points
-            empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(), C_SOH_Ls[i,np.where(np.isclose(betas_SOH,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
+            if method == '2D_fit_cons_w_CFD_adjusted':
+                empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(), C_SOH_adjusted_Ls[i,np.where(np.isclose(betas_SOH,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
+            else:
+                empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(),          C_SOH_Ls[i,np.where(np.isclose(betas_SOH,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
             if plot_CFD:  # then the unfilled scatter markers shall represent CFD results, instead of being just a visual aid
-                empty_ax_CFD[b_i] = plt.scatter(deg(thetas_CFD[np.where(np.isclose(betas_CFD,beta, atol=rad(2)))]).tolist(), C_CFD_Ls[i,np.where(np.isclose(betas_CFD,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_CFD_label, facecolor='none', marker=marker_list[b_i], s=markersize_list[b_i], edgecolors=color_list[b_i])
+                if method == '2D_fit_cons_w_CFD_adjusted':
+                    empty_ax_CFD[b_i] = plt.scatter(deg(thetas_CFD[np.where(np.isclose(betas_CFD,beta, atol=rad(2)))]).tolist(), C_CFD_adjusted_Ls[i,np.where(np.isclose(betas_CFD,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_CFD_label, facecolor='none', marker=marker_list[b_i], s=markersize_list[b_i], edgecolors=color_list[b_i])
+                else:
+                    empty_ax_CFD[b_i] = plt.scatter(deg(thetas_CFD[np.where(np.isclose(betas_CFD,beta, atol=rad(2)))]).tolist(),          C_CFD_Ls[i,np.where(np.isclose(betas_CFD,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_CFD_label, facecolor='none', marker=marker_list[b_i], s=markersize_list[b_i], edgecolors=color_list[b_i])
         ax.set_xlabel(r'$\theta\/[\degree]$')
         y_label_str = [r'$C_{x}$', r'$C_{y}$', r'$C_{z}$', r'$C_{rx}$', r'$C_{ry}$', r'$C_{rz}$'][i]
         ax.set_ylabel(y_label_str)
@@ -398,8 +425,9 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             plt.close()
 
 # plot_2D_at_beta_fixed(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
-plot_2D_at_beta_fixed(method=      '2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
-plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
+# plot_2D_at_beta_fixed(method=      '2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
+# plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
+plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_adjusted', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)

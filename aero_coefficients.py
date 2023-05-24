@@ -33,6 +33,10 @@ from aerodynamic_coefficients.polynomial_fit import cons_poly_fit
 from transformations import T_LnwLs_func, theta_yz_bar_func, T_LsGw_func
 import copy
 
+# Factor for when using aero_coef_method == '2D_fit_cons_w_CFD_adjusted':
+Cx_factor = 2.0  # To make CFD results conservative, better match SOH and reflect friction and other bridge equipment
+Cy_factor = 1.0  # MAKE SURE IF THIS HAS ALREADY BEEN DONE IN THE CSV FILE "aero_coef_experimental_data.csv"   # 4.0 / 3.5  # H has increased from 3.5 to 4.0 in Phase 7 of the BJF project, but since Cy is normalized by B, this is overlooked...
+
 def rad(deg):
     return deg * np.pi / 180
 
@@ -45,7 +49,7 @@ def from_SOH_to_Zhu_angles(betas_uncorrected, alphas):
     thetas = -np.arcsin(np.cos(betas_uncorrected) * np.sin(alphas))  # [Rad]. thetas as in L.D.Zhu definition. See the "Angles of the skewed wind" document in the _basis folder for explanation.
     return betas, thetas
 
-def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degree_list=[3,4,4,4,4,4], constr_fit_2_degree_list=[3,4,4,4,4,4], free_fit_degree_list=[2,2,1,1,3,4]):
+def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degree_list=[3,4,4,4,4,4], constr_fit_2_degree_list=[3,4,4,4,4,4], free_fit_degree_list=[2,2,1,1,3,4], constr_fit_adjusted_degree_list=[3,5,5,5,4,4]):  # constr_fit_adjusted_degree_list=[3,6,6,5,4,4]
     """
     betas: 1D-array
     thetas: 1D-array (same size as betas)
@@ -97,17 +101,25 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     Cyy_Ls = df['Cyy_Ls'].to_numpy()
     Czz_Ls = df['Czz_Ls'].to_numpy()
 
-    if method == '2D_fit_cons_w_CFD':
+    if method in ['2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted']:
         # Import and append the results from NablaFlow 3D CFD
         df_CFD = pd.read_csv(project_path + r'\\aerodynamic_coefficients\\aero_coef_CFD_data.csv')  # raw original values
         betas_SOH = np.append(betas_SOH, rad(df_CFD['beta[deg]'].to_numpy()))
         thetas_SOH = np.append(thetas_SOH, rad(df_CFD['theta[deg]'].to_numpy()))
-        Cx_Ls = np.append(Cx_Ls, df_CFD['Cx_Ls'].to_numpy())
-        Cy_Ls = np.append(Cy_Ls, df_CFD['Cy_Ls'].to_numpy())
+        if method == '2D_fit_cons_w_CFD':
+            Cx_Ls = np.append(Cx_Ls, df_CFD['Cx_Ls'].to_numpy())
+            Cy_Ls = np.append(Cy_Ls, df_CFD['Cy_Ls'].to_numpy())
+        elif method == '2D_fit_cons_w_CFD_adjusted':
+            Cx_Ls = np.append(Cx_Ls, Cx_factor * df_CFD['Cx_Ls'].to_numpy())  # only CFD results are upscaled
+            Cy_Ls = Cy_factor * np.append(Cy_Ls, df_CFD['Cy_Ls'].to_numpy())  # both SOH and CFD results are upscaled
         Cz_Ls = np.append(Cz_Ls, df_CFD['Cz_Ls'].to_numpy())
         Cxx_Ls = np.append(Cxx_Ls, df_CFD['Cxx_Ls'].to_numpy())
         Cyy_Ls = np.append(Cyy_Ls, df_CFD['Cyy_Ls'].to_numpy())
         Czz_Ls = np.append(Czz_Ls, df_CFD['Czz_Ls'].to_numpy())
+
+    if method == '2D_fit_cons_w_CFD_adjusted':
+        # Adjusting polynomial degrees to better resemble Julsundet results at beta=0 and to increase derivative of Cz and Crx
+        constr_fit_degree_list = copy.deepcopy(constr_fit_adjusted_degree_list)
 
     # Converting all [-180,180] angles into equivalent [0,90] angles. The sign information outside [0,90] is lost and stored manually for each coefficient. Assumes symmetric cross-section.
     Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = np.zeros((6, size))
@@ -421,7 +433,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     if coor_system == 'Ls':
         if method == '2D_fit_free':
             return C_Ci_Ls_2D_fit_free
-        elif method in ['2D_fit_cons', '2D_fit_cons_2', '2D_fit_cons_w_CFD']:
+        elif method in ['2D_fit_cons', '2D_fit_cons_2', '2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted']:
             return C_Ci_Ls_2D_fit_cons
         elif method in ['cos_rule','2D']:
             return C_Ci_Ls_cos

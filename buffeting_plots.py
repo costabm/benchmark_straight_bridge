@@ -110,7 +110,7 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
     print('Cases available to plot: \n', list_of_cases_df)
     idx_cases_to_plot = eval(input('''Enter list of index numbers from '1st_result_index' to plot:'''))  # choose the index numbers to plot in 1 plot, from '1st result_index' column
     list_of_cases_to_plot_df = list_of_cases_df.loc[list_of_cases_df['1st_result_index'].isin(idx_cases_to_plot)]
-    list_of_cases_to_plot_df = list_of_cases_to_plot_df.assign(Method=list_of_cases_to_plot_df['Method'].replace(['2D_fit_free', '2D_fit_cons', '2D_fit_cons_w_CFD','2D_fit_cons_2', 'cos_rule', '2D'], ['Free fit', 'SOH', 'SOH+CFD', '2-var. constr. fit (2)', 'Cosine rule', '2D']))
+    list_of_cases_to_plot_df = list_of_cases_to_plot_df.assign(Method=list_of_cases_to_plot_df['Method'].replace(['2D_fit_free', '2D_fit_cons', '2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted', '2D_fit_cons_2', 'cos_rule', '2D'], ['Free fit', 'SOH', 'SOH+CFD', 'SOH+CFD+Jul.','2-var. constr. fit (2)', 'Cosine rule', '2D']))
     list_of_cases_to_plot_df = list_of_cases_to_plot_df.assign(FD_type=list_of_cases_to_plot_df['FD_type'].replace(['3D_Zhu', '3D_Scanlan','3D_full'], ['(QS) Zhu', '(QS) Scanlan', '(QS) full']))
     ####################################################################################################################
     # PLOTTING

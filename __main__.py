@@ -410,10 +410,10 @@ include_KG_cases = [True]  # include the effects of geometric stiffness (both in
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
-aero_coef_method_cases = ['2D_fit_cons', '2D_fit_cons_w_CFD']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
+aero_coef_method_cases = ['2D_fit_cons_w_CFD_adjusted']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [4]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
+n_freq_cases = [1024]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
 f_min_cases = [0.002]  # Hz. Use 0.002
 f_max_cases = [10]  # Hz. Use 0.5! important to not overstretch this parameter
 f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins', 'logspace_base_n' where n is the base of the log
@@ -441,7 +441,7 @@ list_of_cases = list_of_cases_FD_func(n_aero_coef_cases, include_SE_cases, aero_
 # pr = cProfile.Profile()
 # pr.enable()
 # Writing results
-# parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
+parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
 # pr.disable()
 # pr.print_stats(sort='cumtime')
 
@@ -504,7 +504,7 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
                                       beta_DB_cases)
 
 # Writing results
-parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
+# parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 # # Plotting
 # import buffeting_plots
 # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
