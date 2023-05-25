@@ -26,7 +26,7 @@ author: Bernardo Costa
 email: bernamdc@gmail.com
 """
 
-import sys
+import os
 import numpy as np
 import pandas as pd
 from aerodynamic_coefficients.polynomial_fit import cons_poly_fit
@@ -49,7 +49,26 @@ def from_SOH_to_Zhu_angles(betas_uncorrected, alphas):
     thetas = -np.arcsin(np.cos(betas_uncorrected) * np.sin(alphas))  # [Rad]. thetas as in L.D.Zhu definition. See the "Angles of the skewed wind" document in the _basis folder for explanation.
     return betas, thetas
 
-def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degree_list=[3,4,4,4,4,4], constr_fit_2_degree_list=[3,4,4,4,4,4], free_fit_degree_list=[2,2,1,1,3,4], constr_fit_adjusted_degree_list=[3,5,5,5,4,4]):  # constr_fit_adjusted_degree_list=[3,6,6,5,4,4]
+def df_aero_coef_measurement_data(method):
+    """
+    Creates a dataframe compiling the necessary aerodynamic coefficients from wind tunnel tests (SOH or e.g. Julsund) and CFD results.
+    These can be later used as input for polynomial fits of this data
+    """
+
+    df_SOH = pd.read_csv(os.path.join(os.getcwd(), 'aerodynamic_coefficients', 'aero_coef_experimental_data.csv'))  # raw original values
+    df = df_SOH[['test_case_name', 'beta[deg]', 'theta[deg]', 'Cx_Ls', 'Cy_Ls', 'Cz_Ls', 'Cxx_Ls', 'Cyy_Ls', 'Czz_Ls']]  # keeping only relevant columns
+
+    if method in ['2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted', '2D_fit_cons_w_CFD_upscaled']:
+        # Import and append the results from NablaFlow 3D CFD
+        df_CFD = pd.read_csv(os.path.join(os.getcwd(), 'aerodynamic_coefficients', 'aero_coef_CFD_data.csv'))  # raw original values
+        df = pd.concat([df, df_CFD])
+    if method in ['2D_fit_cons_w_CFD_upscaled']:
+        df_Jul = pd.read_csv(os.path.join(os.getcwd(), 'aerodynamic_coefficients', 'aero_coef_Julsundet_data.csv'))  # raw original values
+        df = pd.concat([df, df_Jul])
+
+    return df
+
+def aero_coef(betas_extrap, thetas_extrap, method, coor_system, degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_upscaled':[3,4,4,4,4,4]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]
     """
     betas: 1D-array
     thetas: 1D-array (same size as betas)
@@ -77,23 +96,11 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     if len(np.shape(betas_extrap)) != 1 or len(np.shape(thetas_extrap)) != 1:
         raise TypeError('Input should be 1D array')
 
-    size = len(betas_extrap)
-    try:  # works only when "Run"
-        import os
-        project_path = os.path.dirname(os.path.abspath(__file__))
-    except:  # works when running directly in console
-        project_path = sys.path[1]  # Path of the project directory. To be used in the Python Console! When a console is opened in Pycharm, the current project path should be automatically added to sys.path.
+    # Importing input data
+    df = df_aero_coef_measurement_data(method)
 
-
-    # Importing input file
-    df = pd.read_csv(
-        project_path + r'\\aerodynamic_coefficients\\aero_coef_experimental_data.csv')  # raw original values
-
-    # Importing the angles
     betas_SOH = rad(df['beta[deg]'].to_numpy())
     thetas_SOH = rad(df['theta[deg]'].to_numpy())
-    alphas_SOH = rad(df['alpha[deg]'].to_numpy())  # torsional rotation of the bridge girder (different from thetas)
-
     Cx_Ls = df['Cx_Ls'].to_numpy()
     Cy_Ls = df['Cy_Ls'].to_numpy()
     Cz_Ls = df['Cz_Ls'].to_numpy()
@@ -101,27 +108,8 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
     Cyy_Ls = df['Cyy_Ls'].to_numpy()
     Czz_Ls = df['Czz_Ls'].to_numpy()
 
-    if method in ['2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted']:
-        # Import and append the results from NablaFlow 3D CFD
-        df_CFD = pd.read_csv(project_path + r'\\aerodynamic_coefficients\\aero_coef_CFD_data.csv')  # raw original values
-        betas_SOH = np.append(betas_SOH, rad(df_CFD['beta[deg]'].to_numpy()))
-        thetas_SOH = np.append(thetas_SOH, rad(df_CFD['theta[deg]'].to_numpy()))
-        if method == '2D_fit_cons_w_CFD':
-            Cx_Ls = np.append(Cx_Ls, df_CFD['Cx_Ls'].to_numpy())
-            Cy_Ls = np.append(Cy_Ls, df_CFD['Cy_Ls'].to_numpy())
-        elif method == '2D_fit_cons_w_CFD_adjusted':
-            Cx_Ls = np.append(Cx_Ls, Cx_factor * df_CFD['Cx_Ls'].to_numpy())  # only CFD results are upscaled
-            Cy_Ls = Cy_factor * np.append(Cy_Ls, df_CFD['Cy_Ls'].to_numpy())  # both SOH and CFD results are upscaled
-        Cz_Ls = np.append(Cz_Ls, df_CFD['Cz_Ls'].to_numpy())
-        Cxx_Ls = np.append(Cxx_Ls, df_CFD['Cxx_Ls'].to_numpy())
-        Cyy_Ls = np.append(Cyy_Ls, df_CFD['Cyy_Ls'].to_numpy())
-        Czz_Ls = np.append(Czz_Ls, df_CFD['Czz_Ls'].to_numpy())
-
-    if method == '2D_fit_cons_w_CFD_adjusted':
-        # Adjusting polynomial degrees to better resemble Julsundet results at beta=0 and to increase derivative of Cz and Crx
-        constr_fit_degree_list = copy.deepcopy(constr_fit_adjusted_degree_list)
-
     # Converting all [-180,180] angles into equivalent [0,90] angles. The sign information outside [0,90] is lost and stored manually for each coefficient. Assumes symmetric cross-section.
+    size = len(betas_extrap)
     Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = np.zeros((6, size))
     # Signs for axes in Ls.
     for b in range(size):
@@ -184,17 +172,17 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
 
     # 2D polynomial fitting. Note: wrong signs if outside [0,90]
     if method == '2D_fit_free' or method == 'hybrid':
-        Cx_Ls_2D_fit_free = cons_poly_fit(data_in_Cx_Ls, data_coor_out, data_bounds, degree=free_fit_degree_list[0], ineq_constraint=False,
+        Cx_Ls_2D_fit_free = cons_poly_fit(data_in_Cx_Ls, data_coor_out, data_bounds, degree=degree_list['2D_fit_free'][0], ineq_constraint=False,
                                           other_constraint=False, degree_type='max')[1] * Cx_sign
-        Cy_Ls_2D_fit_free = cons_poly_fit(data_in_Cy_Ls, data_coor_out, data_bounds, degree=free_fit_degree_list[1], ineq_constraint=False,
+        Cy_Ls_2D_fit_free = cons_poly_fit(data_in_Cy_Ls, data_coor_out, data_bounds, degree=degree_list['2D_fit_free'][1], ineq_constraint=False,
                                           other_constraint=False, degree_type='max')[1] * Cy_sign
-        Cz_Ls_2D_fit_free = cons_poly_fit(data_in_Cz_Ls, data_coor_out, data_bounds, degree=free_fit_degree_list[2], ineq_constraint=False,
+        Cz_Ls_2D_fit_free = cons_poly_fit(data_in_Cz_Ls, data_coor_out, data_bounds, degree=degree_list['2D_fit_free'][2], ineq_constraint=False,
                                           other_constraint=False, degree_type='max')[1] * Cz_sign
-        Cxx_Ls_2D_fit_free = cons_poly_fit(data_in_Cxx_Ls, data_coor_out, data_bounds, degree=free_fit_degree_list[3], ineq_constraint=False,
+        Cxx_Ls_2D_fit_free = cons_poly_fit(data_in_Cxx_Ls, data_coor_out, data_bounds, degree=degree_list['2D_fit_free'][3], ineq_constraint=False,
                                            other_constraint=False, degree_type='max')[1] * Cxx_sign
-        Cyy_Ls_2D_fit_free = cons_poly_fit(data_in_Cyy_Ls, data_coor_out, data_bounds, degree=free_fit_degree_list[4], ineq_constraint=False,
+        Cyy_Ls_2D_fit_free = cons_poly_fit(data_in_Cyy_Ls, data_coor_out, data_bounds, degree=degree_list['2D_fit_free'][4], ineq_constraint=False,
                                            other_constraint=False, degree_type='max')[1] * Cyy_sign
-        Czz_Ls_2D_fit_free = cons_poly_fit(data_in_Czz_Ls, data_coor_out, data_bounds, degree=free_fit_degree_list[5], ineq_constraint=False,
+        Czz_Ls_2D_fit_free = cons_poly_fit(data_in_Czz_Ls, data_coor_out, data_bounds, degree=degree_list['2D_fit_free'][5], ineq_constraint=False,
                                            other_constraint=False, degree_type='max')[1] * Czz_sign
         C_Ci_Ls_2D_fit_free = np.array(
             [Cx_Ls_2D_fit_free, Cy_Ls_2D_fit_free, Cz_Ls_2D_fit_free, Cxx_Ls_2D_fit_free, Cyy_Ls_2D_fit_free,
@@ -211,13 +199,13 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
             Cx_Ls_2D_fit_beta_0_theta_all = np.zeros(size)
             # Cx_Ls_2D_fit_beta_0_theta_all = cons_poly_fit( data_in_Cx_Ls , data_coor_out_beta_0_theta_all, data_bounds, degree=2, ineq_constraint=False, other_constraint=False, degree_type='total')[1] * Cx_sign
             Cy_Ls_2D_fit_beta_0_theta_all = \
-            cons_poly_fit(data_in_Cy_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=free_fit_degree_list[1], ineq_constraint=False,
+            cons_poly_fit(data_in_Cy_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=degree_list['2D_fit_free'][1], ineq_constraint=False,
                           other_constraint=False, degree_type='total')[1] * Cy_sign
             Cz_Ls_2D_fit_beta_0_theta_all = \
-            cons_poly_fit(data_in_Cz_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=free_fit_degree_list[2], ineq_constraint=False,
+            cons_poly_fit(data_in_Cz_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=degree_list['2D_fit_free'][2], ineq_constraint=False,
                           other_constraint=False, degree_type='total')[1] * Cz_sign
             Cxx_Ls_2D_fit_beta_0_theta_all = \
-            cons_poly_fit(data_in_Cxx_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=free_fit_degree_list[3], ineq_constraint=False,
+            cons_poly_fit(data_in_Cxx_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=degree_list['2D_fit_free'][3], ineq_constraint=False,
                           other_constraint=False, degree_type='total')[1] * Cxx_sign
             Cyy_Ls_2D_fit_beta_0_theta_all = np.zeros(size)
             Czz_Ls_2D_fit_beta_0_theta_all = np.zeros(size)
@@ -230,13 +218,13 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
             Cx_Ls_2D_fit_beta_0_theta_all = np.zeros(size)
             # Cx_Ls_2D_fit_beta_0_theta_all = cons_poly_fit( data_in_Cx_Ls , data_coor_out_beta_0_theta_all, data_bounds, degree=2, ineq_constraint=False, other_constraint=False, degree_type='total')[1] * Cx_sign
             Cy_Ls_2D_fit_beta_0_theta_all = \
-            cons_poly_fit(data_in_Cy_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=free_fit_degree_list[1], ineq_constraint=False,
+            cons_poly_fit(data_in_Cy_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=degree_list['2D_fit_free'][1], ineq_constraint=False,
                           other_constraint=False, degree_type='total')[1] * Cy_sign
             Cz_Ls_2D_fit_beta_0_theta_all = \
-            cons_poly_fit(data_in_Cz_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=free_fit_degree_list[2], ineq_constraint=False,
+            cons_poly_fit(data_in_Cz_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=degree_list['2D_fit_free'][2], ineq_constraint=False,
                           other_constraint=False, degree_type='total')[1] * Cz_sign
             Cxx_Ls_2D_fit_beta_0_theta_all = \
-            cons_poly_fit(data_in_Cxx_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=free_fit_degree_list[3], ineq_constraint=False,
+            cons_poly_fit(data_in_Cxx_Ls[:,:5], data_coor_out_beta_0_theta_all, data_bounds, degree=degree_list['2D_fit_free'][3], ineq_constraint=False,
                           other_constraint=False, degree_type='total')[1] * Cxx_sign
             Cyy_Ls_2D_fit_beta_0_theta_all = np.zeros(size)
             Czz_Ls_2D_fit_beta_0_theta_all = np.zeros(size)
@@ -286,22 +274,22 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, constr_fit_degre
         ineq_constraint_Czz = False  # False or 'positivity' or 'negativity'
         other_constraint_Czz = ['F_is_0_at_x0_start', 'F_is_0_at_x0_end', 'F_is_0_at_x1_start', 'F_is_0_at_x1_end']
         Cx_Ls_2D_fit_cons = \
-        cons_poly_fit(data_in_Cx_Ls, data_coor_out, data_bounds, constr_fit_degree_list[0], ineq_constraint_Cx, other_constraint_Cx,
+        cons_poly_fit(data_in_Cx_Ls, data_coor_out, data_bounds, degree_list[method][0], ineq_constraint_Cx, other_constraint_Cx,
                       degree_type='max')[1] * Cx_sign
         Cy_Ls_2D_fit_cons = \
-        cons_poly_fit(data_in_Cy_Ls, data_coor_out, data_bounds, constr_fit_degree_list[1], ineq_constraint_Cy, other_constraint_Cy,
+        cons_poly_fit(data_in_Cy_Ls, data_coor_out, data_bounds, degree_list[method][1], ineq_constraint_Cy, other_constraint_Cy,
                       degree_type='max')[1] * Cy_sign  #,, minimize_method='trust-constr', init_guess=[3.71264795e-22, -8.86505000e+00, 4.57056472e+01, -7.39911989e+01, 3.71506016e+01, -6.12248467e-22, -8.75830974e+00,  5.74817737e+01, -1.10425715e+02, 6.17022514e+01, -1.09522498e-21, -2.46382690e+01, 7.14658962e+01, -4.41460857e+01, -2.68154157e+00,  0.00000000e+00, 4.21168758e+01, -1.42475723e+02,  1.30059436e+02, -2.97005883e+01, 0.00000000e+00,  1.44752923e-01, -3.21775938e+01,  9.85035640e+01, -6.64707231e+01])[1] * Cy_sign  # minimize_method='trust-constr'
         Cz_Ls_2D_fit_cons = \
-        cons_poly_fit(data_in_Cz_Ls, data_coor_out, data_bounds, constr_fit_degree_list[2], ineq_constraint_Cz, other_constraint_Cz,
+        cons_poly_fit(data_in_Cz_Ls, data_coor_out, data_bounds, degree_list[method][2], ineq_constraint_Cz, other_constraint_Cz,
                       degree_type='max', minimize_method='SLSQP')[1] * Cz_sign
         Cxx_Ls_2D_fit_cons = \
-        cons_poly_fit(data_in_Cxx_Ls, data_coor_out, data_bounds, constr_fit_degree_list[3], ineq_constraint_Cxx, other_constraint_Cxx,
+        cons_poly_fit(data_in_Cxx_Ls, data_coor_out, data_bounds, degree_list[method][3], ineq_constraint_Cxx, other_constraint_Cxx,
                       degree_type='max')[1] * Cxx_sign
         Cyy_Ls_2D_fit_cons = \
-        cons_poly_fit(data_in_Cyy_Ls, data_coor_out, data_bounds, constr_fit_degree_list[4], ineq_constraint_Cyy, other_constraint_Cyy,
+        cons_poly_fit(data_in_Cyy_Ls, data_coor_out, data_bounds, degree_list[method][4], ineq_constraint_Cyy, other_constraint_Cyy,
                       degree_type='max')[1] * Cyy_sign
         Czz_Ls_2D_fit_cons = \
-        cons_poly_fit(data_in_Czz_Ls, data_coor_out, data_bounds, constr_fit_degree_list[5], ineq_constraint_Czz, other_constraint_Czz,
+        cons_poly_fit(data_in_Czz_Ls, data_coor_out, data_bounds, degree_list[method][5], ineq_constraint_Czz, other_constraint_Czz,
                       degree_type='max')[1] * Czz_sign
         C_Ci_Ls_2D_fit_cons = np.array([Cx_Ls_2D_fit_cons, Cy_Ls_2D_fit_cons, Cz_Ls_2D_fit_cons, Cxx_Ls_2D_fit_cons, Cyy_Ls_2D_fit_cons,Czz_Ls_2D_fit_cons])
 

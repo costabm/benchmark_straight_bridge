@@ -1,4 +1,0 @@
-I removed the 5 datapoints from SOH at beta=0 from aero_coef_experimental_data, and, instead, included 21 new datapoints at beta=0 from the Julsundet bridge!!
-In the same document I scaled Cy by 4/3.5 but ONLY for the SOH values, not Julsund ones.
-
-I removed the two datapoints from CFD at beta=0 from the aero_coef_CFD_data which coincided with Julsund data
