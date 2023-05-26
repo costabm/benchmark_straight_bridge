@@ -410,7 +410,7 @@ include_KG_cases = [True]  # include the effects of geometric stiffness (both in
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
-aero_coef_method_cases = ['2D_fit_cons', '2D_fit_cons_w_CFD_adjusted', '2D_fit_cons_w_CFD_upscaled']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
+aero_coef_method_cases = ['2D_fit_cons', '2D_fit_cons_scale_to_Jul', '2D_fit_cons_w_CFD_scale_to_Jul']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D', or "benchmark", or "table"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
 n_freq_cases = [1024]  # Use 256 with 'equal_energy_bins' or 1024*16 otherwise
@@ -441,7 +441,7 @@ list_of_cases = list_of_cases_FD_func(n_aero_coef_cases, include_SE_cases, aero_
 # pr = cProfile.Profile()
 # pr.enable()
 # Writing results
-parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
+# parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, R_loc, D_loc, include_modal_coupling, include_SE_in_modal)
 # pr.disable()
 # pr.print_stats(sort='cumtime')
 
@@ -481,11 +481,11 @@ include_sw_cases = [True]  # include static wind effects or not (initial angle o
 include_KG_cases = [True]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [6]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz)
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
-aero_coef_method_cases = ['2D_fit_cons']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
+aero_coef_method_cases = ['2D_fit_cons', '2D_fit_cons_scale_to_Jul', '2D_fit_cons_w_CFD_scale_to_Jul']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', 'cos_rule', '2D'
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law' # I had written "not working for aero_coef 'NL'", but it seems to be working well now right??
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan_confirm', '3D_Zhu', '3D_Zhu_bad_P5'
 aero_coef_linearity_cases = ['NL']  # 'L': Taylor formula. 'NL': aero_coeff from instantaneous beta and theta
-SE_linearity_cases = ['L', 'NL']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
+SE_linearity_cases = ['L']  # 'L': Constant Fb in Newmark, SE (if included!) taken as linear Kse and Cse (KG is not updated) 'NL': Fb is updated each time step, no Kse nor Cse (KG is updated each dt).
 geometric_linearity_cases = ['L']  # 'L': Constant M,K in Newmark. 'NL': M,K are updated each time step from deformed node coordinates.
 # where_to_get_wind_cases = [r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0_dt_0p05s\windspeed.npy']  # 'in-house' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\AMC_wind_time_series\wind_fine_direction=0.h5' or r'C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\wind_field\data\beta_0\windspeed.npy'
 where_to_get_wind_cases = ['in-house']
@@ -494,8 +494,9 @@ n_seeds_cases = [3]
 # dt_cases = [0.2002]  # Not all values possible! wind_overlap_size must be even!
 dt_cases = [0.05]
 # beta_0_cases = np.array([rad(0)])
-beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
-beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
+# beta_0_cases = np.array([rad(-100), rad(-40), rad(0), rad(60), rad(160)])
+# beta_DB_cases = np.array([beta_DB_func_2(b) for b in beta_0_cases])  # np.arange(rad(100), rad(359), rad(1000))  # wind (from) directions. Interval: [rad(0), rad(360)]
+beta_DB_cases = np.arange(rad(0), rad(359), rad(10))
 
 list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases, include_SE_cases,
                                       flutter_derivatives_type_cases, n_nodes_cases, include_sw_cases, include_KG_cases,
@@ -504,7 +505,7 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
                                       beta_DB_cases)
 
 # Writing results
-# parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
+parametric_buffeting_TD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplified, wind_block_T, wind_overlap_T, wind_T, transient_T, ramp_T, R_loc, D_loc, plots=False, save_txt=False)
 # # Plotting
 # import buffeting_plots
 # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])

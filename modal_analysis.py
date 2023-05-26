@@ -26,8 +26,12 @@ def modal_analysis_func(M, K):
     shape_0 = np.array([i/np.max(np.abs(i)) for i in np.transpose(vectors)])  # mode shapes. Normalizing the vectors.
 
     # Sorting the omegas and shapes
-    shapes = np.array([s for w, s in sorted(zip(omega_0, shape_0))])  # shape: (n_modes, n_nodes)
-    omegas = np.array([w for w, s in sorted(zip(omega_0, shape_0))])
+    omega_idxs = omega_0.argsort()
+    omegas = omega_0[omega_idxs]
+    shapes = shape_0[omega_idxs]
+    # # Old version produced some rare errors when two omegas were exactly equal:
+    # shapes = np.array([s for w, s in sorted(zip(omega_0, shape_0))])  # shape: (n_modes, n_nodes)
+    # omegas = np.array([w for w, s in sorted(zip(omega_0, shape_0))])
 
     # Generalized Mass and Stiffness for each mode.
     M_tilde = shapes @ M @ np.transpose(shapes)

@@ -338,6 +338,11 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             title_str = [r'$C_{x}^{SOH&CFD}$', r'$C_{y}^{SOH&CFD}$', r'$C_{z}^{SOH&CFD}$', r'$C_{rx}^{SOH&CFD}$', r'$C_{ry}^{SOH&CFD}$', r'$C_{rz}^{SOH&CFD}$'][i]
         elif method == '2D_fit_cons_w_CFD_adjusted':
             title_str = [r'$C_{x}^{SOH&CFD&Jul.}$', r'$C_{y}^{SOH&CFD&Jul.}$', r'$C_{z}^{SOH&CFD&Jul.}$', r'$C_{rx}^{SOH&CFD&Jul.}$', r'$C_{ry}^{SOH&CFD&Jul.}$', r'$C_{rz}^{SOH&CFD&Jul.}$'][i]
+        elif method == '2D_fit_cons_scale_to_Jul':
+            title_str = [r'$C_{x}^{SOH\/\/Jul.\/scaled}$', r'$C_{y}^{SOH\/\/Jul.\/scaled}$', r'$C_{z}^{SOH\/\/Jul.\/scaled}$', r'$C_{rx}^{SOH\/\/Jul.\/scaled}$', r'$C_{ry}^{SOH\/\/Jul.\/scaled}$', r'$C_{rz}^{SOH\/\/Jul.\/scaled}$'][i]
+        elif method == '2D_fit_cons_w_CFD_scale_to_Jul':
+            title_str = [r'$C_{x}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{y}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{z}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{rx}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{ry}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{rz}^{SOH&CFD\/\/Jul.\/scaled}$'][i]
+
 
         # Plotting:
         plt.figure(figsize=(5, 4), dpi=300)
@@ -425,7 +430,8 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             plt.close()
 
 # plot_2D_at_beta_fixed(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
-plot_2D_at_beta_fixed(method=      '2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
+# plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
+plot_2D_at_beta_fixed(method='2D_fit_cons_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_adjusted', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
