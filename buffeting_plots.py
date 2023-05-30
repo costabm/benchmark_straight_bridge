@@ -38,7 +38,7 @@ def get_bridge_node_angles_and_radia_to_plot(ax):
 
 # SENSITIVITY ANALYSIS
 # Plotting response
-def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=False, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'beta_DB']):
+def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=False, tables_of_differences=False, shaded_sector=True, show_bridge=True, buffeting_or_static='buffeting', order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'beta_DB']):
     ####################################################################################################################
     # ORGANIZING DATA
     ####################################################################################################################
@@ -81,8 +81,10 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
     if n_results_TD > 0:  # if we have TD results
         list_of_cases_df_repeated = results_df.drop(
             ['old_indexes', 'beta_DB', 'std_max_dof_0', 'std_max_dof_1', 'std_max_dof_2', 'std_max_dof_3',
-             'std_max_dof_4', 'std_max_dof_5', 'std_std_max_dof_0', 'std_std_max_dof_1', 'std_std_max_do    f_2',
-             'std_std_max_dof_3', 'std_std_max_dof_4', 'std_std_max_dof_5'], axis=1)  # removing columns
+             'std_max_dof_4', 'std_max_dof_5', 'std_std_max_dof_0', 'std_std_max_dof_1', 'std_std_max_dof_2',
+             'std_std_max_dof_3', 'std_std_max_dof_4', 'std_std_max_dof_5', 'static_max_dof_0', 'static_max_dof_1',
+             'static_max_dof_2', 'static_max_dof_3', 'static_max_dof_4', 'static_max_dof_5', 'std_static_max_dof_0', 'std_static_max_dof_1',
+             'std_static_max_dof_2', 'std_static_max_dof_3', 'std_static_max_dof_4', 'std_static_max_dof_5'], axis=1)  # removing columns
     else:
         list_of_cases_df_repeated = results_df.drop(
             ['old_indexes', 'beta_DB', 'std_max_dof_0', 'std_max_dof_1', 'std_max_dof_2', 'std_max_dof_3',
@@ -119,12 +121,21 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
     angle_idx = list(list_of_cases_to_plot_df['1st_result_index'])
     angle_idx = [list(range(angle_idx[i], angle_idx[i]+list_of_cases_to_plot_df['beta_DB_count'].iloc[i])) for i in range(len(angle_idx))]
 
-    str_dof = ["Max. $\sigma_x$ $[m]$",
-               "Max. $\sigma_y$ $[m]$",
-               "Max. $\sigma_z$ $[m]$",
-               "Max. $\sigma_{rx}$ $[\degree]$",
-               "Max. $\sigma_{ry}$ $[\degree]$",
-               "Max. $\sigma_{rz}$ $[\degree]$"]
+    if buffeting_or_static == 'buffeting':
+        str_dof = ["Max. $\sigma_x$ $[m]$",
+                   "Max. $\sigma_y$ $[m]$",
+                   "Max. $\sigma_z$ $[m]$",
+                   "Max. $\sigma_{rx}$ $[\degree]$",
+                   "Max. $\sigma_{ry}$ $[\degree]$",
+                   "Max. $\sigma_{rz}$ $[\degree]$"]
+    elif buffeting_or_static == 'static':
+        str_dof = ["Max. $|\Delta_x|$ $[m]$",
+                   "Max. $|\Delta_y|$ $[m]$",
+                   "Max. $|\Delta_z|$ $[m]$",
+                   "Max. $|\Delta_{rx}|$ $[\degree]$",
+                   "Max. $|\Delta_{ry}|$ $[\degree]$",
+                   "Max. $|\Delta_{rz}|$ $[\degree]$"]
+
     str_dof2 = ['x','y','z','rx','ry','rz']
 
     new_colors = [plt.get_cmap('jet')(1. * i / len(idx_cases_to_plot)) for i in range(len(idx_cases_to_plot))]
@@ -195,11 +206,18 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
         ax = plt.subplot(111, projection='polar')
         ax.set_prop_cycle(custom_cycler)
         k = -1 # counter
+        # Use this for FD only:
+        # for _, (_, aero_coef_method, n_aero_coef, include_SE, flutter_derivatives_type, n_modes, n_freq, g_node_num, f_min, f_max, include_sw, include_KG, skew_approach, f_array_type,
+        #         make_M_C_freq_dep, dtype_in_response_spectra, Nw_idx, Nw_or_equiv_Hw, cospec_type, damping_ratio, damping_Ti, damping_Tj, analysis_type, _) in list_of_cases_to_plot_df.iterrows():
+        # Use this for TD only:
         # for _, (_, aero_coef_method, n_aero_coef, include_SE, flutter_derivatives_type, n_modes, n_freq, g_node_num, f_min, f_max, include_sw, include_KG, skew_approach,
         #         f_array_type, make_M_C_freq_dep, dtype_in_response_spectra, cospec_type,
         #         damping_ratio, damping_Ti, damping_Tj, analysis_type, n_seeds, dt, C_Ci_linearity, SE_linearity, geometric_linearity, _) in list_of_cases_to_plot_df.iterrows():
+        # Use this for FD + TD:
         for _, (_, aero_coef_method, n_aero_coef, include_SE, flutter_derivatives_type, n_modes, n_freq, g_node_num, f_min, f_max, include_sw, include_KG, skew_approach, f_array_type,
-                make_M_C_freq_dep, dtype_in_response_spectra, Nw_idx, Nw_or_equiv_Hw, cospec_type, damping_ratio, damping_Ti, damping_Tj, analysis_type, _) in list_of_cases_to_plot_df.iterrows():
+                make_M_C_freq_dep, dtype_in_response_spectra, Nw_idx, Nw_or_equiv_Hw, cospec_type,
+                damping_ratio, damping_Ti, damping_Tj, analysis_type, n_seeds, dt, C_Ci_linearity, SE_linearity, geometric_linearity, where_to_get_wind, _) in list_of_cases_to_plot_df.iterrows():
+
             k += 1  # starts with 0
             # str_plt_0 = aero_coef_method[:6] + '. '
             # str_plt_1 = 'Ca: ' + str(n_aero_coef)[:1] + '. '
@@ -221,15 +239,22 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
                 # str_plt = str(int(n_freq))
                 # str_plt = str(int(g_node_num))
             if analysis_type == 'TD':
-                str_plt = r'Time-domain: $\mu$ ('+ u"\u00B1" +' $\sigma$)'
+                str_plt = str(aero_coef_method)
+                # str_plt = r'Time-domain: $\mu$ ('+ u"\u00B1" +' $\sigma$)'
                 # if C_Ci_linearity == 'L':
                 #     str_plt = 'Linear time-domain'
                 # elif C_Ci_linearity == 'NL':
                 #     str_plt = 'Non-linear time-domain'
             angle = np.array(results_df['beta_DB'][angle_idx[k][0]:angle_idx[k][-1]+1])
-            radius = np.array(results_df['std_max_dof_' + str(dof)][angle_idx[k][0]:angle_idx[k][-1]+1])
-            if n_results_TD > 0 and error_bars and analysis_type=='TD': # Include error_bars
-                radius_std = np.array(results_df['std_std_max_dof_' + str(dof)][angle_idx[k][0]:angle_idx[k][-1]+1])
+            if buffeting_or_static == 'buffeting':
+                radius = np.array(results_df['std_max_dof_' + str(dof)][angle_idx[k][0]:angle_idx[k][-1]+1])
+                if n_results_TD > 0 and error_bars and analysis_type=='TD': # Include error_bars
+                    radius_std = np.array(results_df['std_std_max_dof_' + str(dof)][angle_idx[k][0]:angle_idx[k][-1]+1])
+            if buffeting_or_static == 'static':
+                radius = np.array(results_df['static_max_dof_' + str(dof)][angle_idx[k][0]:angle_idx[k][-1]+1])
+                if n_results_TD > 0 and error_bars and analysis_type=='TD': # Include error_bars
+                    radius_std = np.array(results_df['std_static_max_dof_' + str(dof)][angle_idx[k][0]:angle_idx[k][-1]+1])
+
             if dof >= 3:
                 import copy
                 radius = deg(copy.deepcopy(radius))  # converting from radians to degrees!
@@ -275,7 +300,7 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
 
         plt.tight_layout()
 
-        plt.savefig(r'results\Polar_std_delta_local_' + str_dof2[dof] +'_Spec-' + str(cospec_type) + \
+        plt.savefig(r'results\Polar_std_delta_local_' + str(buffeting_or_static) + '_' + str_dof2[dof] +'_Spec-' + str(cospec_type) + \
                     '_zeta-' + str(damping_ratio) + '_Ti-' + str(damping_Ti) + '_Tj-' + str(damping_Tj) + '_Nodes-' + \
                     str(g_node_num) + '_Modes-' + str(n_modes) + '_FD-f-' + str(f_min) + '-' + str(f_max) + \
                     '-' + str(n_freq) + '_NAeroCoef-' + str(n_aero_coef) + '.png')
@@ -353,7 +378,7 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
         table_all_diff.to_csv(r'results\Table_of_all_differences_between_all_cases_' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv',index = False)
         table_max_diff_all_betas.to_csv(r'results\Table_of_the_maximum_difference_for_pairs_of_cases_' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
 
-response_polar_plots(symmetry_180_shifts=False, error_bars=False, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, order_by=['Method', 'beta_DB'])
+response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='buffeting', order_by=['Analysis', 'Method', 'beta_DB'])
 # response_polar_plots(symmetry_180_shifts=False, error_bars=False, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
 # response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'make_M_C_freq_dep', 'beta_DB'])
 

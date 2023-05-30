@@ -2,7 +2,7 @@ import copy
 
 import pandas as pd
 import numpy as np
-from aero_coefficients import aero_coef, aero_coef_derivatives, rad, deg, Cx_factor, Cy_factor
+from aero_coefficients import aero_coef, df_aero_coef_measurement_data, aero_coef_derivatives, rad, deg, Cx_factor, Cy_factor
 import matplotlib.pyplot as plt
 import matplotlib
 import os
@@ -30,7 +30,6 @@ thetas_CFD = rad(df_CFD['theta[deg]'].to_numpy())
 C_CFD_Ls = np.array([df_CFD['Cx_Ls'], df_CFD['Cy_Ls'], df_CFD['Cz_Ls'], df_CFD['Cxx_Ls'], df_CFD['Cyy_Ls'], df_CFD['Czz_Ls']])
 # Adjusted Data
 C_CFD_adjusted_Ls = np.array([df_CFD['Cx_Ls'] * Cx_factor, df_CFD['Cy_Ls'] * Cy_factor, df_CFD['Cz_Ls'], df_CFD['Cxx_Ls'], df_CFD['Cyy_Ls'], df_CFD['Czz_Ls']])
-
 
 #####################################################################################################################
 # Confirming some Mathematical equations
@@ -175,8 +174,11 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
             title_str = [r'$C_{x}^{SOH}$', r'$C_{y}^{SOH}$', r'$C_{z}^{SOH}$', r'$C_{rx}^{SOH}$', r'$C_{ry}^{SOH}$', r'$C_{rz}^{SOH}$'][i]
         elif method == '2D_fit_cons_w_CFD':
             title_str = [r'$C_{x}^{SOH&CFD}$', r'$C_{y}^{SOH&CFD}$', r'$C_{z}^{SOH&CFD}$', r'$C_{rx}^{SOH&CFD}$', r'$C_{ry}^{SOH&CFD}$', r'$C_{rz}^{SOH&CFD}$'][i]
-        elif method == '2D_fit_cons_w_CFD_adjusted':
-            title_str = [r'$C_{x}^{SOH&CFD&Jul.}$', r'$C_{y}^{SOH&CFD&Jul.}$', r'$C_{z}^{SOH&CFD&Jul.}$', r'$C_{rx}^{SOH&CFD&Jul.}$', r'$C_{ry}^{SOH&CFD&Jul.}$', r'$C_{rz}^{SOH&CFD&Jul.}$'][i]
+        elif method == '2D_fit_cons_scale_to_Jul':
+            title_str = [r'$C_{x}^{SOH\/\/Jul.\/scaled}$', r'$C_{y}^{SOH\/\/Jul.\/scaled}$', r'$C_{z}^{SOH\/\/Jul.\/scaled}$', r'$C_{rx}^{SOH\/\/Jul.\/scaled}$', r'$C_{ry}^{SOH\/\/Jul.\/scaled}$', r'$C_{rz}^{SOH\/\/Jul.\/scaled}$'][i]
+        elif method == '2D_fit_cons_w_CFD_scale_to_Jul':
+            title_str = [r'$C_{x}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{y}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{z}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{rx}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{ry}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{rz}^{SOH&CFD\/\/Jul.\/scaled}$'][i]
+
 
 
         # Finding the coefficient of determination R_squared
@@ -208,6 +210,12 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         markersize = 60
         if method == '2D_fit_cons_w_CFD_adjusted':
             ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_SOH_adjusted_Ls[i]), label='Measurements', edgecolors='black')
+        # TRASH?
+        # elif method == '2D_fit_cons_w_CFD_scale_to_Jul':
+        #     df = df_aero_coef_measurement_data(method)
+        #     betas_SOH, thetas_SOH = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
+        #     C_upscaled_Ls = np.array(df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls'])
+        #     ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(    C_upscaled_Ls[i]), label='Measurements', edgecolors='black')
         else:
             ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(         C_SOH_Ls[i]), label='Measurements', edgecolors='black')
         if method == '2D_fit_cons_w_CFD':
@@ -227,8 +235,8 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         plt.close()
 # colormap_2var_cons_fit_zoomin(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
-# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5])
-# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_adjusted', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D', idx_to_plot=[1,2,3])
 # colormap_2var_cons_fit_zoomin(method='cos_rule', idx_to_plot=[1,2,3])
@@ -343,7 +351,6 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
         elif method == '2D_fit_cons_w_CFD_scale_to_Jul':
             title_str = [r'$C_{x}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{y}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{z}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{rx}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{ry}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{rz}^{SOH&CFD\/\/Jul.\/scaled}$'][i]
 
-
         # Plotting:
         plt.figure(figsize=(5, 4), dpi=300)
         ax = plt.axes()
@@ -365,9 +372,18 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             # Scatter points
             if method == '2D_fit_cons_w_CFD_adjusted':
                 empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(), C_SOH_adjusted_Ls[i,np.where(np.isclose(betas_SOH,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
+
+            elif method in ['2D_fit_cons_scale_to_Jul', '2D_fit_cons_w_CFD_scale_to_Jul']:
+                df = df_aero_coef_measurement_data(method)
+                betas_SOH, thetas_SOH = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
+                SOH_mask = df['test_case_name'].str.startswith('K71')
+                CFD_mask = df['test_case_name'].str.startswith("'[b")
+                C_upscaled_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
+                empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH, beta, atol=rad(2)) & SOH_mask)]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_SOH,beta, atol=rad(2)) & SOH_mask)][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
+                empty_ax_CFD[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH, beta, atol=rad(2)) & CFD_mask)]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_SOH,beta, atol=rad(2)) & CFD_mask)][0].tolist(), alpha=0.8, label=measured_CFD_label, facecolor='none', marker=marker_list[b_i], s=markersize_list[b_i], edgecolors=color_list[b_i])
             else:
                 empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(),          C_SOH_Ls[i,np.where(np.isclose(betas_SOH,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
-            if plot_CFD:  # then the unfilled scatter markers shall represent CFD results, instead of being just a visual aid
+            if plot_CFD and method not in ['2D_fit_cons_scale_to_Jul', '2D_fit_cons_w_CFD_scale_to_Jul']:  # then the unfilled scatter markers shall represent CFD results, instead of being just a visual aid
                 if method == '2D_fit_cons_w_CFD_adjusted':
                     empty_ax_CFD[b_i] = plt.scatter(deg(thetas_CFD[np.where(np.isclose(betas_CFD,beta, atol=rad(2)))]).tolist(), C_CFD_adjusted_Ls[i,np.where(np.isclose(betas_CFD,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_CFD_label, facecolor='none', marker=marker_list[b_i], s=markersize_list[b_i], edgecolors=color_list[b_i])
                 else:
@@ -430,8 +446,9 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             plt.close()
 
 # plot_2D_at_beta_fixed(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
-# plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
-plot_2D_at_beta_fixed(method='2D_fit_cons_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
+# plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
+# plot_2D_at_beta_fixed(method='2D_fit_cons_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
+plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[3], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_adjusted', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)

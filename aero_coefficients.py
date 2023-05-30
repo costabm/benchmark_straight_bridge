@@ -114,18 +114,19 @@ def df_aero_coef_measurement_data(method):
         Cy_Jul_func = interpolate.interp1d(df_Jul['theta[deg]'], df_Jul['Cy_Ls'], fill_value='extrapolate')
         Cz_Jul_func = interpolate.interp1d(df_Jul['theta[deg]'], df_Jul['Cz_Ls'], fill_value='extrapolate')
         Cxx_Jul_func = interpolate.interp1d(df_Jul['theta[deg]'], df_Jul['Cxx_Ls'], fill_value='extrapolate')
-        df['Cy_Ls']  =  df['Cy_Ls'] + ( Cy_Jul_func(df['theta[deg]']) -  Cy_beta_0_func(df['theta[deg]'])) * np.cos(np.deg2rad(df['beta[deg]']))
-        df['Cz_Ls']  =  df['Cz_Ls'] + ( Cz_Jul_func(df['theta[deg]']) -  Cz_beta_0_func(df['theta[deg]'])) * np.cos(np.deg2rad(df['beta[deg]']))
-        df['Cxx_Ls'] = df['Cxx_Ls'] + (Cxx_Jul_func(df['theta[deg]']) - Cxx_beta_0_func(df['theta[deg]'])) * np.cos(np.deg2rad(df['beta[deg]']))
+        df = df.assign(Cy_Ls =   df['Cy_Ls'] + ( Cy_Jul_func(df['theta[deg]']) -  Cy_beta_0_func(df['theta[deg]'])) * np.cos(np.deg2rad(df['beta[deg]'])),
+                       Cz_Ls =   df['Cz_Ls'] + ( Cz_Jul_func(df['theta[deg]']) -  Cz_beta_0_func(df['theta[deg]'])) * np.cos(np.deg2rad(df['beta[deg]'])),
+                       Cxx_Ls = df['Cxx_Ls'] + (Cxx_Jul_func(df['theta[deg]']) - Cxx_beta_0_func(df['theta[deg]'])) * np.cos(np.deg2rad(df['beta[deg]'])))
+
+        # df['Cy_Ls']  =  df['Cy_Ls'].copy() * ( Cy_Jul_func(df['theta[deg]']) /  Cy_beta_0_func(df['theta[deg]']))  # Jungao's suggestion
 
     if include_Julsund:
         df_Jul = pd.read_csv(os.path.join(os.getcwd(), 'aerodynamic_coefficients', 'aero_coef_Julsundet_data.csv'))  # raw original values
         df = pd.concat([df, df_Jul])
 
-
     return df
 
-def aero_coef(betas_extrap, thetas_extrap, method, coor_system, degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4], '2D_fit_cons_scale_to_Jul':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_scale_to_Jul':[3,4,4,4,4,4]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]
+def aero_coef(betas_extrap, thetas_extrap, method, coor_system, degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4], '2D_fit_cons_scale_to_Jul':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_scale_to_Jul':[3,4,4,5,4,4]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]
     """
     betas: 1D-array
     thetas: 1D-array (same size as betas)
