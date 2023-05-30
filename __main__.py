@@ -4,8 +4,6 @@ author: Bernardo Costa
 email: bernamdc@gmail.com
 """
 
-#good
-
 import os
 import sys
 import time
@@ -50,7 +48,6 @@ D_loc = np.zeros((all_node_num, 6))  # No initial nodal displacements
 girder_N = copy.deepcopy(R_loc[:g_elem_num, 0])  # No girder axial forces
 c_N = copy.deepcopy(R_loc[g_elem_num:, 0])  # No columns axial forces
 alpha = copy.deepcopy(D_loc[:g_node_num, 3])  # No girder nodes torsional rotations
-
 
 ########################################################################################################################
 # Modal analysis:
