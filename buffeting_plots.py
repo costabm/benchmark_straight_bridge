@@ -112,7 +112,7 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
     print('Cases available to plot: \n', list_of_cases_df)
     idx_cases_to_plot = eval(input('''Enter list of index numbers from '1st_result_index' to plot:'''))  # choose the index numbers to plot in 1 plot, from '1st result_index' column
     list_of_cases_to_plot_df = list_of_cases_df.loc[list_of_cases_df['1st_result_index'].isin(idx_cases_to_plot)]
-    list_of_cases_to_plot_df = list_of_cases_to_plot_df.assign(Method=list_of_cases_to_plot_df['Method'].replace(['2D_fit_free', '2D_fit_cons', '2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted', '2D_fit_cons_2', 'cos_rule', '2D'], ['Free fit', 'SOH', 'SOH+CFD', 'SOH+CFD+Jul.','2-var. constr. fit (2)', 'Cosine rule', '2D']))
+    list_of_cases_to_plot_df = list_of_cases_to_plot_df.assign(Method=list_of_cases_to_plot_df['Method'].replace(['2D_fit_free', '2D_fit_cons', '2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted', '2D_fit_cons_w_CFD_scale_to_Jul', '2D_fit_cons_2', 'cos_rule', '2D'], ['Free fit', 'SOH', 'SOH+CFD', 'SOH+CFD+Jul.', 'SOH+CFD scaled to Jul.','2-var. constr. fit (2)', 'Cosine rule', '2D']))
     list_of_cases_to_plot_df = list_of_cases_to_plot_df.assign(FD_type=list_of_cases_to_plot_df['FD_type'].replace(['3D_Zhu', '3D_Scanlan','3D_full'], ['(QS) Zhu', '(QS) Scanlan', '(QS) full']))
     ####################################################################################################################
     # PLOTTING
@@ -158,6 +158,13 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
     #                  cycler(linestyle=['-', '-', '-', ':', '-.']) +
     #                  cycler(lw=lineweight_list) +
     #                  cycler(alpha=[0.8, 0.4, 0.8, 0.8, 0.8]))
+    # FD aero method with both FD and TD
+    lineweight_list = [2., 2., 2., 2.]
+    custom_cycler = (cycler(color=['dodgerblue', 'gold', 'blue', 'orange']) +
+                     #cycler(color=new_colors) +
+                     cycler(linestyle=['-', '-', '--', '--']) +
+                     cycler(lw=lineweight_list) +
+                     cycler(alpha=[0.8, 0.8, 0.8, 0.8]))
     # # Sensitivity
     # custom_cycler = (cycler(color=['cyan', 'orange', 'red', 'blue', 'magenta', 'blue', 'red']) +
     #                  # cycler(color=new_colors) +
@@ -165,14 +172,14 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
     #                  cycler(lw=[1, 1, 1., 1, 1, 1., 1]) +
     #                  cycler(alpha=[0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]))
     # FD aero method:
-    lineweight_list = [2., 2., 2., 2.]
-    custom_cycler = (cycler(color=['gold', 'brown', 'green', 'blue', ]) +
-                     #cycler(color=new_colors) +
-                     cycler(linestyle=['--', '-', '-.', (0, (3, 1.5, 1, 1.5, 1, 1.5))]) +
-                     cycler(lw=lineweight_list) +
-                     cycler(marker=["o"]*len(lineweight_list)) +
-                     cycler(markersize=np.array(lineweight_list)*1.2) +
-                     cycler(alpha=[0.8, 0.8, 0.8, 0.4]))
+    # lineweight_list = [2., 2., 2., 2.]
+    # custom_cycler = (cycler(color=['gold', 'brown', 'green', 'blue', ]) +
+    #                  #cycler(color=new_colors) +
+    #                  cycler(linestyle=['--', '-', '-.', (0, (3, 1.5, 1, 1.5, 1, 1.5))]) +
+    #                  cycler(lw=lineweight_list) +
+    #                  cycler(marker=["o"]*len(lineweight_list)) +
+    #                  cycler(markersize=np.array(lineweight_list)*1.2) +
+    #                  cycler(alpha=[0.8, 0.8, 0.8, 0.4]))
     # FD approach:
     # lineweight_list = [2., 2., 2., 2.]
     # custom_cycler = (cycler(color=['gold','green','brown', 'blue', ]) +
@@ -227,19 +234,19 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
             if analysis_type == 'FD':
                 # str_plt = 'Frequency-domain'
                 # str_plt = str(skew_approach) + '.  MD: ' + str(include_SE)[0]
-                str_plt = str(aero_coef_method)
+                # str_plt = str(aero_coef_method)
                 # str_plt = str(skew_approach)
                 # str_plt = str(skew_approach) + '. ' + str(n_aero_coef)
                 if not include_SE:
                     str_plt = 'No self-excited forces'
                 if include_SE:
                     # str_plt = str(flutter_derivatives_type)
-                    str_plt = str(aero_coef_method)
+                    str_plt = str(aero_coef_method) + ' (FD)'
                 # str_plt = r'Frequency-domain'
                 # str_plt = str(int(n_freq))
                 # str_plt = str(int(g_node_num))
             if analysis_type == 'TD':
-                str_plt = str(aero_coef_method)
+                str_plt = str(aero_coef_method) + ' (TD)'
                 # str_plt = r'Time-domain: $\mu$ ('+ u"\u00B1" +' $\sigma$)'
                 # if C_Ci_linearity == 'L':
                 #     str_plt = 'Linear time-domain'
@@ -309,11 +316,12 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
         # order = [0, 3, 1, 4, 2, 5]
         # FD skew approach:
         order = list(range(len(handles)))
+        order = [0, 3, 1, 4, 2]
         # FD aero fit method:
         # order = [3,0,2,1,4,5,6]
         # order = list(range(len(handles)))
         # SE:
-        order = list(range(len(handles)))
+        # order = list(range(len(handles)))
         # FD vs 1 TD:
         # order = [0, 4, 1, 2, 3]  # with shaded sectors
         # order = [0, 2, 3, 1]  # without shaded sectors
@@ -378,7 +386,7 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
         table_all_diff.to_csv(r'results\Table_of_all_differences_between_all_cases_' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv',index = False)
         table_max_diff_all_betas.to_csv(r'results\Table_of_the_maximum_difference_for_pairs_of_cases_' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
 
-response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='buffeting', order_by=['Analysis', 'Method', 'beta_DB'])
+response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='static', order_by=['Analysis', 'Method', 'beta_DB'])
 # response_polar_plots(symmetry_180_shifts=False, error_bars=False, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
 # response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'make_M_C_freq_dep', 'beta_DB'])
 
