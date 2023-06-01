@@ -210,12 +210,14 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
         markersize = 60
         if method == '2D_fit_cons_w_CFD_adjusted':
             ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(C_SOH_adjusted_Ls[i]), label='Measurements', edgecolors='black')
-        # TRASH?
-        # elif method == '2D_fit_cons_w_CFD_scale_to_Jul':
-        #     df = df_aero_coef_measurement_data(method)
-        #     betas_SOH, thetas_SOH = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
-        #     C_upscaled_Ls = np.array(df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls'])
-        #     ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(    C_upscaled_Ls[i]), label='Measurements', edgecolors='black')
+
+        if method == '2D_fit_cons_w_CFD_scale_to_Jul':
+            df = df_aero_coef_measurement_data(method)
+            betas_SOHCFD, thetas_SOHCFD = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
+            SOH_mask = df['test_case_name'].str.startswith('K71')
+            CFD_mask = df['test_case_name'].str.startswith("'[b")
+            C_upscaled_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
+            ax.scatter(betas_SOHCFD * 180 /np.pi, thetas_SOHCFD * 180 /np.pi, s=markersize, c=scalarMap.to_rgba(C_upscaled_Ls[i]), label='Measurements', edgecolors='black')
         else:
             ax.scatter(betas_SOH * 180 / np.pi, thetas_SOH * 180 / np.pi, s=markersize, c=scalarMap.to_rgba(         C_SOH_Ls[i]), label='Measurements', edgecolors='black')
         if method == '2D_fit_cons_w_CFD':
@@ -236,7 +238,7 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
 # colormap_2var_cons_fit_zoomin(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5])
-# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5])
+colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D', idx_to_plot=[1,2,3])
 # colormap_2var_cons_fit_zoomin(method='cos_rule', idx_to_plot=[1,2,3])
