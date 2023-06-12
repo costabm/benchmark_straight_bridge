@@ -9,7 +9,7 @@
       <sourceFolder url="file://$MODULE_DIR$/wind_field" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/wind_field/AMC_wind_time_series" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="C:\Users\bercos\Anaconda3" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="C:\Users\bercos\AppData\Local\anaconda3" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

@@ -94,6 +94,13 @@ def df_aero_coef_measurement_data(method):
         upscale_Cy_Cz_Crx_to_Julsund = True
         include_Julsund = False
 
+    if method == 'cos_rule':
+        include_CFD = True
+        increase_CFD_Cx = True
+        multiply_2018_Cy_by_4_by_3p5 = False
+        upscale_Cy_Cz_Crx_to_Julsund = True
+        include_Julsund = False
+
     if include_CFD:
         # Import the results from NablaFlow 3D CFD
         df_CFD = pd.read_csv(os.path.join(os.getcwd(), 'aerodynamic_coefficients', 'aero_coef_CFD_data.csv'))  # raw original values

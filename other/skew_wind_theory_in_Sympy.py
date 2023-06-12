@@ -1,4 +1,6 @@
 """
+This code works with sympy version 1.6, but might not work with newer ones
+
 bb means beta_bar which means "mean beta"
 tb means theta_bar which means "mean theta"
 
