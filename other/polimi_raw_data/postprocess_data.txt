@@ -1,0 +1,1857 @@
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.50
+Pressione assoluta [Pa]: 99840.7
+rho [kg/m^3]: 1.161
+Pitot V Galleria 0.199235	V Campo 0.316979	VCampo/VGalleria 1.59098
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.162	 0.026	 0.171	 0.000	 0.002	 0.000	
+Cf:
+-2.777	 0.441	 2.933	 0.007	 0.042	 0.001	
+
+Bilancia:	ATI8748
+Forze:
+24.117	 0.153	 0.320	-0.000	 0.282	 0.010	
+Cf:
+413.572	 2.624	 5.495	-0.007	 4.828	 0.173	
+
+Bilancia:	ATI10057
+Forze:
+-24.452	-0.575	 0.283	-0.000	-0.268	 0.014	
+Cf:
+-419.329	-9.860	 4.857	-0.009	-4.596	 0.247	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.336	-0.422	 0.604	-0.001	 0.014	 0.024	
+Cf:
+-5.757	-7.236	10.352	-0.015	 0.233	 0.420	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\018_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.36
+Pressione assoluta [Pa]: 99987.7
+rho [kg/m^3]: 1.163
+Pitot V Galleria 7.72914	V Campo 6.47138	VCampo/VGalleria 0.83727
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.153	 1.288	-0.100	 0.133	 0.007	 0.091	
+Cf:
+-0.006	 0.053	-0.004	 0.005	 0.000	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+ 8.925	 0.111	-3.287	 0.008	 0.069	 0.006	
+Cf:
+ 0.366	 0.005	-0.135	 0.000	 0.003	 0.000	
+
+Bilancia:	ATI10057
+Forze:
+-8.325	-0.105	 1.314	 0.006	-0.143	-0.004	
+Cf:
+-0.342	-0.004	 0.054	 0.000	-0.006	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.600	 0.007	-1.973	 0.014	-0.075	 0.002	
+Cf:
+ 0.025	 0.000	-0.081	 0.001	-0.003	 0.000	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\019_SIW_ATI_P5000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.60
+Pressione assoluta [Pa]: 100058.3
+rho [kg/m^3]: 1.163
+Pitot V Galleria 9.3713	V Campo 7.83104	VCampo/VGalleria 0.83564
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.229	 1.852	-0.160	 0.190	 0.011	 0.127	
+Cf:
+-0.006	 0.052	-0.004	 0.005	 0.000	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+ 9.972	 0.136	-4.668	 0.014	 0.067	-0.008	
+Cf:
+ 0.280	 0.004	-0.131	 0.000	 0.002	-0.000	
+
+Bilancia:	ATI10057
+Forze:
+-9.083	-0.096	 1.748	 0.005	-0.165	 0.000	
+Cf:
+-0.255	-0.003	 0.049	 0.000	-0.005	 0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.889	 0.040	-2.920	 0.019	-0.098	-0.008	
+Cf:
+ 0.025	 0.001	-0.082	 0.001	-0.003	-0.000	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\020_SIW_ATI_P6000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.53
+Pressione assoluta [Pa]: 99839.4
+rho [kg/m^3]: 1.161
+Pitot V Galleria 0.283365	V Campo 0.174129	VCampo/VGalleria 0.614504
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.074	 0.021	 0.021	 0.001	 0.001	-0.001	
+Cf:
+-4.193	 1.211	 1.186	 0.035	 0.043	-0.063	
+
+Bilancia:	ATI8748
+Forze:
+ 7.656	 0.075	 0.088	 0.000	 0.088	-0.014	
+Cf:
+435.128	 4.289	 4.991	 0.009	 4.973	-0.793	
+
+Bilancia:	ATI10057
+Forze:
+-7.743	-0.174	-0.007	-0.001	-0.086	 0.019	
+Cf:
+-440.048	-9.894	-0.399	-0.037	-4.903	 1.093	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.087	-0.099	 0.081	-0.000	 0.001	 0.005	
+Cf:
+-4.920	-5.605	 4.592	-0.028	 0.070	 0.300	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\021_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.67
+Pressione assoluta [Pa]: 99842.3
+rho [kg/m^3]: 1.160
+Pitot V Galleria 0.108817	V Campo 0.119908	VCampo/VGalleria 1.10192
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.027	-0.002	 0.064	-0.000	-0.001	 0.000	
+Cf:
+-3.241	-0.267	 7.731	-0.048	-0.128	 0.002	
+
+Bilancia:	ATI8748
+Forze:
+-9.568	-0.050	 0.076	 0.001	-0.108	-0.011	
+Cf:
+-1147.288	-5.983	 9.102	 0.173	-12.978	-1.309	
+
+Bilancia:	ATI10057
+Forze:
+ 9.638	 0.148	 0.179	-0.002	 0.108	 0.000	
+Cf:
+1155.676	17.689	21.492	-0.243	12.947	 0.029	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.070	 0.098	 0.255	-0.001	-0.000	-0.011	
+Cf:
+ 8.388	11.706	30.594	-0.070	-0.030	-1.280	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\022_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.51
+Pressione assoluta [Pa]: 100058.4
+rho [kg/m^3]: 1.163
+Pitot V Galleria 9.3352	V Campo 7.9633	VCampo/VGalleria 0.85304
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.226	 1.890	-0.116	 0.194	 0.012	 0.130	
+Cf:
+-0.006	 0.051	-0.003	 0.005	 0.000	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+10.586	 0.157	-4.701	 0.015	 0.077	 0.001	
+Cf:
+ 0.287	 0.004	-0.127	 0.000	 0.002	 0.000	
+
+Bilancia:	ATI10057
+Forze:
+-9.719	-0.111	 1.709	 0.008	-0.173	-0.009	
+Cf:
+-0.264	-0.003	 0.046	 0.000	-0.005	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.867	 0.046	-2.992	 0.023	-0.096	-0.008	
+Cf:
+ 0.024	 0.001	-0.081	 0.001	-0.003	-0.000	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\023_SIW_ATI_P6000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.39
+Pressione assoluta [Pa]: 99832.6
+rho [kg/m^3]: 1.161
+Pitot V Galleria 0.262185	V Campo 0.181989	VCampo/VGalleria 0.694124
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.073	 0.036	 0.097	 0.001	 0.001	-0.001	
+Cf:
+-3.822	 1.866	 5.050	 0.058	 0.068	-0.036	
+
+Bilancia:	ATI8748
+Forze:
+10.999	 0.082	 0.087	-0.001	 0.127	-0.008	
+Cf:
+572.064	 4.290	 4.530	-0.035	 6.625	-0.440	
+
+Bilancia:	ATI10057
+Forze:
+-11.142	-0.249	-0.094	 0.000	-0.125	 0.012	
+Cf:
+-579.507	-12.965	-4.875	 0.016	-6.477	 0.600	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.143	-0.167	-0.007	-0.000	 0.003	 0.003	
+Cf:
+-7.443	-8.675	-0.345	-0.019	 0.148	 0.160	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\024_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.40
+Pressione assoluta [Pa]: 99827.2
+rho [kg/m^3]: 1.161
+Pitot V Galleria 0.151916	V Campo 0.120433	VCampo/VGalleria 0.792764
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.011	-0.001	 0.048	-0.000	-0.001	-0.000	
+Cf:
+-1.250	-0.169	 5.662	-0.036	-0.120	-0.007	
+
+Bilancia:	ATI8748
+Forze:
+-5.081	-0.025	 0.108	 0.001	-0.057	-0.005	
+Cf:
+-603.484	-3.020	12.787	 0.161	-6.773	-0.644	
+
+Bilancia:	ATI10057
+Forze:
+ 5.104	 0.076	 0.179	-0.002	 0.058	-0.001	
+Cf:
+606.205	 9.010	21.246	-0.198	 6.891	-0.112	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.023	 0.050	 0.287	-0.000	 0.001	-0.006	
+Cf:
+ 2.722	 5.990	34.033	-0.037	 0.119	-0.756	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\025_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.89
+Pressione assoluta [Pa]: 100130.4
+rho [kg/m^3]: 1.163
+Pitot V Galleria 10.9194	V Campo 9.19229	VCampo/VGalleria 0.841832
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.285	 2.564	-0.160	 0.262	 0.016	 0.174	
+Cf:
+-0.006	 0.052	-0.003	 0.005	 0.000	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+ 0.513	 0.132	-6.441	 0.023	-0.053	-0.012	
+Cf:
+ 0.010	 0.003	-0.131	 0.000	-0.001	-0.000	
+
+Bilancia:	ATI10057
+Forze:
+ 0.817	 0.106	 2.356	 0.007	-0.075	-0.015	
+Cf:
+ 0.017	 0.002	 0.048	 0.000	-0.002	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 1.330	 0.238	-4.085	 0.029	-0.128	-0.028	
+Cf:
+ 0.027	 0.005	-0.083	 0.001	-0.003	-0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\026_SIW_ATI_P7000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.91
+Pressione assoluta [Pa]: 99821.9
+rho [kg/m^3]: 1.159
+Pitot V Galleria 0.271629	V Campo 0.120515	VCampo/VGalleria 0.443677
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.038	 0.051	 0.197	 0.002	 0.000	-0.001	
+Cf:
+-4.471	 6.094	23.357	 0.222	 0.008	-0.162	
+
+Bilancia:	ATI8748
+Forze:
+-6.921	-0.003	 0.162	 0.001	-0.077	-0.027	
+Cf:
+-822.390	-0.364	19.301	 0.088	-9.131	-3.172	
+
+Bilancia:	ATI10057
+Forze:
+ 6.982	 0.072	 0.008	-0.002	 0.076	 0.012	
+Cf:
+829.568	 8.520	 0.963	-0.207	 8.979	 1.402	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.060	 0.069	 0.171	-0.001	-0.001	-0.015	
+Cf:
+ 7.178	 8.156	20.265	-0.119	-0.152	-1.770	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\027_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.72
+Pressione assoluta [Pa]: 99819.4
+rho [kg/m^3]: 1.160
+Pitot V Galleria 0.189247	V Campo 0.123353	VCampo/VGalleria 0.651807
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.006	-0.002	 0.118	-0.000	-0.000	 0.000	
+Cf:
+-0.656	-0.260	13.326	-0.053	-0.044	 0.047	
+
+Bilancia:	ATI8748
+Forze:
+ 1.328	 0.061	-0.002	-0.004	 0.016	 0.070	
+Cf:
+150.504	 6.889	-0.206	-0.493	 1.830	 7.904	
+
+Bilancia:	ATI10057
+Forze:
+-1.399	-0.119	 0.110	 0.003	-0.014	-0.009	
+Cf:
+-158.530	-13.523	12.462	 0.328	-1.553	-1.011	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.071	-0.059	 0.108	-0.001	 0.002	 0.061	
+Cf:
+-8.026	-6.634	12.256	-0.165	 0.277	 6.893	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\028_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.05
+Pressione assoluta [Pa]: 100119.3
+rho [kg/m^3]: 1.162
+Pitot V Galleria 10.936	V Campo 9.15383	VCampo/VGalleria 0.837033
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.322	 2.512	-0.271	 0.278	 0.024	 0.176	
+Cf:
+-0.007	 0.052	-0.006	 0.006	 0.000	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+ 0.220	 0.920	-5.893	 0.085	-0.047	-0.033	
+Cf:
+ 0.005	 0.019	-0.121	 0.002	-0.001	-0.001	
+
+Bilancia:	ATI10057
+Forze:
+ 1.039	 0.374	 2.274	 0.070	-0.054	 0.007	
+Cf:
+ 0.021	 0.008	 0.047	 0.001	-0.001	 0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 1.259	 1.294	-3.618	 0.155	-0.100	-0.026	
+Cf:
+ 0.026	 0.027	-0.074	 0.003	-0.002	-0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\029_SIW_ATI_P7000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.00
+Pressione assoluta [Pa]: 99812.6
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.325094	V Campo 0.25987	VCampo/VGalleria 0.799368
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.013	 0.023	 0.176	 0.002	-0.000	-0.002	
+Cf:
+-0.335	 0.579	 4.498	 0.039	-0.007	-0.052	
+
+Bilancia:	ATI8748
+Forze:
+-5.231	-0.024	 0.133	 0.003	-0.059	-0.021	
+Cf:
+-133.731	-0.612	 3.409	 0.070	-1.511	-0.547	
+
+Bilancia:	ATI10057
+Forze:
+ 5.272	 0.053	-0.024	-0.003	 0.059	 0.002	
+Cf:
+134.778	 1.366	-0.618	-0.088	 1.505	 0.054	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.041	 0.029	 0.109	-0.001	-0.000	-0.019	
+Cf:
+ 1.048	 0.754	 2.792	-0.018	-0.006	-0.493	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\030_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.82
+Pressione assoluta [Pa]: 99809.4
+rho [kg/m^3]: 1.159
+Pitot V Galleria 0.169497	V Campo 0.185909	VCampo/VGalleria 1.09683
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.004	-0.008	 0.012	-0.001	-0.000	 0.001	
+Cf:
+-0.220	-0.387	 0.615	-0.039	-0.015	 0.048	
+
+Bilancia:	ATI8748
+Forze:
+ 5.965	 0.048	 0.011	-0.004	 0.072	 0.063	
+Cf:
+297.784	 2.399	 0.538	-0.178	 3.572	 3.123	
+
+Bilancia:	ATI10057
+Forze:
+-6.090	-0.160	 0.088	 0.003	-0.068	-0.023	
+Cf:
+-304.048	-8.000	 4.391	 0.145	-3.414	-1.154	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.125	-0.112	 0.099	-0.001	 0.003	 0.039	
+Cf:
+-6.264	-5.601	 4.930	-0.033	 0.158	 1.969	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\031_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.78
+Pressione assoluta [Pa]: 99808.7
+rho [kg/m^3]: 1.159
+Pitot V Galleria 0.19952	V Campo 0.136017	VCampo/VGalleria 0.681718
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.001	 0.002	 0.003	-0.000	-0.000	 0.000	
+Cf:
+-0.076	 0.143	 0.268	-0.017	-0.002	 0.003	
+
+Bilancia:	ATI8748
+Forze:
+ 0.090	-0.006	 0.029	 0.001	 0.001	 0.007	
+Cf:
+ 8.429	-0.569	 2.732	 0.119	 0.050	 0.672	
+
+Bilancia:	ATI10057
+Forze:
+-0.099	-0.001	 0.013	-0.001	-0.000	-0.008	
+Cf:
+-9.255	-0.091	 1.222	-0.132	-0.008	-0.763	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.009	-0.007	 0.042	-0.000	 0.000	-0.001	
+Cf:
+-0.827	-0.660	 3.955	-0.014	 0.042	-0.092	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\031_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.09
+Pressione assoluta [Pa]: 100105.7
+rho [kg/m^3]: 1.162
+Pitot V Galleria 10.9499	V Campo 9.21257	VCampo/VGalleria 0.841339
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.406	 2.389	 0.472	 0.274	-0.026	 0.189	
+Cf:
+-0.008	 0.048	 0.010	 0.006	-0.001	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+ 0.280	 1.753	-4.608	 0.158	-0.029	-0.050	
+Cf:
+ 0.006	 0.036	-0.093	 0.003	-0.001	-0.001	
+
+Bilancia:	ATI10057
+Forze:
+ 0.817	 0.474	 2.311	 0.112	-0.029	-0.016	
+Cf:
+ 0.017	 0.010	 0.047	 0.002	-0.001	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 1.097	 2.227	-2.297	 0.270	-0.058	-0.067	
+Cf:
+ 0.022	 0.045	-0.047	 0.005	-0.001	-0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\032_SIW_ATI_P7000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.99
+Pressione assoluta [Pa]: 99800.5
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.299528	V Campo 0.14863	VCampo/VGalleria 0.496215
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.005	 0.025	 0.077	 0.001	-0.001	-0.002	
+Cf:
+ 0.425	 1.966	 6.047	 0.112	-0.094	-0.158	
+
+Bilancia:	ATI8748
+Forze:
+-4.635	-0.054	 0.073	 0.002	-0.051	-0.035	
+Cf:
+-362.288	-4.248	 5.735	 0.166	-4.020	-2.746	
+
+Bilancia:	ATI10057
+Forze:
+ 4.695	 0.081	-0.040	-0.003	 0.052	-0.004	
+Cf:
+366.936	 6.295	-3.126	-0.230	 4.048	-0.334	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.059	 0.026	 0.033	-0.001	 0.000	-0.039	
+Cf:
+ 4.648	 2.047	 2.609	-0.064	 0.028	-3.080	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\033_NOW_ATI_P0000_Ang+000
+-------------------------->> correggi
+E:\2023-BJORN\ATI\028_NOW_ATI_P0000_Ang+000.mat
+E:\2023-BJORN\ATI\029_SIW_ATI_P7000_Ang+000.mat
+E:\2023-BJORN\ATI\030_NOW_ATI_P0000_Ang+000.mat
+correggi
+E:\2023-BJORN\ATI\031_NOW_ATI_P0000_Ang+000.mat
+E:\2023-BJORN\ATI\032_SIW_ATI_P7000_Ang+000.mat
+E:\2023-BJORN\ATI\033_NOW_ATI_P0000_Ang+000.mat
+
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.83
+Pressione assoluta [Pa]: 99797.5
+rho [kg/m^3]: 1.159
+Pitot V Galleria 0.210976	V Campo 0.160943	VCampo/VGalleria 0.76285
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.007	-0.005	 0.029	-0.001	-0.000	 0.001	
+Cf:
+-0.463	-0.354	 1.923	-0.039	-0.001	 0.072	
+
+Bilancia:	ATI8748
+Forze:
+ 4.486	 0.020	-0.041	-0.002	 0.052	 0.015	
+Cf:
+298.897	 1.334	-2.755	-0.156	 3.466	 0.974	
+
+Bilancia:	ATI10057
+Forze:
+-4.544	-0.085	 0.065	 0.003	-0.053	-0.004	
+Cf:
+-302.719	-5.664	 4.313	 0.189	-3.531	-0.273	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.057	-0.065	 0.023	 0.001	-0.001	 0.011	
+Cf:
+-3.823	-4.330	 1.558	 0.034	-0.064	 0.701	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\034_NOW_ATI_P0000_Ang-030
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.21
+Pressione assoluta [Pa]: 100092.3
+rho [kg/m^3]: 1.161
+Pitot V Galleria 10.9429	V Campo 9.2248	VCampo/VGalleria 0.842994
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.425	 2.282	 1.518	 0.254	-0.081	 0.207	
+Cf:
+-0.009	 0.046	 0.031	 0.005	-0.002	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+-0.551	 2.497	-3.192	 0.197	-0.027	-0.064	
+Cf:
+-0.011	 0.051	-0.065	 0.004	-0.001	-0.001	
+
+Bilancia:	ATI10057
+Forze:
+ 1.491	 0.493	 2.653	 0.102	-0.011	-0.016	
+Cf:
+ 0.030	 0.010	 0.054	 0.002	-0.000	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.940	 2.990	-0.539	 0.299	-0.038	-0.079	
+Cf:
+ 0.019	 0.061	-0.011	 0.006	-0.001	-0.002	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\035_SIW_ATI_P7000_Ang-030
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.08
+Pressione assoluta [Pa]: 99785.4
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.240171	V Campo 0.170345	VCampo/VGalleria 0.709265
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.020	 0.019	 0.088	 0.001	-0.002	-0.002	
+Cf:
+ 1.209	 1.121	 5.215	 0.042	-0.109	-0.099	
+
+Bilancia:	ATI8748
+Forze:
+-5.120	-0.044	 0.060	 0.003	-0.058	-0.039	
+Cf:
+-304.794	-2.646	 3.551	 0.160	-3.442	-2.306	
+
+Bilancia:	ATI10057
+Forze:
+ 5.185	 0.084	 0.034	-0.003	 0.057	 0.008	
+Cf:
+308.639	 5.012	 1.996	-0.208	 3.408	 0.499	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.065	 0.040	 0.093	-0.001	-0.001	-0.030	
+Cf:
+ 3.846	 2.367	 5.547	-0.047	-0.034	-1.807	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\036_NOW_ATI_P0000_Ang-030
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.94
+Pressione assoluta [Pa]: 99784.4
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.198998	V Campo 0.188293	VCampo/VGalleria 0.946207
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.018	-0.004	 0.033	-0.000	 0.001	 0.001	
+Cf:
+-0.901	-0.176	 1.591	-0.023	 0.034	 0.049	
+
+Bilancia:	ATI8748
+Forze:
+ 4.199	 0.088	-0.016	-0.003	 0.049	 0.031	
+Cf:
+204.487	 4.298	-0.764	-0.152	 2.400	 1.534	
+
+Bilancia:	ATI10057
+Forze:
+-4.273	-0.144	 0.029	 0.004	-0.050	 0.019	
+Cf:
+-208.083	-7.022	 1.419	 0.173	-2.425	 0.911	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.074	-0.056	 0.013	 0.000	-0.001	 0.050	
+Cf:
+-3.596	-2.724	 0.655	 0.021	-0.025	 2.445	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\037_NOW_ATI_P0000_Ang-040
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.23
+Pressione assoluta [Pa]: 100081.1
+rho [kg/m^3]: 1.161
+Pitot V Galleria 10.9677	V Campo 9.27148	VCampo/VGalleria 0.845343
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.443	 2.171	 2.014	 0.232	-0.126	 0.195	
+Cf:
+-0.009	 0.044	 0.040	 0.005	-0.003	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+-0.093	 3.032	-2.336	 0.195	-0.013	-0.070	
+Cf:
+-0.002	 0.061	-0.047	 0.004	-0.000	-0.001	
+
+Bilancia:	ATI10057
+Forze:
+ 0.962	 0.505	 2.497	 0.071	-0.008	-0.024	
+Cf:
+ 0.019	 0.010	 0.050	 0.001	-0.000	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.869	 3.537	 0.161	 0.266	-0.021	-0.094	
+Cf:
+ 0.017	 0.071	 0.003	 0.005	-0.000	-0.002	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\038_SIW_ATI_P7000_Ang-040
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.15
+Pressione assoluta [Pa]: 99776.9
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.310312	V Campo 0.120711	VCampo/VGalleria 0.389
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.031	 0.013	 0.060	 0.001	-0.002	-0.002	
+Cf:
+ 3.692	 1.566	 7.084	 0.089	-0.262	-0.242	
+
+Bilancia:	ATI8748
+Forze:
+-5.930	-0.048	 0.055	 0.003	-0.069	-0.071	
+Cf:
+-703.155	-5.639	 6.559	 0.329	-8.186	-8.426	
+
+Bilancia:	ATI10057
+Forze:
+ 6.019	 0.104	 0.010	-0.004	 0.068	 0.042	
+Cf:
+713.764	12.391	 1.194	-0.433	 8.012	 5.003	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.089	 0.057	 0.065	-0.001	-0.001	-0.029	
+Cf:
+10.610	 6.751	 7.753	-0.104	-0.174	-3.422	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\039_NOW_ATI_P0000_Ang-040
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 26.94
+Pressione assoluta [Pa]: 99774.6
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.19145	V Campo 0.136342	VCampo/VGalleria 0.712154
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.033	-0.007	 0.011	-0.001	 0.001	 0.002	
+Cf:
+-3.075	-0.608	 1.053	-0.099	 0.104	 0.154	
+
+Bilancia:	ATI8748
+Forze:
+ 5.336	 0.048	 0.021	-0.001	 0.060	 0.048	
+Cf:
+495.617	 4.488	 1.908	-0.100	 5.601	 4.437	
+
+Bilancia:	ATI10057
+Forze:
+-5.440	-0.123	 0.044	 0.002	-0.061	-0.025	
+Cf:
+-505.327	-11.461	 4.080	 0.150	-5.648	-2.334	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.105	-0.075	 0.064	 0.001	-0.001	 0.023	
+Cf:
+-9.710	-6.973	 5.988	 0.050	-0.047	 2.103	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\040_NOW_ATI_P0000_Ang-050
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.28
+Pressione assoluta [Pa]: 100074.3
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.984	V Campo 9.27381	VCampo/VGalleria 0.844299
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.389	 1.637	 2.212	 0.165	-0.149	 0.155	
+Cf:
+-0.008	 0.033	 0.044	 0.003	-0.003	 0.003	
+
+Bilancia:	ATI8748
+Forze:
+-0.974	 3.246	-1.393	 0.148	-0.015	-0.085	
+Cf:
+-0.020	 0.065	-0.028	 0.003	-0.000	-0.002	
+
+Bilancia:	ATI10057
+Forze:
+ 2.005	 0.774	 2.158	 0.026	-0.003	-0.004	
+Cf:
+ 0.040	 0.016	 0.043	 0.001	-0.000	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 1.031	 4.020	 0.765	 0.174	-0.018	-0.089	
+Cf:
+ 0.021	 0.081	 0.015	 0.003	-0.000	-0.002	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\041_SIW_ATI_P7000_Ang-050
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.22
+Pressione assoluta [Pa]: 99775.8
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.27487	V Campo 0.160017	VCampo/VGalleria 0.582157
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.028	 0.005	 0.074	 0.000	-0.003	-0.002	
+Cf:
+ 1.903	 0.325	 5.014	 0.030	-0.173	-0.115	
+
+Bilancia:	ATI8748
+Forze:
+-8.586	-0.045	-0.000	 0.002	-0.098	-0.086	
+Cf:
+-579.557	-3.064	-0.022	 0.132	-6.607	-5.830	
+
+Bilancia:	ATI10057
+Forze:
+ 8.714	 0.143	-0.010	-0.002	 0.097	 0.064	
+Cf:
+588.202	 9.623	-0.683	-0.161	 6.538	 4.287	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.128	 0.097	-0.010	-0.000	-0.001	-0.023	
+Cf:
+ 8.645	 6.560	-0.705	-0.029	-0.069	-1.543	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\042_NOW_ATI_P0000_Ang-050
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.00
+Pressione assoluta [Pa]: 99774.9
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.140235	V Campo 0.122696	VCampo/VGalleria 0.874933
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.038	-0.008	 0.010	-0.001	 0.001	 0.001	
+Cf:
+-4.363	-0.929	 1.105	-0.128	 0.158	 0.161	
+
+Bilancia:	ATI8748
+Forze:
+ 6.961	-0.012	-0.015	-0.000	 0.081	 0.032	
+Cf:
+798.568	-1.348	-1.745	-0.005	 9.316	 3.728	
+
+Bilancia:	ATI10057
+Forze:
+-7.066	-0.104	 0.041	 0.000	-0.080	-0.047	
+Cf:
+-810.577	-11.904	 4.724	 0.015	-9.136	-5.405	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.105	-0.116	 0.026	 0.000	 0.002	-0.015	
+Cf:
+-12.009	-13.252	 2.980	 0.011	 0.179	-1.678	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\043_NOW_ATI_P0000_Ang-060
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.34
+Pressione assoluta [Pa]: 100076.4
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.9739	V Campo 9.23315	VCampo/VGalleria 0.841376
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.363	 1.041	 2.161	 0.093	-0.149	 0.110	
+Cf:
+-0.007	 0.021	 0.044	 0.002	-0.003	 0.002	
+
+Bilancia:	ATI8748
+Forze:
+-0.126	 3.340	 0.168	 0.074	 0.005	-0.107	
+Cf:
+-0.003	 0.068	 0.003	 0.002	 0.000	-0.002	
+
+Bilancia:	ATI10057
+Forze:
+ 0.845	 1.205	 2.204	-0.045	-0.014	 0.034	
+Cf:
+ 0.017	 0.024	 0.045	-0.001	-0.000	 0.001	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.719	 4.545	 2.372	 0.029	-0.010	-0.073	
+Cf:
+ 0.015	 0.092	 0.048	 0.001	-0.000	-0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\044_SIW_ATI_P7000_Ang-060
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.29
+Pressione assoluta [Pa]: 99784.1
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.272349	V Campo 0.202629	VCampo/VGalleria 0.744006
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.025	 0.005	 0.004	 0.000	-0.002	-0.001	
+Cf:
+ 1.055	 0.222	 0.171	 0.016	-0.104	-0.038	
+
+Bilancia:	ATI8748
+Forze:
+-7.575	-0.026	 0.040	 0.002	-0.087	-0.086	
+Cf:
+-318.887	-1.082	 1.690	 0.065	-3.651	-3.607	
+
+Bilancia:	ATI10057
+Forze:
+ 7.687	 0.115	 0.023	-0.002	 0.086	 0.075	
+Cf:
+323.638	 4.845	 0.968	-0.069	 3.621	 3.172	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.113	 0.089	 0.063	-0.000	-0.001	-0.010	
+Cf:
+ 4.751	 3.763	 2.658	-0.004	-0.030	-0.435	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\045_NOW_ATI_P0000_Ang-060
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.12
+Pressione assoluta [Pa]: 99783.4
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.219032	V Campo 0.280073	VCampo/VGalleria 1.27869
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.020	 0.008	 0.027	 0.001	 0.001	 0.001	
+Cf:
+-0.451	 0.170	 0.597	 0.013	 0.023	 0.031	
+
+Bilancia:	ATI8748
+Forze:
+-0.025	-0.012	 0.038	-0.002	 0.001	 0.088	
+Cf:
+-0.540	-0.269	 0.845	-0.049	 0.020	 1.940	
+
+Bilancia:	ATI10057
+Forze:
+-0.022	 0.007	 0.042	 0.002	-0.000	-0.099	
+Cf:
+-0.478	 0.145	 0.935	 0.037	-0.008	-2.180	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.046	-0.006	 0.081	-0.001	 0.001	-0.011	
+Cf:
+-1.017	-0.124	 1.780	-0.012	 0.012	-0.240	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\046_NOW_ATI_P0000_Ang-070
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.49
+Pressione assoluta [Pa]: 100082.5
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.9753	V Campo 9.28455	VCampo/VGalleria 0.845951
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.300	 0.230	 2.028	 0.005	-0.125	 0.044	
+Cf:
+-0.006	 0.005	 0.041	 0.000	-0.003	 0.001	
+
+Bilancia:	ATI8748
+Forze:
+ 0.995	 3.069	 1.385	 0.004	 0.023	-0.095	
+Cf:
+ 0.020	 0.061	 0.028	 0.000	 0.000	-0.002	
+
+Bilancia:	ATI10057
+Forze:
+-0.534	 1.770	 2.259	-0.075	-0.034	 0.044	
+Cf:
+-0.011	 0.035	 0.045	-0.002	-0.001	 0.001	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.461	 4.839	 3.645	-0.071	-0.010	-0.051	
+Cf:
+ 0.009	 0.097	 0.073	-0.001	-0.000	-0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\047_SIW_ATI_P7000_Ang-070
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.34
+Pressione assoluta [Pa]: 99783.8
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.270877	V Campo 0.247473	VCampo/VGalleria 0.913598
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.016	-0.008	 0.051	-0.001	-0.002	-0.000	
+Cf:
+ 0.441	-0.233	 1.429	-0.019	-0.044	-0.009	
+
+Bilancia:	ATI8748
+Forze:
+-5.610	-0.031	 0.019	 0.003	-0.066	-0.080	
+Cf:
+-158.371	-0.864	 0.546	 0.081	-1.870	-2.266	
+
+Bilancia:	ATI10057
+Forze:
+ 5.695	 0.087	 0.004	-0.003	 0.066	 0.069	
+Cf:
+160.775	 2.442	 0.116	-0.094	 1.871	 1.953	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.085	 0.056	 0.023	-0.000	 0.000	-0.011	
+Cf:
+ 2.404	 1.578	 0.662	-0.013	 0.002	-0.312	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\048_NOW_ATI_P0000_Ang-070
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.16
+Pressione assoluta [Pa]: 99784.2
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.227374	V Campo 0.211382	VCampo/VGalleria 0.929667
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.018	 0.002	 0.035	-0.000	 0.001	 0.000	
+Cf:
+-0.701	 0.064	 1.345	-0.008	 0.032	 0.011	
+
+Bilancia:	ATI8748
+Forze:
+ 5.255	 0.021	-0.004	-0.002	 0.061	 0.015	
+Cf:
+203.207	 0.793	-0.162	-0.095	 2.374	 0.591	
+
+Bilancia:	ATI10057
+Forze:
+-5.314	-0.080	 0.009	 0.003	-0.063	-0.010	
+Cf:
+-205.484	-3.083	 0.335	 0.116	-2.454	-0.387	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.059	-0.059	 0.004	 0.001	-0.002	 0.005	
+Cf:
+-2.277	-2.290	 0.172	 0.021	-0.080	 0.205	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\049_NOW_ATI_P0000_Ang-080
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.54
+Pressione assoluta [Pa]: 100081.9
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.974	V Campo 9.20246	VCampo/VGalleria 0.838568
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.267	-0.128	 1.901	-0.025	-0.095	 0.013	
+Cf:
+-0.005	-0.003	 0.039	-0.001	-0.002	 0.000	
+
+Bilancia:	ATI8748
+Forze:
+-0.148	 2.694	 2.398	-0.054	 0.023	-0.105	
+Cf:
+-0.003	 0.055	 0.049	-0.001	 0.000	-0.002	
+
+Bilancia:	ATI10057
+Forze:
+ 0.247	 1.909	 1.786	-0.028	 0.001	 0.072	
+Cf:
+ 0.005	 0.039	 0.036	-0.001	 0.000	 0.001	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.099	 4.603	 4.184	-0.082	 0.023	-0.033	
+Cf:
+ 0.002	 0.094	 0.085	-0.002	 0.000	-0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\050_SIW_ATI_P7000_Ang-080
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.36
+Pressione assoluta [Pa]: 99781.0
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.318768	V Campo 0.124218	VCampo/VGalleria 0.38968
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.001	-0.015	-0.008	-0.001	-0.000	 0.001	
+Cf:
+-0.110	-1.709	-0.871	-0.080	-0.036	 0.109	
+
+Bilancia:	ATI8748
+Forze:
+-5.412	-0.028	-0.000	 0.004	-0.064	-0.088	
+Cf:
+-606.424	-3.125	-0.007	 0.452	-7.218	-9.895	
+
+Bilancia:	ATI10057
+Forze:
+ 5.503	 0.087	 0.004	-0.004	 0.064	 0.078	
+Cf:
+616.623	 9.734	 0.488	-0.449	 7.217	 8.698	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.091	 0.059	 0.004	 0.000	-0.000	-0.011	
+Cf:
+10.199	 6.609	 0.482	 0.003	-0.001	-1.196	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\051_NOW_ATI_P0000_Ang-080
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.21
+Pressione assoluta [Pa]: 99781.5
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.231089	V Campo 0.305453	VCampo/VGalleria 1.3218
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.016	 0.009	 0.038	 0.000	 0.001	 0.000	
+Cf:
+-0.302	 0.158	 0.700	 0.005	 0.012	 0.005	
+
+Bilancia:	ATI8748
+Forze:
+ 0.915	 0.053	 0.018	-0.005	 0.014	 0.202	
+Cf:
+16.957	 0.978	 0.328	-0.096	 0.265	 3.735	
+
+Bilancia:	ATI10057
+Forze:
+-1.036	-0.114	 0.027	 0.003	-0.012	-0.138	
+Cf:
+-19.192	-2.109	 0.499	 0.052	-0.219	-2.562	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.121	-0.061	 0.045	-0.002	 0.002	 0.063	
+Cf:
+-2.235	-1.130	 0.827	-0.045	 0.046	 1.173	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\052_NOW_ATI_P0000_Ang-090
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.40
+Pressione assoluta [Pa]: 100084.8
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.9855	V Campo 9.21681	VCampo/VGalleria 0.839
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.252	-0.038	 1.612	-0.004	-0.072	 0.011	
+Cf:
+-0.005	-0.001	 0.033	-0.000	-0.001	 0.000	
+
+Bilancia:	ATI8748
+Forze:
+ 4.489	 2.171	 2.392	-0.071	 0.072	-0.056	
+Cf:
+ 0.091	 0.044	 0.049	-0.001	 0.001	-0.001	
+
+Bilancia:	ATI10057
+Forze:
+-4.610	 1.927	 1.815	-0.037	-0.056	 0.023	
+Cf:
+-0.094	 0.039	 0.037	-0.001	-0.001	 0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.121	 4.097	 4.207	-0.108	 0.016	-0.033	
+Cf:
+-0.002	 0.083	 0.085	-0.002	 0.000	-0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\053_SIW_ATI_P7000_Ang-090
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.29
+Pressione assoluta [Pa]: 99788.8
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.308896	V Campo 0.122014	VCampo/VGalleria 0.395001
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.002	-0.002	-0.017	-0.000	-0.000	 0.000	
+Cf:
+-0.194	-0.256	-1.968	-0.001	-0.017	 0.014	
+
+Bilancia:	ATI8748
+Forze:
+-1.233	-0.036	 0.005	 0.003	-0.017	-0.056	
+Cf:
+-143.179	-4.160	 0.576	 0.343	-1.951	-6.524	
+
+Bilancia:	ATI10057
+Forze:
+ 1.259	 0.039	-0.009	-0.002	 0.018	 0.033	
+Cf:
+146.170	 4.486	-1.097	-0.283	 2.053	 3.815	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.026	 0.003	-0.004	 0.001	 0.001	-0.023	
+Cf:
+ 2.991	 0.327	-0.521	 0.060	 0.102	-2.708	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\054_NOW_ATI_P0000_Ang-090
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.10
+Pressione assoluta [Pa]: 99791.8
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.240444	V Campo 0.215874	VCampo/VGalleria 0.897812
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.013	-0.002	 0.013	-0.000	 0.001	-0.000	
+Cf:
+-0.473	-0.073	 0.493	-0.011	 0.026	-0.002	
+
+Bilancia:	ATI8748
+Forze:
+ 3.870	-0.119	-0.005	 0.002	 0.046	-0.059	
+Cf:
+143.438	-4.405	-0.200	 0.086	 1.690	-2.172	
+
+Bilancia:	ATI10057
+Forze:
+-3.917	 0.079	 0.024	-0.001	-0.044	-0.039	
+Cf:
+-145.176	 2.928	 0.885	-0.051	-1.634	-1.453	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.047	-0.040	 0.018	 0.001	 0.002	-0.098	
+Cf:
+-1.738	-1.476	 0.684	 0.035	 0.056	-3.624	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\055_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.37
+Pressione assoluta [Pa]: 100092.8
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.9379	V Campo 9.24221	VCampo/VGalleria 0.844967
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.308	 2.601	-0.211	 0.267	 0.017	 0.174	
+Cf:
+-0.006	 0.052	-0.004	 0.005	 0.000	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+ 2.647	 0.132	-6.456	 0.024	-0.025	-0.026	
+Cf:
+ 0.053	 0.003	-0.130	 0.000	-0.001	-0.001	
+
+Bilancia:	ATI10057
+Forze:
+-1.317	 0.098	 2.452	 0.006	-0.099	-0.002	
+Cf:
+-0.027	 0.002	 0.049	 0.000	-0.002	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 1.330	 0.230	-4.005	 0.030	-0.124	-0.028	
+Cf:
+ 0.027	 0.005	-0.081	 0.001	-0.002	-0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\056_SIW_ATI_P7000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.34
+Pressione assoluta [Pa]: 99790.4
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.33083	V Campo 0.122908	VCampo/VGalleria 0.371512
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.050	 0.046	 0.053	 0.003	 0.003	-0.003	
+Cf:
+-5.773	 5.264	 6.052	 0.368	 0.329	-0.288	
+
+Bilancia:	ATI8748
+Forze:
+-3.064	-0.006	 0.040	 0.001	-0.034	-0.037	
+Cf:
+-350.664	-0.667	 4.529	 0.148	-3.877	-4.262	
+
+Bilancia:	ATI10057
+Forze:
+ 3.109	 0.056	-0.002	-0.001	 0.034	 0.031	
+Cf:
+355.744	 6.364	-0.244	-0.134	 3.924	 3.492	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.044	 0.050	 0.037	 0.000	 0.000	-0.007	
+Cf:
+ 5.080	 5.697	 4.285	 0.014	 0.046	-0.770	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\057_NOW_ATI_P0000_Ang+000
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.11
+Pressione assoluta [Pa]: 99788.5
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.241912	V Campo 0.216114	VCampo/VGalleria 0.893357
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.006	-0.017	-0.035	-0.001	-0.000	 0.001	
+Cf:
+-0.231	-0.617	-1.305	-0.054	-0.001	 0.030	
+
+Bilancia:	ATI8748
+Forze:
+ 9.440	 0.195	-0.045	-0.004	 0.109	-0.086	
+Cf:
+349.155	 7.225	-1.681	-0.137	 4.041	-3.197	
+
+Bilancia:	ATI10057
+Forze:
+-9.450	-0.291	 0.001	 0.006	-0.110	 0.203	
+Cf:
+-349.530	-10.746	 0.026	 0.213	-4.082	 7.525	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.010	-0.095	-0.045	 0.002	-0.001	 0.117	
+Cf:
+-0.375	-3.520	-1.655	 0.076	-0.041	 4.328	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\058_NOW_ATI_P0000_Ang+030
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.41
+Pressione assoluta [Pa]: 100089.4
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.9616	V Campo 9.3159	VCampo/VGalleria 0.849865
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.148	 2.585	-1.539	 0.238	 0.095	 0.193	
+Cf:
+-0.003	 0.051	-0.031	 0.005	 0.002	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+ 1.695	-2.474	-3.950	-0.181	-0.002	 0.030	
+Cf:
+ 0.034	-0.049	-0.078	-0.004	-0.000	 0.001	
+
+Bilancia:	ATI10057
+Forze:
+-0.602	-0.423	 2.333	-0.116	-0.043	-0.020	
+Cf:
+-0.012	-0.008	 0.046	-0.002	-0.001	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 1.093	-2.897	-1.617	-0.297	-0.044	 0.010	
+Cf:
+ 0.022	-0.058	-0.032	-0.006	-0.001	 0.000	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\059_SIW_ATI_P7000_Ang+030
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.31
+Pressione assoluta [Pa]: 99788.7
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.302942	V Campo 0.150642	VCampo/VGalleria 0.497264
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.039	 0.008	-0.024	 0.001	 0.002	 0.000	
+Cf:
+-2.989	 0.586	-1.828	 0.045	 0.123	 0.004	
+
+Bilancia:	ATI8748
+Forze:
+-4.256	-0.021	 0.029	 0.001	-0.048	 0.016	
+Cf:
+-324.187	-1.563	 2.229	 0.100	-3.634	 1.223	
+
+Bilancia:	ATI10057
+Forze:
+ 4.294	 0.079	-0.017	-0.001	 0.049	-0.025	
+Cf:
+327.126	 5.980	-1.295	-0.088	 3.734	-1.867	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.039	 0.058	 0.012	 0.000	 0.001	-0.008	
+Cf:
+ 2.939	 4.417	 0.934	 0.013	 0.099	-0.645	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\060_NOW_ATI_P0000_Ang+030
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.11
+Pressione assoluta [Pa]: 99789.9
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.230688	V Campo 0.280743	VCampo/VGalleria 1.21698
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.010	 0.003	-0.011	-0.000	 0.000	 0.002	
+Cf:
+-0.210	 0.071	-0.236	-0.001	 0.001	 0.034	
+
+Bilancia:	ATI8748
+Forze:
+ 2.395	-0.029	 0.017	-0.004	 0.029	 0.126	
+Cf:
+52.497	-0.626	 0.363	-0.088	 0.625	 2.767	
+
+Bilancia:	ATI10057
+Forze:
+-2.496	-0.090	 0.013	 0.001	-0.028	-0.100	
+Cf:
+-54.707	-1.963	 0.284	 0.024	-0.616	-2.200	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.101	-0.118	 0.030	-0.003	 0.000	 0.026	
+Cf:
+-2.210	-2.589	 0.647	-0.064	 0.010	 0.568	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\061_NOW_ATI_P0000_Ang+060
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.41
+Pressione assoluta [Pa]: 100088.3
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.9946	V Campo 9.18421	VCampo/VGalleria 0.835335
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.060	 1.418	-2.565	 0.155	 0.160	 0.106	
+Cf:
+ 0.001	 0.029	-0.052	 0.003	 0.003	 0.002	
+
+Bilancia:	ATI8748
+Forze:
+ 2.786	-3.788	 0.005	-0.105	 0.045	 0.067	
+Cf:
+ 0.057	-0.077	 0.000	-0.002	 0.001	 0.001	
+
+Bilancia:	ATI10057
+Forze:
+-2.115	-1.081	 1.980	 0.019	-0.032	-0.010	
+Cf:
+-0.043	-0.022	 0.040	 0.000	-0.001	-0.000	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.670	-4.869	 1.985	-0.086	 0.013	 0.058	
+Cf:
+ 0.014	-0.100	 0.041	-0.002	 0.000	 0.001	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\062_SIW_ATI_P7000_Ang+060
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.37
+Pressione assoluta [Pa]: 99786.6
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.30247	V Campo 0.206016	VCampo/VGalleria 0.681113
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.019	-0.001	 0.030	 0.000	 0.001	 0.000	
+Cf:
+-0.794	-0.027	 1.222	 0.006	 0.029	 0.009	
+
+Bilancia:	ATI8748
+Forze:
+-4.921	-0.050	-0.016	 0.002	-0.056	 0.048	
+Cf:
+-200.466	-2.032	-0.657	 0.091	-2.295	 1.967	
+
+Bilancia:	ATI10057
+Forze:
+ 4.958	 0.113	 0.010	-0.003	 0.058	-0.072	
+Cf:
+201.987	 4.622	 0.427	-0.109	 2.343	-2.953	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.037	 0.064	-0.006	-0.000	 0.001	-0.024	
+Cf:
+ 1.521	 2.590	-0.230	-0.018	 0.049	-0.985	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\063_NOW_ATI_P0000_Ang+060
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.16
+Pressione assoluta [Pa]: 99783.8
+rho [kg/m^3]: 1.158
+Pitot V Galleria 0.240709	V Campo 0.126345	VCampo/VGalleria 0.524889
+Bilancia:	ATI8747-COLUMN
+Forze:
+-0.024	-0.002	-0.054	-0.001	 0.000	 0.001	
+Cf:
+-2.652	-0.226	-5.885	-0.110	 0.001	 0.102	
+
+Bilancia:	ATI8748
+Forze:
+ 0.411	-0.006	 0.025	 0.001	 0.002	-0.138	
+Cf:
+44.520	-0.611	 2.725	 0.080	 0.163	-14.985	
+
+Bilancia:	ATI10057
+Forze:
+-0.396	 0.049	 0.015	 0.001	-0.006	 0.099	
+Cf:
+-42.811	 5.308	 1.574	 0.137	-0.635	10.683	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.016	 0.043	 0.040	 0.002	-0.004	-0.040	
+Cf:
+ 1.708	 4.697	 4.299	 0.217	-0.472	-4.302	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\064_NOW_ATI_P0000_Ang+090
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.45
+Pressione assoluta [Pa]: 100078.6
+rho [kg/m^3]: 1.160
+Pitot V Galleria 10.9797	V Campo 9.20002	VCampo/VGalleria 0.83791
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.001	 0.009	-1.585	-0.000	 0.084	-0.002	
+Cf:
+ 0.000	 0.000	-0.032	-0.000	 0.002	-0.000	
+
+Bilancia:	ATI8748
+Forze:
+ 1.171	-2.177	 2.109	 0.066	 0.026	 0.048	
+Cf:
+ 0.024	-0.044	 0.043	 0.001	 0.001	 0.001	
+
+Bilancia:	ATI10057
+Forze:
+-1.217	-2.259	 2.247	 0.082	-0.031	-0.057	
+Cf:
+-0.025	-0.046	 0.046	 0.002	-0.001	-0.001	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+-0.046	-4.435	 4.356	 0.148	-0.005	-0.009	
+Cf:
+-0.001	-0.090	 0.089	 0.003	-0.000	-0.000	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\065_SIW_ATI_P7000_Ang+090
+--------------------------
+
+*************
+Inizio postprocess
+
+Temperatura [°C]: 27.40
+Pressione assoluta [Pa]: 99776.4
+rho [kg/m^3]: 1.157
+Pitot V Galleria 0.283714	V Campo 0.196058	VCampo/VGalleria 0.69104
+Bilancia:	ATI8747-COLUMN
+Forze:
+ 0.002	-0.019	 0.072	-0.001	-0.001	 0.001	
+Cf:
+ 0.097	-0.847	 3.259	-0.036	-0.024	 0.024	
+
+Bilancia:	ATI8748
+Forze:
+-6.127	-0.036	-0.019	 0.001	-0.071	 0.068	
+Cf:
+-275.641	-1.623	-0.845	 0.055	-3.188	 3.062	
+
+Bilancia:	ATI10057
+Forze:
+ 6.179	 0.123	-0.009	-0.002	 0.071	-0.080	
+Cf:
+278.001	 5.535	-0.397	-0.106	 3.204	-3.577	
+---------------------------------------------
+Bilancia:	TOT-PONTUUN
+Fx		Fy		Fz		Mx		My		Mz
+ 0.052	 0.087	-0.028	-0.001	 0.000	-0.011	
+Cf:
+ 2.360	 3.912	-1.242	-0.051	 0.016	-0.515	
+---------------------------------------------
+
+Fine postprocess.. bravi noi!
+
+File Salvato:	E:\2023-BJORN\ATI\066_NOW_ATI_P0000_Ang+090
+-------------------------->> 

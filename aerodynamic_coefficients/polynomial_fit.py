@@ -292,8 +292,8 @@ def cons_poly_fit(data_in, data_ind_out, data_ind_bounds, degree, ineq_constrain
         # Re-writting again the result from a solve_linear_system format (Ab) back into the same scipy.optimize.LinearConstraint format (A and b)
         eq_cons_sol = [(key - value) for (key, value) in Ab_eq_cons_reduced.items()]  # coef = f(other_coefs) <=> coef - f(other_coefs) = 0 <=> 'f(coefs) = 0'
         A_eq_cons, b_eq_cons = linear_eq_to_matrix(eq_cons_sol, coefs)
-        A_eq_cons = np.array(A_eq_cons).astype(np.float)  # converting to array
-        b_eq_cons = np.array(b_eq_cons.T)[0].astype(np.float)  # converting column vector to simple array
+        A_eq_cons = np.array(A_eq_cons).astype(np.float64)  # converting to array
+        b_eq_cons = np.array(b_eq_cons.T)[0].astype(np.float64)  # converting column vector to simple array
         # And finally getting the constraint in scipy:
         eq_cons_list_class = scipy.optimize.LinearConstraint(A_eq_cons, lb=b_eq_cons, ub=b_eq_cons)  # Object to use in scipy.optimize.minimize
         list_eq_and_ineq_cons_obj.append(eq_cons_list_class)  # List of scipy.optimize.LinearConstraint objects (maximum two elements in this list, one for eq., one for ineq. constraints).
