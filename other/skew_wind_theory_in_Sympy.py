@@ -652,11 +652,29 @@ delta_t = tt_Taylor - tb
 Cuvw_Taylor = Cuvw + Cuvw_db*delta_b + Cuvw_dt*delta_t
 fb_Gw =  S.Half * rho * V_linear**2 * T_GwbGwt_Taylor_6 * B_mat * Cuvw_Taylor - S.Half*rho*U**2*B_mat*Cuvw
 A_Gw = simplify(Matrix([[Poly(fb_Gw[i], u, v, w).coeff_monomial([u, v, w][j]) for j in range(3)] for i in range(6)]))  # <-------------------------------------------------- Enter in console to print nicely or do pprint
+# Result of A_Gw:
+# Matrix([
+# [    B*Cu*U*rho,                    B*U*rho*(Cu_db/cos(tb) - Cv)/2,      B*U*rho*(Cu_dt - Cw)/2],
+# [    B*Cv*U*rho,       B*U*rho*(Cu + Cv_db/cos(tb) - Cw*tan(tb))/2,             B*Cv_dt*U*rho/2],
+# [    B*Cw*U*rho,          B*U*rho*(Cv*sin(tb) + Cw_db)/(2*cos(tb)),      B*U*rho*(Cu + Cw_dt)/2],
+# [B**2*Cuu*U*rho,               B**2*U*rho*(Cuu_db/cos(tb) - Cvv)/2, B**2*U*rho*(Cuu_dt - Cww)/2],
+# [B**2*Cvv*U*rho, B**2*U*rho*(Cuu + Cvv_db/cos(tb) - Cww*tan(tb))/2,         B**2*Cvv_dt*U*rho/2],
+# [B**2*Cww*U*rho,     B**2*U*rho*(Cvv*sin(tb) + Cww_db)/(2*cos(tb)), B**2*U*rho*(Cuu + Cww_dt)/2]])
+
 
 # In Ls (ELs - 'Expressed with Ls coefficients'):
 Cxyz_Taylor = Cxyz + Cxyz_db*delta_b + Cxyz_dt*delta_t
 fad_Ls =  S.Half * rho * V_linear**2 * B_mat * Cxyz_Taylor
 A_Ls = simplify(Matrix([[Poly(fad_Ls[i], u, v, w).coeff_monomial([u, v, w][j]) for j in range(3)] for i in range(6)]))  # <-------------------------------------------------- Enter in console to print nicely or do pprint
+# Result of A_Ls:
+# Matrix([
+# [    B*Cx*U*rho,     B*Cx_db*U*rho/(2*cos(tb)),     B*Cx_dt*U*rho/2],
+# [    B*Cy*U*rho,     B*Cy_db*U*rho/(2*cos(tb)),     B*Cy_dt*U*rho/2],
+# [    B*Cz*U*rho,     B*Cz_db*U*rho/(2*cos(tb)),     B*Cz_dt*U*rho/2],
+# [B**2*Crx*U*rho, B**2*Crx_db*U*rho/(2*cos(tb)), B**2*Crx_dt*U*rho/2],
+# [B**2*Cry*U*rho, B**2*Cry_db*U*rho/(2*cos(tb)), B**2*Cry_dt*U*rho/2],
+# [B**2*Crz*U*rho, B**2*Crz_db*U*rho/(2*cos(tb)), B**2*Crz_dt*U*rho/2]])
+
 
 # # Confirmation:
 # Cuvw_Taylor_ECxyz = Cuvw_ECxyz + Cuvw_db_ECxyz*delta_b + Cuvw_dt_ECxyz*delta_t # Expressed in the Ls system

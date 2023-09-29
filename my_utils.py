@@ -1,4 +1,7 @@
 import numpy as np
+import os
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))  # Root directory that should be used to avoid path problems. See https://stackoverflow.com/questions/25389095/python-get-path-of-root-project-structure
 
 def rad(deg):
     return deg*np.pi/180

@@ -1,16 +1,16 @@
 import copy
-
 import pandas as pd
 import numpy as np
 from aero_coefficients import aero_coef, df_aero_coef_measurement_data, aero_coef_derivatives, rad, deg, Cx_factor, Cy_factor
 import matplotlib.pyplot as plt
 import matplotlib
 import os
+from my_utils import ROOT_DIR
 
 #####################################################################################################################
 # Raw Data from SOH
 #####################################################################################################################
-path_df = os.path.join(os.getcwd(), r'aerodynamic_coefficients', 'aero_coef_experimental_data.csv')
+path_df = os.path.join(ROOT_DIR, r'aerodynamic_coefficients', 'aero_coef_experimental_data.csv')
 df = pd.read_csv(path_df)  # raw original values
 betas_uncorrected_SOH = rad(df['SOH_beta_uncorrected[deg]'].to_numpy()) # SOH initial skew angle, before performing rotation about bridge axis (which changes the beta angle).
 alphas_SOH = rad(df['alpha[deg]'].to_numpy()) # Alpha: rotation about the bridge x-axis, which differs from the theta definition from L.D.Zhu and from SOH alpha (opposite direction).
@@ -23,7 +23,7 @@ C_SOH_adjusted_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'] * Cy_factor, df['Cz_Ls'],
 #####################################################################################################################
 # Raw Data from CFD
 #####################################################################################################################
-path_df_CFD = os.path.join(os.getcwd(), r'aerodynamic_coefficients', 'aero_coef_CFD_data.csv')
+path_df_CFD = os.path.join(ROOT_DIR, r'aerodynamic_coefficients', 'aero_coef_CFD_data.csv')
 df_CFD = pd.read_csv(path_df_CFD)  # raw original values
 betas_CFD = rad(df_CFD['beta[deg]'].to_numpy())
 thetas_CFD = rad(df_CFD['theta[deg]'].to_numpy())
@@ -238,7 +238,7 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
 # colormap_2var_cons_fit_zoomin(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5])
-colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5])
+# colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5])
 # colormap_2var_cons_fit_zoomin(method='2D', idx_to_plot=[1,2,3])
 # colormap_2var_cons_fit_zoomin(method='cos_rule', idx_to_plot=[1,2,3])
@@ -247,7 +247,7 @@ colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_pl
 #     if plot_other_bridges:
 #         import os
 #         import pandas as pd
-#         path_raw_data = os.path.join(os.getcwd(), r'other', 'Langenuen and other bridges - static coefficients.xlsx')
+#         path_raw_data = os.path.join(ROOT_DIR, r'other', 'Langenuen and other bridges - static coefficients.xlsx')
 #         str_bridges = ['Langenuen', 'Julsundet', 'Sotrabru']
 #         linestyles = ['dotted','dashed','dashdot']
 #         df_list = [pd.read_excel(io=path_raw_data, sheet_name='Langenuen_table_only'),
@@ -317,9 +317,7 @@ colormap_2var_cons_fit_zoomin(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_pl
 
 def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False, plot_CFD=False, plot_extra_lines=False):
     if plot_other_bridges:
-        import os
-        import pandas as pd
-        path_raw_data = os.path.join(os.getcwd(), r'other', 'Langenuen and other bridges - static coefficients - v5.xlsx')
+        path_raw_data = os.path.join(ROOT_DIR, r'other', 'Langenuen and other bridges - static coefficients - v5.xlsx')
         str_bridges = ['Langenuen', 'Julsundet', 'Sotrabru']
         linestyles = ['dotted','dashed','dashdot']
         df_list = [pd.read_excel(io=path_raw_data, sheet_name='Langenuen_table_only'),
@@ -352,6 +350,8 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
             title_str = [r'$C_{x}^{SOH\/\/Jul.\/scaled}$', r'$C_{y}^{SOH\/\/Jul.\/scaled}$', r'$C_{z}^{SOH\/\/Jul.\/scaled}$', r'$C_{rx}^{SOH\/\/Jul.\/scaled}$', r'$C_{ry}^{SOH\/\/Jul.\/scaled}$', r'$C_{rz}^{SOH\/\/Jul.\/scaled}$'][i]
         elif method == '2D_fit_cons_w_CFD_scale_to_Jul':
             title_str = [r'$C_{x}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{y}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{z}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{rx}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{ry}^{SOH&CFD\/\/Jul.\/scaled}$', r'$C_{rz}^{SOH&CFD\/\/Jul.\/scaled}$'][i]
+        elif method == '2D_fit_cons_polimi':
+            title_str = [r'$C_{x}^{Polimi}$', r'$C_{y}^{Polimi}$', r'$C_{z}^{Polimi}$', r'$C_{rx}^{Polimi}$', r'$C_{ry}^{Polimi}$', r'$C_{rz}^{Polimi}$'][i]
 
         # Plotting:
         plt.figure(figsize=(5, 4), dpi=300)
@@ -377,12 +377,12 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
 
             elif method in ['2D_fit_cons_scale_to_Jul', '2D_fit_cons_w_CFD_scale_to_Jul']:
                 df = df_aero_coef_measurement_data(method)
-                betas_SOH, thetas_SOH = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
+                betas_SOH_, thetas_SOH_ = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
                 SOH_mask = df['test_case_name'].str.startswith('K71')
                 CFD_mask = df['test_case_name'].str.startswith("'[b")
                 C_upscaled_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
-                empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH, beta, atol=rad(2)) & SOH_mask)]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_SOH,beta, atol=rad(2)) & SOH_mask)][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
-                empty_ax_CFD[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH, beta, atol=rad(2)) & CFD_mask)]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_SOH,beta, atol=rad(2)) & CFD_mask)][0].tolist(), alpha=0.8, label=measured_CFD_label, facecolor='none', marker=marker_list[b_i], s=markersize_list[b_i], edgecolors=color_list[b_i])
+                empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH_[np.where(np.isclose(betas_SOH_, beta, atol=rad(2)) & SOH_mask)]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_SOH_,beta, atol=rad(2)) & SOH_mask)][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
+                empty_ax_CFD[b_i] = plt.scatter(deg(thetas_SOH_[np.where(np.isclose(betas_SOH_, beta, atol=rad(2)) & CFD_mask)]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_SOH_,beta, atol=rad(2)) & CFD_mask)][0].tolist(), alpha=0.8, label=measured_CFD_label, facecolor='none', marker=marker_list[b_i], s=markersize_list[b_i], edgecolors=color_list[b_i])
             else:
                 empty_ax_SOH[b_i] = plt.scatter(deg(thetas_SOH[np.where(np.isclose(betas_SOH,beta, atol=rad(2)))]).tolist(),          C_SOH_Ls[i,np.where(np.isclose(betas_SOH,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_SOH_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
             if plot_CFD and method not in ['2D_fit_cons_scale_to_Jul', '2D_fit_cons_w_CFD_scale_to_Jul']:  # then the unfilled scatter markers shall represent CFD results, instead of being just a visual aid
@@ -426,7 +426,7 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
         ylims = [[-0.046, 0.002], [-0.04, 0.11], [-1.0, 0.6], [-0.16, 0.21], [None, None], [None, None]]
         plt.ylim(ylims[i])
         plt.tight_layout()
-        plt.savefig(r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg')
+        plt.savefig(os.path.join(ROOT_DIR, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg'))
         plt.close()
 
         # Plotting legend
@@ -450,13 +450,79 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
 # plot_2D_at_beta_fixed(method='2D_fit_free', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_scale_to_Jul', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
-plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[3], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
+# plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_scale_to_Jul', idx_to_plot=[3], plot_other_bridges=True, plot_CFD=False, plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_w_CFD_adjusted', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=True, plot_CFD=True,  plot_extra_lines=True)
 # plot_2D_at_beta_fixed(method='2D_fit_cons_2', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)
 
+def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2,3,4,5]):
+    # ZOOM IN GRAPH
+    # Tested Domain
+    theta_angle_step = 0.1  # in degrees.
+    thetas = np.arange(rad(-10), rad(10) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
+    beta_list = rad(np.array([0, 10, 20, 30, 40, 50, 60, 70, 80, 90]))
+    n_betas = len(beta_list)
+    from matplotlib.rcsetup import cycler
+
+    for i in idx_to_plot:
+        assert method == '2D_fit_cons_polimi'
+        title_str = [r'$C_{x}^{Polimi}$', r'$C_{y}^{Polimi}$', r'$C_{z}^{Polimi}$', r'$C_{rx}^{Polimi}$', r'$C_{ry}^{Polimi}$', r'$C_{rz}^{Polimi}$'][i]
+
+        # Plotting:
+        plt.figure(figsize=(5, 4), dpi=300)
+        ax = plt.axes()
+        # color_list = plt.cm.plasma(np.linspace(0, 0.95, len(beta_list))).tolist()
+        color_list = plt.cm.turbo(np.linspace(0, 0.95, len(beta_list))).tolist()
+        marker_list = ["^", "v", "s", "D", "p", "h", "8", "X", "P", "*"]
+        markersize_list = np.array([1.8, 1.8, 1.8, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3]) * 28
+        empty_ax_polimi = [None] * n_betas
+
+        plt.title(title_str +r'$(\beta,\theta)$ fit ($\beta$-fixed views)')
+
+        for b_i, beta in enumerate(beta_list):
+            C_Ci_grid_flat_Ls = aero_coef(np.ones(len(thetas)) * beta, thetas, method=method, coor_system='Ls')
+            # Line plots
+            plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], color=color_list[b_i], label=r'$\beta=$'+str(int(round(deg(beta),0)))+'$\degree$', alpha=0.8)  # , marker=marker_str_polimi[b_i],markevery=markevery, markersize=markersize_plt[b_i]*4, fillstyle='none')
+            measured_label = 'Measured' if b_i == 1 else ''
+
+            if method in ['2D_fit_cons_polimi']:
+                df = df_aero_coef_measurement_data(method)
+                betas_polimi, thetas_polimi = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
+                C_upscaled_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
+                empty_ax_polimi[b_i] = plt.scatter(deg(thetas_polimi[np.where(np.isclose(betas_polimi, beta, atol=rad(2)))]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_polimi,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
+        ax.set_xlabel(r'$\theta\/[\degree]$')
+        y_label_str = [r'$C_{x}$', r'$C_{y}$', r'$C_{z}$', r'$C_{rx}$', r'$C_{ry}$', r'$C_{rz}$'][i]
+        ax.set_ylabel(y_label_str)
+        handles, labels = ax.get_legend_handles_labels()
+        handles[0], handles[1], handles[2] = handles[2], handles[0], handles[1]  # swapping
+        labels[0], labels[1], labels[2] = labels[2], labels[0], labels[1]  # swapping
+
+
+        C_limits = [None,None,None,None,None,None]
+        plt.ylim(C_limits[i])
+        plt.xticks(np.arange(-10, 10+0.01, 2))
+
+        ylims = [[-0.046, 0.002], [-0.04, 0.125], [-1.05, 0.65], [-0.165, 0.215], [None, None], [None, None]]
+        plt.ylim(ylims[i])
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig(os.path.join(ROOT_DIR, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg'))
+        plt.close()
+
+        # Plotting legend
+        if i == 1:
+            from matplotlib.legend_handler import HandlerTuple
+            plt.figure(figsize=(2, 3), dpi=1000)
+            plt.axis("off")
+            plt.legend(handles, labels) #, handler_map={tuple: HandlerTuple(ndivide=None)})
+            plt.tight_layout()
+            plt.savefig(os.path.join(ROOT_DIR, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
+            plt.close()
+plot_2D_at_beta_fixed_polimi()
+
+raise NotImplementedError
 def plot_2D_at_theta_0(idx_to_plot=[0,1,2,3,4,5], plot_for_EACWE2022=False):
     beta_angle_step = 0.1  # in degrees.
     betas = np.arange(rad(-15), rad(105) + rad(theta_angle_step) * 0.012345, rad(beta_angle_step))
