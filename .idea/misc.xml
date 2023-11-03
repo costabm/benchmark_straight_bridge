@@ -2,7 +2,7 @@
 <project version="4">
   <component name="Black">
     <option name="enabledOnReformat" value="true" />
-    <option name="sdkUUID" value="e74039f2-3e7f-49e0-8227-37bdbbba5c85" />
+    <option name="sdkName" value="C:\Users\bercos\AppData\Local\anaconda3" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="C:\Users\bercos\AppData\Local\anaconda3" project-jdk-type="Python SDK" />
   <component name="PyCharmProfessionalAdvertiser">
