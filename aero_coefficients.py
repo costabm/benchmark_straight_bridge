@@ -31,7 +31,7 @@ import numpy as np
 import pandas as pd
 from aerodynamic_coefficients.polynomial_fit import cons_poly_fit
 from transformations import T_LnwLs_func, theta_yz_bar_func, T_LsGw_func
-from my_utils import ROOT_DIR
+from my_utils import root_dir
 from scipy import interpolate
 import copy
 
@@ -57,7 +57,7 @@ def df_aero_coef_measurement_data(method):
     These can be later used as input for polynomial fits of this data
     """
 
-    df_SOH = pd.read_csv(os.path.join(ROOT_DIR, 'aerodynamic_coefficients', 'aero_coef_experimental_data.csv'))  # raw original values
+    df_SOH = pd.read_csv(os.path.join(root_dir, 'aerodynamic_coefficients', 'aero_coef_experimental_data.csv'))  # raw original values
     df = df_SOH[['test_case_name', 'beta[deg]', 'theta[deg]', 'Cx_Ls', 'Cy_Ls', 'Cz_Ls', 'Cxx_Ls', 'Cyy_Ls', 'Czz_Ls']]  # keeping only relevant columns
 
     include_CFD = False
@@ -98,7 +98,7 @@ def df_aero_coef_measurement_data(method):
 
     if include_CFD:
         # Import the results from NablaFlow 3D CFD
-        df_CFD = pd.read_csv(os.path.join(ROOT_DIR, 'aerodynamic_coefficients', 'aero_coef_CFD_data.csv'))  # raw original values
+        df_CFD = pd.read_csv(os.path.join(root_dir, 'aerodynamic_coefficients', 'aero_coef_CFD_data.csv'))  # raw original values
         if increase_CFD_Cx:
             df_CFD['Cx_Ls'] = 2 * df_CFD['Cx_Ls']
         df = pd.concat([df, df_CFD])
@@ -108,7 +108,7 @@ def df_aero_coef_measurement_data(method):
 
     if upscale_Cy_Cz_Crx_to_Julsund:
         # Import the latest wind tunnel tests (Milano) from the Julsundbru project
-        df_Jul = pd.read_csv(os.path.join(ROOT_DIR, 'aerodynamic_coefficients', 'aero_coef_Julsundet_data.csv'))  # raw original values
+        df_Jul = pd.read_csv(os.path.join(root_dir, 'aerodynamic_coefficients', 'aero_coef_Julsundet_data.csv'))  # raw original values
 
         Cy_beta_0_func  = interpolate.interp1d(df[df['beta[deg]']==0]['theta[deg]'], df[df['beta[deg]']==0][ 'Cy_Ls'], fill_value='extrapolate')
         Cz_beta_0_func  = interpolate.interp1d(df[df['beta[deg]']==0]['theta[deg]'], df[df['beta[deg]']==0][ 'Cz_Ls'], fill_value='extrapolate')
@@ -123,13 +123,13 @@ def df_aero_coef_measurement_data(method):
         # df['Cy_Ls']  =  df['Cy_Ls'].copy() * ( Cy_Jul_func(df['theta[deg]']) /  Cy_beta_0_func(df['theta[deg]']))  # Jungao's suggestion
 
     if include_Julsund:
-        df_Jul = pd.read_csv(os.path.join(ROOT_DIR, 'aerodynamic_coefficients', 'aero_coef_Julsundet_data.csv'))  # raw original values
+        df_Jul = pd.read_csv(os.path.join(root_dir, 'aerodynamic_coefficients', 'aero_coef_Julsundet_data.csv'))  # raw original values
         df = pd.concat([df, df_Jul])
 
     if polimi_only:
         which_tests = 'K12_G_L_no_traffic_sign'  # K12_G_L_no_traffic_sign ; K12_G_L_with_traffic_sign ; K12_G_L_T1
         # Load results
-        path_polimi_data = os.path.join(ROOT_DIR, r'aerodynamic_coefficients\polimi_raw_data/coefficients.xlsx')
+        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi_raw_data/coefficients.xlsx')
         df = pd.read_excel(io=path_polimi_data, sheet_name='coeff ' + which_tests).dropna().sort_values(['yaw', 'theta'])
         # Renaming coefficients
         df.rename(columns={'yaw':'beta[deg]', 'theta':'theta[deg]', 'CMxL':'CrxL', 'CMxi':'Crxi','CMyL':'CryL',
@@ -157,7 +157,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system, degree_list={'2D
 
     plot = True or False. Plots and saves pictures of the generated surface for Cd
 
-    method = '2D_fit_free', '2D_fit_cons', 'cos_rule', 'hybrid'.
+    method = '2D_fit_free', '2D_fit_cons', 'cos_rule', 'hybrid', 'table'.
 
     coor_system = 'Lnw', 'Ls', 'Lnw&Ls'
 

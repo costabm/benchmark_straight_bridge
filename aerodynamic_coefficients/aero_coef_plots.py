@@ -5,12 +5,12 @@ from aero_coefficients import aero_coef, df_aero_coef_measurement_data, aero_coe
 import matplotlib.pyplot as plt
 import matplotlib
 import os
-from my_utils import ROOT_DIR
+from my_utils import root_dir
 
 #####################################################################################################################
 # Raw Data from SOH
 #####################################################################################################################
-path_df = os.path.join(ROOT_DIR, r'aerodynamic_coefficients', 'aero_coef_experimental_data.csv')
+path_df = os.path.join(root_dir, r'aerodynamic_coefficients', 'aero_coef_experimental_data.csv')
 df = pd.read_csv(path_df)  # raw original values
 betas_uncorrected_SOH = rad(df['SOH_beta_uncorrected[deg]'].to_numpy()) # SOH initial skew angle, before performing rotation about bridge axis (which changes the beta angle).
 alphas_SOH = rad(df['alpha[deg]'].to_numpy()) # Alpha: rotation about the bridge x-axis, which differs from the theta definition from L.D.Zhu and from SOH alpha (opposite direction).
@@ -23,7 +23,7 @@ C_SOH_adjusted_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'] * Cy_factor, df['Cz_Ls'],
 #####################################################################################################################
 # Raw Data from CFD
 #####################################################################################################################
-path_df_CFD = os.path.join(ROOT_DIR, r'aerodynamic_coefficients', 'aero_coef_CFD_data.csv')
+path_df_CFD = os.path.join(root_dir, r'aerodynamic_coefficients', 'aero_coef_CFD_data.csv')
 df_CFD = pd.read_csv(path_df_CFD)  # raw original values
 betas_CFD = rad(df_CFD['beta[deg]'].to_numpy())
 thetas_CFD = rad(df_CFD['theta[deg]'].to_numpy())
@@ -317,7 +317,7 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
 
 def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False, plot_CFD=False, plot_extra_lines=False):
     if plot_other_bridges:
-        path_raw_data = os.path.join(ROOT_DIR, r'other', 'Langenuen and other bridges - static coefficients - v5.xlsx')
+        path_raw_data = os.path.join(root_dir, r'other', 'Langenuen and other bridges - static coefficients - v5.xlsx')
         str_bridges = ['Langenuen', 'Julsundet', 'Sotrabru']
         linestyles = ['dotted','dashed','dashdot']
         df_list = [pd.read_excel(io=path_raw_data, sheet_name='Langenuen_table_only'),
@@ -426,7 +426,7 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
         ylims = [[-0.046, 0.002], [-0.04, 0.11], [-1.0, 0.6], [-0.16, 0.21], [None, None], [None, None]]
         plt.ylim(ylims[i])
         plt.tight_layout()
-        plt.savefig(os.path.join(ROOT_DIR, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg'))
+        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg'))
         plt.close()
 
         # Plotting legend
@@ -508,7 +508,7 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
         plt.ylim(ylims[i])
         plt.grid()
         plt.tight_layout()
-        plt.savefig(os.path.join(ROOT_DIR, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg'))
+        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg'))
         plt.close()
 
         # Plotting legend
@@ -518,7 +518,7 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             plt.axis("off")
             plt.legend(handles, labels) #, handler_map={tuple: HandlerTuple(ndivide=None)})
             plt.tight_layout()
-            plt.savefig(os.path.join(ROOT_DIR, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
+            plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
             plt.close()
 plot_2D_at_beta_fixed_polimi()
 
