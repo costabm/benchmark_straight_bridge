@@ -1,12 +1,13 @@
 import os
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from mat4py import loadmat
-from my_utils import root_dir
+from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, fill_with_None_where_repeated
 import pandas as pd
+matplotlib.use('Qt5Agg')
 
-
-folder_path_to_raw_data = os.path.join(root_dir, r"aerodynamic_coefficients\polimi_raw_data\testing")
+folder_path_to_raw_data = os.path.join(root_dir, r"aerodynamic_coefficients\polimi_raw_data\preliminary")
 
 
 def get_raw_data_dict(folder_path):
@@ -92,61 +93,100 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True):
     return coh_df, pont_df, deck_df
 
 
+# Getting processed dataframes
 raw_data_dict = get_raw_data_dict(folder_path_to_raw_data)
 coh_df, pont_df, deck_df = get_dfs_from_raw_data(raw_data_dict)
 
+# Further post-processing
+coh_df['U/U_ceiling'] = coh_df['U'] /coh_df['U_ceiling']
 
 
-NotImplementedError  # COntinue here Bernardo
+# Plotting
+def plot_for_cobras():
+    x_axis = 'cobras'
+    label_axis = 'yaw'
+    coh_df['colors_to_plot'] = get_list_of_colors_matching_list_of_objects(coh_df[label_axis])
+    plt.figure(dpi=400)
+    for label, color in dict(zip(coh_df[label_axis], coh_df['colors_to_plot'])).items():
+        sub_df = coh_df[coh_df[label_axis] == label]  # subset dataframe
+        plt.scatter(sub_df[x_axis], sub_df['U/U_ceiling'], c=sub_df['colors_to_plot'], label=label, alpha=0.8)
+    plt.legend(title='yaw [deg]', bbox_to_anchor=(1.04, 0.5), loc="lower left")
+    plt.ylabel('$U_{centre}\//\/U_{ceiling}$')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
+                             'polimi_raw_data', 'preliminary', 'polimi_U_by_Uceil_for_cobras.jpg'))
+    plt.close()
+
+
+def plot_for_yaw():
+    x_axis = 'yaw'
+    label_axis = 'cobras'
+    coh_df['colors_to_plot'] = get_list_of_colors_matching_list_of_objects(coh_df[label_axis])
+    plt.figure(figsize=(8, 4), dpi=400)
+    plt.title('(obtained from the coherence measurement tests)')
+    for label, color in dict(zip(coh_df[label_axis], coh_df['colors_to_plot'])).items():
+        sub_df = coh_df[coh_df[label_axis] == label]  # subset dataframe
+        plt.scatter(sub_df[x_axis], sub_df['U/U_ceiling'], c=sub_df['colors_to_plot'], label=label, alpha=0.8)
+    plt.scatter([0,30,60,90],
+                [0.886, 0.839, 0.833, 0.851],
+                marker='x', color='black', label='(from wind profile tests)')
+    plt.legend(bbox_to_anchor=(1.04, 0), loc="lower left")
+    plt.ylabel('$U_{centre}\//\/U_{ceiling}$')
+    plt.xlabel('yaw angle [deg]')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
+                             'polimi_raw_data', 'preliminary', 'polimi_U_by_Uceil_for_yaw.jpg'))
+    plt.close()
+
+
+# plot_for_cobras()
+# plot_for_yaw()
+
+
+# Calculating the coefficients from force measurements
+scale = 1/35
+dof = 'Fx'
+yaw = 180
+H = 3.5 * scale
+B = 14.875 * scale
+L = 53 * scale
+U_profile_column_beta0 = np.array([[0.0, 0.0],
+                                   [0.03, 8.3398],
+                                   [0.05, 8.4902],
+                                   [0.1, 8.6605],
+                                   [0.15, 8.9762],
+                                   [0.2, 9.2538],
+                                   [0.25, 9.4597],
+                                   [0.3, 9.854],
+                                   [0.35, 9.918],
+                                   [0.4, 10.0355],
+                                   [0.46, 10.2358],
+                                   [0.5, 10.4923],
+                                   [0.6, 10.5613],
+                                   [0.7, 10.7889]])
+
+np.interp(x=[0.1], xp=)
+
+U_idx_at_H = np.where(U_profile_column_beta0[:,0]<=0.1)[0][-1]
+np.trapz(y=U_profile_column_beta0[:U_idx_at_H+1,1], x=U_profile_column_beta0[:U_idx_at_H+1,0]) / H
+
+sub_df = pont_df[(pont_df['names']==dof+'-PTot') & (pont_df['yaw']==yaw)]  # subset of df
+
+rho = sub_df['rho']
+
+qref_tilde = 1/2 * rho * 7.596**2
+
+Fx = sub_df['THForces_mean']
+
+
+Cx = Fx / (qref_tilde * L * H)
 
 
 
 
 
-plt.title(r'$U\//\/U_{ceiling}$')
-for k1 in coh_data:
-    data = coh_data[k1]
-    plt.scatter(data['cobras'], data['U'] / data['U_ceiling'], label=data['yaw'])
-plt.legend(title='Yaw [deg]:', bbox_to_anchor=(1.04, 0), loc="lower left")
-plt.ylabel('U [m/s]')
-plt.grid()
-plt.tight_layout()
-plt.show(block=True)
-
-for k1 in coh_data:
-    data = coh_data[k1]
-    n_cobras = len(data['cobras'])
-    for idx, cobra in enumerate(data['cobras']):
-        plt.scatter(data['yaw'], data['U'][idx] / data['U_ceiling'], label=data['cobras'])
-plt.legend(title='Cobra:', bbox_to_anchor=(1.04, 0), loc="lower left")
-plt.ylabel('U [m/s]')
-plt.grid()
-plt.tight_layout()
-plt.show(block=True)
-
-plt.close()
-
-#
-# # %% TESTING
-# filename1 = folder_name + "J-0026_SIW_ATI_P7000_Ang+000.mat"
-# filename2 = folder_name + "J-1658_SIW_FLOW-MD_P7700_Ang-180.mat"
-# filename3 = folder_name + "J-0211_SIW_DECK-AERO_P7700_Ang-150.mat"
-#
-# # data1 = loadmat(filename1)
-# # data2 = loadmat(filename2)
-# # data3 = loadmat(filename3)
-#
-# filename = filename2
-# # def get_raw_data_dict(filename):
-# raw_data = loadmat(filename)
-# u = np.array(raw_data["u"]).T  # shape: (n_cobras, n_samples)
-# v = np.array(raw_data["v"]).T  # shape: (n_cobras, n_samples)
-# w = np.array(raw_data["w"]).T  # shape: (n_cobras, n_samples)
-# # pass
-#
-# np.corrcoef(u[0], u[3])
-#
-#
 # # todo: TELL POLIMI ABOUT:
 print(" len(t) is 120000, but len(u)=len(v)=len(w) is 119808. File example: J-1658_SIW_FLOW-MD_P7700_Ang-180.mat  ")
 print("Polimi hasn't delivered the wind profile at column and pontoon locations yet?")
@@ -154,8 +194,3 @@ print("No upwind_uvw information in the pontoon data? (Understandable that it is
 print("It would be very useful to have the data from the upwind pitot tube for all measurements")
 print("If the Polimi yaw_angle is kept in the file names, then we must know if the data provided is already"
       "transformed to our yaw definition (by multiplying by -1 where needed) or not")
-
-
-
-
-
