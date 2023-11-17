@@ -1,8 +1,10 @@
+import copy
 import os
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from mat4py import loadmat
+from scipy.optimize import curve_fit
 from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, fill_with_None_where_repeated
 import pandas as pd
 matplotlib.use('Qt5Agg')
@@ -145,37 +147,62 @@ def plot_for_yaw():
 # plot_for_yaw()
 
 
+def func_to_fit(z, a, b):
+    return a * np.log(z / b)
+
+
 # Calculating the coefficients from force measurements
 scale = 1/35
 dof = 'Fx'
 yaw = 180
-H = 3.5 * scale
+H = np.round(3.5 * scale, 10)
 B = 14.875 * scale
 L = 53 * scale
-U_profile_column_beta0 = np.array([[0.0, 0.0],
-                                   [0.03, 8.3398],
-                                   [0.05, 8.4902],
-                                   [0.1, 8.6605],
-                                   [0.15, 8.9762],
-                                   [0.2, 9.2538],
-                                   [0.25, 9.4597],
-                                   [0.3, 9.854],
-                                   [0.35, 9.918],
-                                   [0.4, 10.0355],
-                                   [0.46, 10.2358],
-                                   [0.5, 10.4923],
-                                   [0.6, 10.5613],
-                                   [0.7, 10.7889]])
+U_profile_raw = np.array([[1E-5, 1E-5],
+                          [0.03, 8.3398],
+                          [0.05, 8.4902],
+                          [0.1, 8.6605],
+                          [0.15, 8.9762],
+                          [0.2, 9.2538],
+                          [0.25, 9.4597],
+                          [0.3, 9.854],
+                          [0.35, 9.918],
+                          [0.4, 10.0355],
+                          [0.46, 10.2358],
+                          [0.5, 10.4923],
+                          [0.6, 10.5613],
+                          [0.7, 10.7889]])
+x_raw = U_profile_raw[:, 0]
+y_raw = U_profile_raw[:, 1]
+x_fit = np.linspace(x_raw.min(), x_raw.max(), num=1E6)
+y_interp = np.interp(x=x_fit, xp=x_raw, fp=y_raw)
 
-np.interp(x=[0.1], xp=)
+popt, pcov, *_ = curve_fit(f=func_to_fit, xdata=x_raw, ydata=y_raw, bounds=np.array([[0, 0], [np.inf, np.inf]]))
+y_fit = func_to_fit(x_fit, *popt)
 
-U_idx_at_H = np.where(U_profile_column_beta0[:,0]<=0.1)[0][-1]
-np.trapz(y=U_profile_column_beta0[:U_idx_at_H+1,1], x=U_profile_column_beta0[:U_idx_at_H+1,0]) / H
+plt.scatter(x_raw, y_raw, label='raw data')
+# plt.plot(x_interp, y_interp, label='interpolation')
+plt.plot(x_fit, y_fit, label='curve fit')
+plt.legend()
+plt.show()
+
+# Integrating raw (coarser) data
+idx = np.where(x_raw <= H)[0][-1]
+y_raw_ref = np.trapz(y=y_raw[:idx+1], x=x_raw[:idx+1]) / H
+
+# Integrating interpolated (finer) data
+idx = np.where(x_fit <= H)[0][-1]
+y_interp_ref = np.trapz(y=y_interp[:idx+1], x=x_fit[:idx+1]) / H
+
+# Integrating fitted (finer) data
+idx = np.where(x_fit <= H)[0][-1]
+y_fit_ref = np.trapz(y=y_fit[:idx+1], x=x_fit[:idx+1]) / H
+
+U_ref = copy.deepcopy(y_fit_ref)
 
 sub_df = pont_df[(pont_df['names']==dof+'-PTot') & (pont_df['yaw']==yaw)]  # subset of df
 
 rho = sub_df['rho']
-
 qref_tilde = 1/2 * rho * 7.596**2
 
 Fx = sub_df['THForces_mean']
