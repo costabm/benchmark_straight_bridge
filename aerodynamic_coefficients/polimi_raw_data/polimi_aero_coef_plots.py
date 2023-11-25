@@ -8,7 +8,7 @@ import os
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
 folder_name = os.path.join(root_dir, r'aerodynamic_coefficients\polimi_raw_data')
-file_name = r'ResultsCoefficients-Rev1-BC.xlsx'   # Rev1-BC: sheet "...BAR" splits into "...BAR-AERO" & "...BAR-GEO"
+file_name = r'ResultsCoefficients-Rev1.xlsx'
 
 
 def plot_phase_7_vs_polimi_coefs(sheet_name):
@@ -140,6 +140,4 @@ def plot_2_variants_of_polimi_coefs(sheet_1, sheet_2):
 # plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T3', sheet_2=r'K12-G-L-T1')
 plot_2_variants_of_polimi_coefs(sheet_1=r'K12-AG-BAR-AERO', sheet_2=r'K12-AG-BAR-GEO')
 
-# TODO: BERNARDO, THE K12-AG-BAR PLOTS ARE ONLY AT YAW=0, SO THEY ARE QUITE DIFFERENT. SO THE BEST IS TO MAKE A NEW
-# FUNCTION FOR THIS PLOT, AND TO DELETE MY "Rev1-BC" WHICH THEN BECOMES UNECESSARY!! DELETE IT IN TWO PLACES: HERE IN
-# THIS PYCHARM PROJECT, AND IN THE SHARED FOLDER 14_FAG_AERODYNAMIKK
+

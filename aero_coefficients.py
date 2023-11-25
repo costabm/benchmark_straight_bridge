@@ -127,30 +127,29 @@ def df_aero_coef_measurement_data(method):
         df = pd.concat([df, df_Jul])
 
     if polimi_only:
-        which_tests = 'K12_G_L_no_traffic_sign'  # K12_G_L_no_traffic_sign ; K12_G_L_with_traffic_sign ; K12_G_L_T1
+        sheet_name = 'K12-G-L'
         # Load results
-        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi_raw_data/coefficients.xlsx')
-        df = pd.read_excel(io=path_polimi_data, sheet_name='coeff ' + which_tests).dropna().sort_values(['yaw', 'theta'])
+        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi_raw_data\ResultsCoefficients-Rev1.xlsx')
+        df = pd.read_excel(io=path_polimi_data, sheet_name=sheet_name).dropna().sort_values(['Yaw', 'Theta'])
         # Renaming coefficients
-        df.rename(columns={'yaw':'beta[deg]', 'theta':'theta[deg]', 'CMxL':'CrxL', 'CMxi':'Crxi','CMyL':'CryL',
-                           'CMyi':'Cryi', 'CMzL':'CrzL', 'CMzi':'Crzi'}, inplace=True)
-        # Multiplying Cx by (-1)
-        df['CxL'] = df['CxL'] * -1
-        df['Cxi'] = df['Cxi'] * -1
+        df.rename(columns={'Yaw': 'beta[deg]', 'Theta':'theta[deg]'}, inplace=True)
         # Create new results from the average of both sensors
-        df['Cx_Ls'] = (df['CxL'] + df['Cxi']) / 2
-        df['Cy_Ls'] = (df['CyL'] + df['Cyi']) / 2
-        df['Cz_Ls'] = (df['CzL'] + df['Czi']) / 2
-        df['Cxx_Ls'] = (df['CrxL'] + df['Crxi']) / 2
-        df['Cyy_Ls'] = (df['CryL'] + df['Cryi']) / 2
-        df['Czz_Ls'] = (df['CrzL'] + df['Crzi']) / 2
+        df['Cx_Ls'] =  df['CxTot']
+        df['Cy_Ls'] =  df['CyTot']
+        df['Cz_Ls'] =  df['CzTot']
+        df['Cxx_Ls'] = df['CMxTot']
+        df['Cyy_Ls'] = df['CMyTot']
+        df['Czz_Ls'] = df['CMzTot']
 
     if discard_data_outside_1st_quadrant:  # just to be sure I'm not changing the previous PhD methods
         df = df[(df['beta[deg]']>=0) & (df['beta[deg]']<=90)]  # removing the new results from Polimi outside the 0-90 quadrant
 
     return df
 
-def aero_coef(betas_extrap, thetas_extrap, method, coor_system, degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4], '2D_fit_cons_scale_to_Jul':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_scale_to_Jul':[3,4,4,5,4,4], '2D_fit_cons_polimi':[9,9,9,9,9,9]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]  BEST FIT FOR '2D_fit_cons_polimi' is [7,9,7,7,-,-]
+def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
+              degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4],
+                           '2D_fit_cons_scale_to_Jul':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_scale_to_Jul':[3,4,4,5,4,4],
+                           '2D_fit_cons_polimi':[9,9,9,9,9,9]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]  BEST FIT FOR '2D_fit_cons_polimi' is [7,9,7,7,-,-]
     """
     betas: 1D-array
     thetas: 1D-array (same size as betas)
