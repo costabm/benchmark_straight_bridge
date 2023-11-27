@@ -16,7 +16,7 @@ from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, fill
 import pandas as pd
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
-folder_path_to_raw_data = os.path.join(root_dir, r"aerodynamic_coefficients\polimi_raw_data\preliminary")
+folder_path_to_raw_data = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\preliminary")
 
 # Common variables
 scale = 1/35  # model scale
@@ -142,7 +142,7 @@ def plot_for_cobras():
     plt.grid()
     plt.tight_layout()
     plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
-                             'polimi_raw_data', 'preliminary', 'polimi_U_by_Uceil_for_cobras.jpg'))
+                             'polimi', 'preliminary', 'polimi_U_by_Uceil_for_cobras.jpg'))
     plt.close()
 
 
@@ -167,7 +167,7 @@ def plot_for_yaw():
     plt.grid()
     plt.tight_layout()
     plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
-                             'polimi_raw_data', 'preliminary', 'polimi_U_by_Uceil_for_yaw.jpg'))
+                             'polimi', 'preliminary', 'polimi_U_by_Uceil_for_yaw.jpg'))
     plt.close()
 
 

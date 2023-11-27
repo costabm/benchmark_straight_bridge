@@ -7,7 +7,7 @@ from my_utils import root_dir
 import os
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
-folder_name = os.path.join(root_dir, r'aerodynamic_coefficients\polimi_raw_data')
+folder_name = os.path.join(root_dir, r'aerodynamic_coefficients\polimi')
 file_name = r'ResultsCoefficients-Rev1.xlsx'
 
 

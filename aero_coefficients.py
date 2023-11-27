@@ -129,7 +129,7 @@ def df_aero_coef_measurement_data(method):
     if polimi_only:
         sheet_name = 'K12-G-L'
         # Load results
-        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi_raw_data\ResultsCoefficients-Rev1.xlsx')
+        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi\ResultsCoefficients-Rev1.xlsx')
         df = pd.read_excel(io=path_polimi_data, sheet_name=sheet_name).dropna().sort_values(['Yaw', 'Theta'])
         # Renaming coefficients
         df.rename(columns={'Yaw': 'beta[deg]', 'Theta':'theta[deg]'}, inplace=True)

@@ -8,6 +8,9 @@
       <sourceFolder url="file://$MODULE_DIR$/other" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/wind_field" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/wind_field/AMC_wind_time_series" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/aerodynamic_coefficients/polimi/plots" />
+      <excludeFolder url="file://$MODULE_DIR$/aerodynamic_coefficients/polimi/preliminary" />
+      <excludeFolder url="file://$MODULE_DIR$/aerodynamic_coefficients/polimi/raw_data" />
     </content>
     <orderEntry type="jdk" jdkName="C:\Users\bercos\AppData\Local\anaconda3" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
