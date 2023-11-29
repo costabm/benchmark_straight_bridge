@@ -52,12 +52,16 @@ def get_list_of_colors_matching_list_of_objects(list_of_objects, plt_colormap=pl
     return pd_series.map(my_color_map).tolist()
 
 
-def fill_with_None_where_repeated(list_of_objects):
+def all_equal(iterator):
     """
-    Useful e.g. when creating a list of labels to be plotted, avoiding plotting repeated labels
+    True if all elements in a list are identical. False otherwise
+    https://stackoverflow.com/questions/3844801/check-if-all-elements-in-a-list-are-identical
     """
-    return [obj if obj not in list_of_objects[:idx] else None for idx, obj in enumerate(list_of_objects)]
-
-# list_of_objects = ['1', '2', '1', '3', '4', '8']
+    iterator = iter(iterator)
+    try:
+        first = next(iterator)
+    except StopIteration:
+        return True
+    return all(first == x for x in iterator)
 
 
