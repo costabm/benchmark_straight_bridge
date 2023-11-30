@@ -18,7 +18,7 @@ import logging
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
 
-path_to_raw_data = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\raw_data")
+raw_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\raw_data")
 debug = False
 
 # Common variables
@@ -32,18 +32,48 @@ L_pont = 53 * scale
 raw_data_types = ['coh', 'col', 'deck', 'pont', 'profile']  # my labels of the different raw data types
 raw_data_str_cues = ['SIW_FLOW', 'SIW_COLUMN', 'SIW_DECK',
                      'SIW_PONTOON', '-FLOW-']  # respective substrings found in Polimi's filenames
-# todo: implement other raw data types?
+# todo: implement other raw data types? MISSING: ANNEX 14; ANNEX 10, ETC.....
 
-def get_raw_data_dict(folder_path):
+
+def overview_all_raw_file_keys():
     """
-    folder_path: the absolute path to the folder with all the raw .mat files provided by Polimi
+    Each raw data annex has several .mat files, each being a dict with several keys (e.g.: 'H', 'accZ', 'fsamp', etc.)
+    This function provides a df with an overview of all keys in all the raw data files.
+    """
+    annex_paths = os.listdir(raw_data_path)
+    annex_nums = [int(''.join([num for num in path[-3:] if num.isnumeric()])) for path in annex_paths]  # read numbers
+    annex_nums, annex_paths = zip(*sorted(zip(annex_nums, annex_paths)))
+    annex_paths = [os.path.join(raw_data_path, s) for s in annex_paths]
+
+    col_annex = []
+    col_file = []
+    col_keys = []
+    for annex_path in annex_paths:
+        file_paths = [os.path.join(raw_data_path, annex_path, file_name) for file_name in os.listdir(annex_path)]
+        for file_path in file_paths:
+            raw_file = loadmat(file_path)
+            set_of_keys = list(raw_file.keys())
+            assert len(set(set_of_keys)) == len(set_of_keys), "One key is repeated in the same file!?"
+            set_of_keys = set(set_of_keys)
+            col_annex.append(os.path.basename(annex_path))
+            col_file.append(os.path.basename(file_path))
+            col_keys.append(set_of_keys)
+    df = pd.DataFrame({'annex': col_annex, 'file': col_file, 'key_set': col_keys})
+    # Factorizing, i.e., finding unique key_sets and numbering them
+    df['key_set_str'] = [' '.join(df['key_set'][i]) for i in range(len(df.index))]  # so that it is hashable
+    df['key_set_id'] = pd.factorize(df['key_set_str'])[0]
+    del df['key_set_str']
+    return df
+
+
+def get_raw_data_dict(raw_data_path):
+    """
+    raw_data_path: the absolute path to the folder with all the raw .mat files provided by Polimi
+    todo: change the logic from raw_data_types to annexes! different annexes are then treated separately. Those with
+    todo: the same keys can be grouped together (see the overview_all_raw_file_keys function)
     """
 
     def get_raw_data_dict_from_file_paths(file_paths, raw_data_type):
-        """
-        raw_data_type: 'coh', 'profile', 'pont', 'col', 'deck'
-        """
-
         assert raw_data_type in raw_data_types
         print(f'Collecting {raw_data_type} data. May take several minutes...')
         file_names = [os.path.basename(fp) for fp in file_paths]
@@ -112,7 +142,7 @@ def get_raw_data_dict(folder_path):
     file_paths = {}  # for all raw_data_types
     data = {}  # for all raw_data_types
     for t, cue in zip(raw_data_types, raw_data_str_cues):
-        file_paths[t] = [os.path.join(root, name) for root, dirs, files in os.walk(path_to_raw_data)
+        file_paths[t] = [os.path.join(root, name) for root, dirs, files in os.walk(raw_data_path)
                          for name in files if cue in name]  # gets all file paths of current raw_data_type
         data[t] = get_raw_data_dict_from_file_paths(file_paths[t], raw_data_type=t)
     data = dict(sorted(data.items()))  # Sorting the dict keys
@@ -121,7 +151,7 @@ def get_raw_data_dict(folder_path):
 
 def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True):
     """
-    Takes as input a triply nested dictionary, with the outer keys as 'coh_data', 'pont_data' and 'deck_data'.
+    Takes as input a triply nested dictionary, with the outer keys as raw_data_types.
     drop_time_series: drops the large time series, for efficiency and to get a dataframe with non-iterable cells
     """
     assert list(raw_data_dict.keys()) == raw_data_types, 'new raw_data_type is not implemented!'
@@ -150,7 +180,7 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True):
 
 
 # Getting processed dataframes
-raw_data_dict = get_raw_data_dict(path_to_raw_data)
+raw_data_dict = get_raw_data_dict(raw_data_path)
 dict_of_dfs = get_dfs_from_raw_data(raw_data_dict)
 
 
