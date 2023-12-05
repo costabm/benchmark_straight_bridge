@@ -65,3 +65,15 @@ def all_equal(iterator):
     return all(first == x for x in iterator)
 
 
+def flatten_nested_list(nested_list):
+    """
+    Flattens a nested list (with various levels of nesting)
+    """
+    result = []
+    for element in nested_list:
+        if isinstance(element, list):
+            result.extend(flatten_nested_list(element))
+        else:
+            result.append(element)
+    return result
+

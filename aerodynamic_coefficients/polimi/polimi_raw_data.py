@@ -12,14 +12,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mat4py import loadmat
 from scipy.optimize import curve_fit
-from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, all_equal
+from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, all_equal, flatten_nested_list
 import pandas as pd
 import logging
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
 
 raw_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\raw_data")
-debug = False
+debug = True
 
 # Common variables
 scale = 1 / 35  # model scale
@@ -29,10 +29,42 @@ H_pont = np.round(3.5 * scale, 10)
 B_pont = 14.875 * scale
 L_pont = 53 * scale
 
-raw_data_types = ['coh', 'col', 'deck', 'pont', 'profile']  # my labels of the different raw data types
-raw_data_str_cues = ['SIW_FLOW', 'SIW_COLUMN', 'SIW_DECK',
-                     'SIW_PONTOON', '-FLOW-']  # respective substrings found in Polimi's filenames
-# todo: implement other raw data types? MISSING: ANNEX 14; ANNEX 10, ETC.....
+# OLD TO BE REPLACED
+# raw_data_types = ['coh', 'col', 'deck', 'pont', 'profile']  # my labels of the different raw data types
+# raw_data_str_cues = ['SIW_FLOW', 'SIW_COLUMN', 'SIW_DECK',
+#                      'SIW_PONTOON', '-FLOW-']  # respective substrings found in Polimi's filenames
+#  TRASH TOO
+# raw_data_types = ['A01-A06', 'A07-A08', 'A09', 'A10',
+#                   'A11-A12', 'A13', 'A14', 'A15-A16']  # my labels of the different raw data types
+# raw_data_str_cues = [['AnnexA1', 'AnnexA2', 'AnnexA3', 'AnnexA4', 'AnnexA5', 'AnnexA6'],
+#                      ['AnnexA7', 'AnnexA8'], ['AnnexA9'], ['Annex10'], ['Annex11', 'Annex12'],
+#                      ['Annex13'], ['Annex14'], ['Annex15', 'Annex16']]  # respective substrings found in Polimi's filenames
+
+
+# Raw data types: my labels of the different raw data types. Cues: respective substrings found in Polimi's filenames
+raw_data_types_and_cues = {'A01-A06': ['AnnexA1', 'AnnexA2', 'AnnexA3', 'AnnexA4', 'AnnexA5', 'AnnexA6'],
+                           'A07-A08': ['AnnexA7', 'AnnexA8'],
+                           'A09': ['AnnexA9'],
+                           'A10': ['Annex10'],
+                           'A11-A12': ['Annex11', 'Annex12'],
+                           'A13': ['Annex13'],
+                           'A14': ['Annex14'],
+                           'A15-A16': ['Annex15', 'Annex16']}
+
+raw_data_types = list(raw_data_types_and_cues.keys())
+raw_data_str_cues = list(raw_data_types_and_cues.values())
+
+
+def unique_file_names_and_paths(file_paths):
+    """
+    Used for debugging purposes, such that only one raw data file is stored per file type, to save time
+    """
+    file_names = [os.path.basename(fp) for fp in file_paths]
+    logging.warning('Debug mode is ON! Only a few unique raw data files will be processed to speed up')
+    case_tags = [fn[6:].split('Ang')[0] for fn in file_names]  # Removing the case id and the angle
+    idxs_unique = np.unique(case_tags, return_index=True)[1]
+    file_names, file_paths = zip(*[[file_names[i], file_paths[i]] for i in idxs_unique])
+    return file_names, file_paths
 
 
 def overview_all_raw_file_keys():
@@ -41,7 +73,7 @@ def overview_all_raw_file_keys():
     This function provides a df with an overview of all keys in all the raw data files.
     """
     annex_paths = os.listdir(raw_data_path)
-    annex_nums = [int(''.join([num for num in path[-3:] if num.isnumeric()])) for path in annex_paths]  # read numbers
+    annex_nums = [int(''.join([num for num in path[-3:] if num.isnumeric()])) for path in annex_paths]  # annex numbers
     annex_nums, annex_paths = zip(*sorted(zip(annex_nums, annex_paths)))
     annex_paths = [os.path.join(raw_data_path, s) for s in annex_paths]
 
@@ -50,6 +82,8 @@ def overview_all_raw_file_keys():
     col_keys = []
     for annex_path in annex_paths:
         file_paths = [os.path.join(raw_data_path, annex_path, file_name) for file_name in os.listdir(annex_path)]
+        if debug:  # Only consider a few unique raw data files (with unique name tags), to speed up
+            _, file_paths = unique_file_names_and_paths(file_paths)
         for file_path in file_paths:
             raw_file = loadmat(file_path)
             set_of_keys = list(raw_file.keys())
@@ -63,14 +97,16 @@ def overview_all_raw_file_keys():
     df['key_set_str'] = [' '.join(df['key_set'][i]) for i in range(len(df.index))]  # so that it is hashable
     df['key_set_id'] = pd.factorize(df['key_set_str'])[0]
     del df['key_set_str']
-    return df
+    set_keys = set(flatten_nested_list([list(k) for k in df['key_set']]))
+    return df, set_keys
+
+
+df_all_keys, set_all_keys = overview_all_raw_file_keys()
 
 
 def get_raw_data_dict(raw_data_path):
     """
     raw_data_path: the absolute path to the folder with all the raw .mat files provided by Polimi
-    todo: change the logic from raw_data_types to annexes! different annexes are then treated separately. Those with
-    todo: the same keys can be grouped together (see the overview_all_raw_file_keys function)
     """
 
     def get_raw_data_dict_from_file_paths(file_paths, raw_data_type):
@@ -80,58 +116,60 @@ def get_raw_data_dict(raw_data_path):
         data = {}  # prepare for a nested dict
 
         if debug:  # Only consider a few unique raw data files (with unique name tags), to speed up
-            logging.warning('Debug mode is ON! Only a few unique raw data files will be processed to speed up')
-            case_tags = [fn[6:].split('Ang')[0] for fn in file_names]  # Removing the case id and the angle
-            idxs_unique = np.unique(case_tags, return_index=True)[1]
-            file_names, file_paths = zip(*[[file_names[i], file_paths[i]] for i in idxs_unique])
+            file_names, file_paths = unique_file_names_and_paths(file_paths)
 
         for file_name, file_path in zip(file_names, file_paths):
-            raw_file = loadmat(file_path)
-            # Treat and collect data common to various raw_data_type
-            raw_file['t'] = np.array(raw_file['t'])
-            raw_file['qCeiling'] = np.array(raw_file['qCeiling']).squeeze()  # squeezing unnecessary dimension
-            raw_file['qUpwind'] = np.array(raw_file['qUpwind']).squeeze()  # squeezing unnecessary dimension
             k1 = file_name.split('.mat')[0]  # using the filename for key 1
-            data[k1] = {}  # prepare for a nested dict
-            for k2 in raw_file:  # collecting for all keys in the raw file
-                data[k1][k2] = raw_file[k2]
-            u_ceil = np.sqrt(data[k1]['qCeiling'] / (1 / 2 * data[k1]['rho']))
-            data[k1].update({'u_ceil': u_ceil, 'U_ceil': np.mean(u_ceil)})
-            data[k1]['q_ceil'] = data[k1].pop('qCeiling')  # rename key, ditching old one
-            data[k1]['q_upwind'] = data[k1].pop('qUpwind')  # rename key, ditching old one
-            data[k1]['polimi_yaw'] = data[k1].pop('turntable')  # rename key, ditching old one
+            data[k1] = loadmat(file_path)
+            data_keys = data[k1].keys()
             data[k1]['id'] = int(file_name[2:6])  # case number
-
-            # Check if the raw data angle 'turntable' corresponds to the angle in the file name after 'Ang':
-            if raw_data_type == 'profile':
-                polimi_yaw_2 = float(file_name.split('-Ang')[1].split('-Z')[0])  # find angle between substrings
-            else:
-                polimi_yaw_2 = float(file_name.split('_Ang')[1].split('.mat')[0])  # find angle between substrings
-            if not np.isclose(data[k1]['polimi_yaw'], polimi_yaw_2, atol=1):  # best to use 1 deg tolerance
-                logging.warning(f"Ang in filename != from 'turntable'. File: {file_path}")
-
-            # Collect data unique to each raw_data_type
-            if raw_data_type in ['coh']:
+            if 't' in data_keys:
+                data[k1]['t'] = np.array(data[k1]['t'])
+            if 'qCeiling' in data_keys:
+                data[k1]['q_ceil'] = data[k1].pop('qCeiling')  # rename key, ditching old one
+                data[k1]['q_ceil'] = np.array(data[k1]['q_ceil']).squeeze()  # squeezing unnecessary dimension
+                u_ceil = np.sqrt(data[k1]['q_ceil'] / (1 / 2 * data[k1]['rho']))
+                data[k1].update({'u_ceil': u_ceil, 'U_ceil': np.mean(u_ceil)})
+            if 'qUpwind' in data_keys:
+                data[k1]['q_upwind'] = data[k1].pop('qUpwind')  # rename key, ditching old one
+                data[k1]['q_upwind'] = np.array(data[k1]['q_upwind']).squeeze()  # squeezing unnecessary dimension
+            if 'turntable' in data_keys:
+                data[k1]['polimi_yaw'] = data[k1].pop('turntable')  # rename key, ditching old one
+                # Check if the raw data angle 'turntable' corresponds to the angle in the file name after 'Ang':
+                if raw_data_type in ['A10', 'A11-A12', 'A14']:  # file types with different Ang syntax in filename
+                    polimi_yaw_2 = float(file_name.split('-Ang')[1].split('-Z')[0])  # find angle between substrings
+                else:
+                    polimi_yaw_2 = float(file_name.split('_Ang')[1].split('.mat')[0])  # find angle between substrings
+                if not np.isclose(data[k1]['polimi_yaw'], polimi_yaw_2, atol=1):  # best to use 1 deg tolerance
+                    logging.warning(f"Ang in filename != from 'turntable'. File: {file_path}")
+            if 'u' in data_keys:
+                assert 'v' in data_keys
+                assert 'w' in data_keys
                 u = np.array(data[k1]['u']).T  # new shape: (n_cobras, n_samples)
                 v = np.array(data[k1]['v']).T  # new shape: (n_cobras, n_samples)
                 w = np.array(data[k1]['w']).T  # new shape: (n_cobras, n_samples)
                 U = np.mean(u, axis=1)
                 data[k1].update({'U': U, 'u': u, 'v': v, 'w': w})  # updating dict
-            if raw_data_type in ['deck', 'col', 'pont']:
+            if 'THForces' in data_keys:
                 data[k1]['F'] = np.array(data[k1]['THForces']).T  # new shape: (dof, n_samples)
                 del data[k1]['THForces']  # ditching old key
+                assert 'EU' in data_keys
                 data[k1]['units'] = data[k1].pop('EU')  # rename key, ditching old one
+                assert 'names' in data_keys
                 data[k1]['dof_tag'] = data[k1].pop('names')  # rename key, ditching old one
                 data[k1]['F_mean'] = np.mean(data[k1]['F'], axis=1)  # new shape: (dof, n_samples)
-            if raw_data_type == 'deck':
-                if 'H' not in data[k1].keys():
-                    logging.warning(f"Polimi forgot to add an 'H' key to the data in Annex A9. File: {file_path}")
-                    data[k1]['H'] = 0.45714285714285713  # taken from the other raw deck data files
-                data[k1]['accZ'] = np.array(data[k1]['accZ']).squeeze()  # squeezing unnecessary dimension
+            if 'H' not in data[k1].keys():
+                logging.warning(f"Polimi forgot to add an 'H' key to the data in Annex A9. File: {file_path}")
+                data[k1]['H'] = 0.45714285714285713  # taken from the other raw deck data files
+            if 'accZ' in data_keys:
+                data[k1]['acc_z'] = np.array(data[k1]['accZ']).squeeze()  # squeezing unnecessary dimension
+                del data[k1]['accZ']
+            if 'upwind_uvw' in data_keys:
                 data[k1]['upwind_uvw'] = np.array(data[k1]['upwind_uvw']).T  # new shape: (3, n_samples)
                 data[k1]['upwind_U'] = np.mean(data[k1]['upwind_uvw'][0])
+            if 'qRef' in data_keys:
                 data[k1]['q_ref'] = data[k1].pop('qRef')  # rename key, ditching old one
-            if raw_data_type in ['col', 'pont']:
+            if 'qTildeRef' in data_keys:
                 data[k1]['q_tilde_ref'] = data[k1].pop('qTildeRef')  # rename key, ditching old one
             data[k1] = dict(sorted(data[k1].items()))  # Sorting the dict keys
         assert all_equal([data[k].keys() for k in data.keys()]), \
@@ -141,9 +179,10 @@ def get_raw_data_dict(raw_data_path):
 
     file_paths = {}  # for all raw_data_types
     data = {}  # for all raw_data_types
-    for t, cue in zip(raw_data_types, raw_data_str_cues):
+    for t, lst_cues in zip(raw_data_types, raw_data_str_cues):
+        # Gett all file paths of current raw_data_type
         file_paths[t] = [os.path.join(root, name) for root, dirs, files in os.walk(raw_data_path)
-                         for name in files if cue in name]  # gets all file paths of current raw_data_type
+                         for name in files if any(cue in root for cue in lst_cues)]
         data[t] = get_raw_data_dict_from_file_paths(file_paths[t], raw_data_type=t)
     data = dict(sorted(data.items()))  # Sorting the dict keys
     return data
@@ -163,7 +202,7 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True):
         """
         df = pd.DataFrame.from_dict(raw_data).transpose()
         if drop_time_series:
-            cols_w_time_series = ['accZ', 'q_ceil', 'q_upwind', 'u', 'v', 'w', 't', 't_uvw', 'u_ceil', 'F',
+            cols_w_time_series = ['acc_z', 'q_ceil', 'q_upwind', 'u', 'v', 'w', 't', 't_uvw', 'u_ceil', 'F',
                                   'upwind_uvw']
             df = df.drop(cols_w_time_series, axis=1, errors='ignore')  # ignore already non-existing keys
         return df.reset_index(names='case_tag')
@@ -171,10 +210,13 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True):
     dict_of_dfs = {k: get_df_from_raw_data(raw_data_dict[k]) for k in raw_data_types}
 
     # Some cols have a list on each cell. These lists will be exploded to multiple rows
-    cols_to_explode = ['cobras', 'U', 'units', 'dof_tag', 'F_mean']  # add columns as needed here
     for k in raw_data_types:
-        cols_to_explode_1df = [c for c in dict_of_dfs[k].columns.values if c in cols_to_explode]
-        dict_of_dfs[k] = dict_of_dfs[k].explode(cols_to_explode_1df)
+        if k in ['A10', 'A11-A12']:
+            dict_of_dfs['A10']['U'] = dict_of_dfs['A10']['U'].apply(np.squeeze)  # 'U' is composed of lists of size 1
+        if k not in ['A10', 'A11-A12']:
+            cols_to_explode = ['cobras', 'U', 'units', 'dof_tag', 'F_mean']  # add columns as needed here
+            cols_to_explode_1df = [c for c in dict_of_dfs[k].columns.values if c in cols_to_explode]
+            dict_of_dfs[k] = dict_of_dfs[k].explode(cols_to_explode_1df)
 
     return dict_of_dfs
 
