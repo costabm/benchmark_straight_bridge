@@ -12,7 +12,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 from scipy.io import loadmat  # Faster alternative than using mat4py.loadmat
 from scipy.optimize import curve_fit
-from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, all_equal, flatten_nested_list
+from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, all_equal, flatten_nested_list, deg, rad
+from transformations import beta_within_minus_Pi_and_Pi_func
 import pandas as pd
 import logging
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
@@ -110,20 +111,18 @@ def get_raw_data_dict(raw_data_path):
 
             data[k1]['id'] = int(file_name[2:6])  # case number
             if 'inclinometer' in data_keys:  # time history acquisition time
-                data[k1]['rx'] = -1.0 * np.array(data[k1]['inclinometer'])  # rx has opposite sign to inclinometer!
+                data[k1]['rx'] = -1.0 * data[k1]['inclinometer']  # opposite sign to inclinometer
                 del data[k1]['inclinometer']  # ditching old key
             if 't' in data_keys:  # time history acquisition time
-                data[k1]['t'] = np.array(data[k1]['t'])
+                pass
             if 'qCeiling' in data_keys:  # time hist of dynamic pressure measured by pitot tube placed on the ceiling
                 data[k1]['q_ceil'] = data[k1].pop('qCeiling')  # rename key, ditching old one
-                data[k1]['q_ceil'] = np.array(data[k1]['q_ceil']).squeeze()  # squeezing unnecessary dimension
                 u_ceil = np.sqrt(data[k1]['q_ceil'] / (1 / 2 * data[k1]['rho']))
                 data[k1].update({'u_ceil': u_ceil, 'U_ceil': np.mean(u_ceil)})
             if 'qUpwind' in data_keys:  # ... pitot placed upwind (2m ahead the turn table) at h=0.5m.
                 data[k1]['q_upwind'] = data[k1].pop('qUpwind')  # rename key, ditching old one
-                data[k1]['q_upwind'] = np.array(data[k1]['q_upwind']).squeeze()  # squeezing unnecessary dimension
             if 'turntable' in data_keys:  # angle imposed to the turning table during the test
-                data[k1]['polimi_yaw'] = data[k1].pop('turntable')  # rename key, ditching old one
+                data[k1]['polimi_yaw'] = float(data[k1].pop('turntable'))  # sometimes it is int, so forcing to float
                 # Check if the raw data angle 'turntable' corresponds to the angle in the file name after 'Ang':
                 if raw_data_type in ['A10', 'A11-A12', 'A14']:  # file types with different Ang syntax in filename
                     polimi_yaw_2 = float(file_name.split('-Ang')[1].split('-Z')[0])  # find angle between substrings
@@ -140,7 +139,7 @@ def get_raw_data_dict(raw_data_path):
                 U = np.mean(u, axis=-1)
                 data[k1].update({'U': U, 'u': u, 'v': v, 'w': w})  # updating dict
             if 'THForces' in data_keys:
-                data[k1]['F'] = np.array(data[k1]['THForces']).T  # new shape: (dof, n_samples)
+                data[k1]['F'] = data[k1]['THForces'].T  # new shape: (dof, n_samples)
                 del data[k1]['THForces']  # ditching old key
                 assert 'EU' in data_keys
                 data[k1]['units'] = data[k1].pop('EU')  # rename key, ditching old one
@@ -150,16 +149,18 @@ def get_raw_data_dict(raw_data_path):
             if 'H' not in data[k1].keys():
                 logging.warning(f"Polimi forgot to add an 'H' key to the data in Annex A9. File: {file_path}")
                 data[k1]['H'] = 0.45714285714285713  # taken from the other raw deck data files
+            else:
+                data[k1]['H'] = float(data[k1]['H'])
             if 'accZ' in data_keys:
-                data[k1]['acc_z'] = np.array(data[k1]['accZ']).squeeze()  # squeezing unnecessary dimension
+                data[k1]['acc_z'] = data[k1]['accZ']
                 del data[k1]['accZ']
             if 'conf' in data_keys:
                 data[k1]['config'] = data[k1].pop('conf')  # rename key, ditching old one
             if 'fsamp' in data_keys:  # (Hz): sampling frequency.
-                data[k1]['fs'] = data[k1].pop('fsamp')  # rename key, ditching old one
+                data[k1]['fs'] = float(data[k1].pop('fsamp'))  # rename key, ditching old one
             if 'upwind_uvw' in data_keys:
                 data[k1]['uvw_upwind'] = data[k1].pop('upwind_uvw')  # rename key, ditching old one
-                data[k1]['uvw_upwind'] = np.array(data[k1]['uvw_upwind']).T  # new shape: (3, n_samples)
+                data[k1]['uvw_upwind'] = data[k1]['uvw_upwind'].T  # new shape: (3, n_samples)
                 data[k1]['U_upwind'] = np.mean(data[k1]['uvw_upwind'][0])
             if 'qRef' in data_keys:
                 data[k1]['q_ref'] = data[k1].pop('qRef')  # rename key, ditching old one
@@ -189,7 +190,7 @@ def get_raw_data_dict(raw_data_path):
     return data
 
 
-def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True, drop_matlab_info=True, report_all_original_keys=True):
+def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True, drop_matlab_info=True, report_all_original_keys=False):
     """
     Takes as input a triply nested dictionary, with the outer keys as raw_data_types.
     drop_time_series: drops the large time series, for efficiency and to get a dataframe with non-iterable cells
@@ -209,14 +210,24 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True, drop_matlab_info
         if drop_matlab_info:
             cols_w_matlab_info = ['__globals__', '__header__', '__version__']
             df = df.drop(cols_w_matlab_info, axis=1, errors='ignore')
+
+        keys_and_types = {'B': float, 'F': object, 'F_mean': object, 'H': float, 'L': float, 'U_ceil': float,
+                          'U_upwind': float, '__globals__': object, '__header__': object, '__version__': object,
+                          'acc_z': object, 'code': object, 'dof_tag': object, 'fs': float, 'id': int, 'polimi_yaw': float,
+                          'q_ceil': object, 'q_ref': float, 'q_upwind': object, 'rho': float, 'rx': float,
+                          't': object, 't_uvw': object, 'temp': float, 'theta': float, 'u_ceil': object,
+                          'units': object, 'uvw_upwind': object, 'yaw': float}
+        for key, value in keys_and_types.items():
+            if key in df:
+                df[key] = df[key].astype(value)
+
+
         return df.reset_index(names='case_tag')
 
     dict_of_dfs = {k: get_df_from_raw_data(raw_data_dict[k]) for k in raw_data_types}
 
     # Some cols have a list on each cell. These lists will be exploded to multiple rows
     for k in raw_data_types:
-        if k in ['A10', 'A11-A12']:
-            dict_of_dfs['A10']['U'] = dict_of_dfs['A10']['U'].apply(np.squeeze)  # 'U' is composed of lists of size 1
         if k not in ['A10', 'A11-A12']:
             cols_to_explode = ['cobras', 'U', 'units', 'dof_tag', 'F_mean']  # add columns as needed here
             cols_to_explode_1df = [c for c in dict_of_dfs[k].columns.values if c in cols_to_explode]
@@ -237,160 +248,203 @@ dict_of_dfs = get_dfs_from_raw_data(raw_data_dict)
 
 
 
+def run_further_checks(dict_of_dfs):
+    """
+    Running a few checks on the processed data (input format: dictionary of dataframes)
+    """
+    df_of_all_dfs = pd.concat(dict_of_dfs[k] for k in raw_data_types)
+
+    # TEST 1: Checking the consistency between the "polimi_yaw" (turntable) angles, and the reported "yaw" angles
+    cols1 = ['polimi_yaw', 'yaw']  # columns to be checked
+    test1 = df_of_all_dfs.copy()
+    # test1 = pd.concat([dict_of_dfs[k][['case_tag', 'id'] + cols1] for k in raw_data_types])
+    test1 = test1.drop_duplicates(subset=cols1).copy()  # drop duplicate combinations of these 2 angles
+    test1['yaw_eq'] = np.array(test1['polimi_yaw'], dtype=float) + 180.0  # AnnexA17 equation: beta = gamma + 180
+    test1['yaw_eq_-pi_pi'] = deg(beta_within_minus_Pi_and_Pi_func(rad(test1['yaw_eq'])))  # convert to interval
+    test1['error_in_yaw_eq'] = test1['yaw'] - test1['yaw_eq_-pi_pi']  # difference (error)
+    fail_condition = test1['error_in_yaw_eq'] > 0.5
+    if fail_condition.any():
+        logging.warning('The following files have an inconsistent yaw angle definition. The polimi_yaw (turntable) '
+                        'angle, when added by 180 deg according to the yaw equation (Polimi Report Annex A17),'
+                        'produces a different angle than the reported "yaw" angle')
+        logging.warning(test1[fail_condition])
+
+    # TEST 2: Calculating beta and theta angles from rx (inclinometer) measurements and polimi_yaw (turntable) angles.
+    cols2 = ['polimi_yaw', 'yaw', 'rx']  # columns to be checked todo: SINCE 'rx' doesn't always exist, some raw_data_types are being ignored
+    # test2 = pd.concat([dict_of_dfs[k][['case_tag', 'id'] + cols2] for k in raw_data_types
+    #                    if all([c in dict_of_dfs[k].keys() for c in cols2])])  # if all elements in cols2 are keys
+    test2 = df_of_all_dfs.copy()
+    test2 = test2.drop_duplicates(subset=cols2).copy()  # drop duplicate combinations of these 2 angles
+    # todo: confirm the following calculation of beta_rx0 (2 code lines) after Polimi's reply to my comment:
+    test2['beta_rx0'] = test2['polimi_yaw'] + 180.0  # AnnexA17 equation: beta = gamma + 180
+    test2['beta_rx0'] = deg(beta_within_minus_Pi_and_Pi_func(rad(test2['beta_rx0'])))  # convert to interval
+    test2['beta'] = deg(np.arctan(np.tan(rad(test2['beta_rx0'])) / np.cos(rad(test2['rx']))))
+
+    # todo: Bernardo, continue here, check "beta", which is wrong when beta_rx0 is outside -90 to 90 domain??? it seems
 
 
 raise NotImplementedError
 
-# Further post-processing
-coh_df['U/U_ceil'] = coh_df['U'] / coh_df['U_ceil']
 
 
-# The following plots assess if we should have yaw-dependent coefficients or not. Conclusion: not
-def plot_for_cobras():
-    """
-    Plot normalized U with the cobra ID in the x_axis
-    """
-    x_axis = 'cobras'
-    label_axis = 'yaw'
-    coh_df['colors_to_plot'] = get_list_of_colors_matching_list_of_objects(coh_df[label_axis])
-    plt.figure(dpi=400)
-    for label, color in dict(zip(coh_df[label_axis], coh_df['colors_to_plot'])).items():
-        sub_df = coh_df[coh_df[label_axis] == label]  # subset dataframe
-        plt.scatter(sub_df[x_axis], sub_df['U/U_ceil'], c=sub_df['colors_to_plot'], label=label, alpha=0.8)
-    plt.legend(title='yaw [deg]', bbox_to_anchor=(1.04, 0.5), loc="lower left")
-    plt.ylabel(r'$U_{centre}\//\/U_{ceiling}$')
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
-                             'polimi', 'preliminary', 'polimi_U_by_Uceil_for_cobras.jpg'))
-    plt.close()
 
 
-def plot_for_yaw():
-    """
-    Plot normalized U with the yaw angle in the x_axis
-    """
-    x_axis = 'yaw'
-    label_axis = 'cobras'
-    coh_df['colors_to_plot'] = get_list_of_colors_matching_list_of_objects(coh_df[label_axis])
-    plt.figure(figsize=(8, 4), dpi=400)
-    plt.title('(obtained from the coherence measurement tests)')
-    for label, color in dict(zip(coh_df[label_axis], coh_df['colors_to_plot'])).items():
-        sub_df = coh_df[coh_df[label_axis] == label]  # subset dataframe
-        plt.scatter(sub_df[x_axis], sub_df['U/U_ceil'], c=sub_df['colors_to_plot'], label=label, alpha=0.8)
-    plt.scatter([0, 30, 60, 90],
-                [0.886, 0.839, 0.833, 0.851],
-                marker='x', color='black', label='(from wind profile tests)')
-    plt.legend(bbox_to_anchor=(1.04, 0), loc="lower left")
-    plt.ylabel(r'$U_{centre}\//\/U_{ceiling}$')
-    plt.xlabel('yaw angle [deg]')
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
-                             'polimi', 'preliminary', 'polimi_U_by_Uceil_for_yaw.jpg'))
-    plt.close()
 
 
-# plot_for_cobras()
-# plot_for_yaw()
 
-raise NotImplementedError
-
-# Calculating the coefficients from force measurements. For this, the wind profile needs to be established, because
-# the wind forces are to be normalized by the integrated / averaged wind speed along the pontoon / column height
-scale = 1 / 35  # wind-tunnel model scale
-dof = 'Fy'  #
-yaw = 180
-
-
-# This function is to be re-done when we get the final raw data files
-def get_raw_aero_coef(dof, yaw, where='pont', back_engineered_U=False):
-    """
-    Describe here....
-    at: 'pont', 'deck', ...
-    """
-
-    #   The wind profile values were taken from a draft raw data Excel file provided below:
-    #   https://vegvesen.sharepoint.com/:x:/s/arb-bjffeedwindtunneltests/EVehciF9YZJEoTX42t6B2qkBSay4agGUy_8MMMQHn9lntA?email=bernardo.morais.da.costa%40vegvesen.no&e=BwZEry
-    # Wind profile, required for force normalization
-    U_profile_raw = np.array([[1E-5, 1E-5],
-                              [0.03, 8.3398],
-                              [0.05, 8.4902],
-                              [0.10, 8.6605],
-                              [0.15, 8.9762],
-                              [0.20, 9.2538],
-                              [0.25, 9.4597],
-                              [0.30, 9.854],
-                              [0.35, 9.918],
-                              [0.40, 10.0355],
-                              [0.46, 10.2358],
-                              [0.50, 10.4923],
-                              [0.60, 10.5613],
-                              [0.70, 10.7889]])
-    x_raw = U_profile_raw[:, 0]
-    y_raw = U_profile_raw[:, 1]
-
-    def func_to_fit(z, a, b):
-        """
-        this logarithmic function is used to fit the measurements of the wind profile (with parameters 'a' and 'b')
-        """
-        return a * np.log(z / b)
-
-    def get_fitted_wind_profile(plot=False):
-        """
-        x_fit: Used for the height above ground (z) [m]
-        return: the fitted wind speed [m/s]
-        """
-        x_fit = np.linspace(x_raw.min(), x_raw.max(), num=1000000)
-        y_interp = np.interp(x=x_fit, xp=x_raw, fp=y_raw)
-        popt, pcov, *_ = curve_fit(f=func_to_fit, xdata=x_raw, ydata=y_raw, bounds=np.array([[0, 0], [np.inf, np.inf]]))
-        y_fit = func_to_fit(x_fit, *popt)
-        if plot:
-            # Plotting the fitted logarithm
-            plt.scatter(x_raw, y_raw, label='raw data')
-            plt.plot(x_fit, y_interp, label='interpolation')
-            plt.plot(x_fit, y_fit, label='curve fit')
-            plt.legend()
-            plt.show()
-        return x_fit, y_fit
-
-    x_fit, y_fit = get_fitted_wind_profile()
-
-    # # Integrating raw (coarser) data
-    # idx = np.where(x_raw <= H)[0][-1]
-    # y_raw_ref = np.trapz(y=y_raw[:idx+1], x=x_raw[:idx+1]) / H
-
-    # # Integrating interpolated (finer) data
-    # idx = np.where(x_fit <= H)[0][-1]
-    # y_interp_ref = np.trapz(y=y_interp[:idx+1], x=x_fit[:idx+1]) / H
-
-    if where == 'pont':
-        H = H_pont
-        B = B_pont
-        L = L_pont
-        sub_df = pont_df[(pont_df['dof_tag'] == dof + '-PTot') & (pont_df['yaw'] == yaw)]  # subset of df
-
-    else:
-        assert where == 'deck', "Error: Haven't implemented coefficients of other elements"
-        H = np.round(3.5 * scale, 10)
-        sub_df = deck_df[(deck_df['dof_tag'] == dof + '-Tot') & (deck_df['yaw'] == yaw)]  # subset of df
-
-    if not back_engineered_U:
-        # Integrating fitted (finer) data
-        idx = np.where(x_fit <= H)[0][-1]
-        U_ref = np.trapz(y=y_fit[:idx + 1], x=x_fit[:idx + 1]) / H
-    else:  # todo: to be deleted, used just for testing
-        U_ref = 7.596  # the speed that gives the q-tilde-ref in the Excel file of Polimi
-    qref_tilde = 1 / 2 * rho * U_ref ** 2
-    F = sub_df['F_mean']  # force or moment
-
-    rho = sub_df['rho']
-
-    # BERNARDO RE-CODE ALL THIS. SEE ANNEX-DRAFT.PDF AND THE FORMULAS OF EACH COEFFICIENT FOR THE PONTOON AND DECK
-    # if dof in ['Fx', 'Fy', 'Fz']:
-    #
-    #     C = F / (qref_tilde * L * H)
-    # else:
-    #     assert dof in ['Mx', 'My', 'Mz']
-
-    return NotImplementedError
+#
+#
+#
+# # Further post-processing
+# coh_df['U/U_ceil'] = coh_df['U'] / coh_df['U_ceil']
+#
+#
+# # The following plots assess if we should have yaw-dependent coefficients or not. Conclusion: not
+# def plot_for_cobras():
+#     """
+#     Plot normalized U with the cobra ID in the x_axis
+#     """
+#     x_axis = 'cobras'
+#     label_axis = 'yaw'
+#     coh_df['colors_to_plot'] = get_list_of_colors_matching_list_of_objects(coh_df[label_axis])
+#     plt.figure(dpi=400)
+#     for label, color in dict(zip(coh_df[label_axis], coh_df['colors_to_plot'])).items():
+#         sub_df = coh_df[coh_df[label_axis] == label]  # subset dataframe
+#         plt.scatter(sub_df[x_axis], sub_df['U/U_ceil'], c=sub_df['colors_to_plot'], label=label, alpha=0.8)
+#     plt.legend(title='yaw [deg]', bbox_to_anchor=(1.04, 0.5), loc="lower left")
+#     plt.ylabel(r'$U_{centre}\//\/U_{ceiling}$')
+#     plt.grid()
+#     plt.tight_layout()
+#     plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
+#                              'polimi', 'preliminary', 'polimi_U_by_Uceil_for_cobras.jpg'))
+#     plt.close()
+#
+#
+# def plot_for_yaw():
+#     """
+#     Plot normalized U with the yaw angle in the x_axis
+#     """
+#     x_axis = 'yaw'
+#     label_axis = 'cobras'
+#     coh_df['colors_to_plot'] = get_list_of_colors_matching_list_of_objects(coh_df[label_axis])
+#     plt.figure(figsize=(8, 4), dpi=400)
+#     plt.title('(obtained from the coherence measurement tests)')
+#     for label, color in dict(zip(coh_df[label_axis], coh_df['colors_to_plot'])).items():
+#         sub_df = coh_df[coh_df[label_axis] == label]  # subset dataframe
+#         plt.scatter(sub_df[x_axis], sub_df['U/U_ceil'], c=sub_df['colors_to_plot'], label=label, alpha=0.8)
+#     plt.scatter([0, 30, 60, 90],
+#                 [0.886, 0.839, 0.833, 0.851],
+#                 marker='x', color='black', label='(from wind profile tests)')
+#     plt.legend(bbox_to_anchor=(1.04, 0), loc="lower left")
+#     plt.ylabel(r'$U_{centre}\//\/U_{ceiling}$')
+#     plt.xlabel('yaw angle [deg]')
+#     plt.grid()
+#     plt.tight_layout()
+#     plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
+#                              'polimi', 'preliminary', 'polimi_U_by_Uceil_for_yaw.jpg'))
+#     plt.close()
+#
+#
+# # plot_for_cobras()
+# # plot_for_yaw()
+#
+# raise NotImplementedError
+#
+# # Calculating the coefficients from force measurements. For this, the wind profile needs to be established, because
+# # the wind forces are to be normalized by the integrated / averaged wind speed along the pontoon / column height
+# scale = 1 / 35  # wind-tunnel model scale
+# dof = 'Fy'  #
+# yaw = 180
+#
+#
+# # This function is to be re-done when we get the final raw data files
+# def get_raw_aero_coef(dof, yaw, where='pont', back_engineered_U=False):
+#     """
+#     Describe here....
+#     at: 'pont', 'deck', ...
+#     """
+#
+#     #   The wind profile values were taken from a draft raw data Excel file provided below:
+#     #   https://vegvesen.sharepoint.com/:x:/s/arb-bjffeedwindtunneltests/EVehciF9YZJEoTX42t6B2qkBSay4agGUy_8MMMQHn9lntA?email=bernardo.morais.da.costa%40vegvesen.no&e=BwZEry
+#     # Wind profile, required for force normalization
+#     U_profile_raw = np.array([[1E-5, 1E-5],
+#                               [0.03, 8.3398],
+#                               [0.05, 8.4902],
+#                               [0.10, 8.6605],
+#                               [0.15, 8.9762],
+#                               [0.20, 9.2538],
+#                               [0.25, 9.4597],
+#                               [0.30, 9.854],
+#                               [0.35, 9.918],
+#                               [0.40, 10.0355],
+#                               [0.46, 10.2358],
+#                               [0.50, 10.4923],
+#                               [0.60, 10.5613],
+#                               [0.70, 10.7889]])
+#     x_raw = U_profile_raw[:, 0]
+#     y_raw = U_profile_raw[:, 1]
+#
+#     def func_to_fit(z, a, b):
+#         """
+#         this logarithmic function is used to fit the measurements of the wind profile (with parameters 'a' and 'b')
+#         """
+#         return a * np.log(z / b)
+#
+#     def get_fitted_wind_profile(plot=False):
+#         """
+#         x_fit: Used for the height above ground (z) [m]
+#         return: the fitted wind speed [m/s]
+#         """
+#         x_fit = np.linspace(x_raw.min(), x_raw.max(), num=1000000)
+#         y_interp = np.interp(x=x_fit, xp=x_raw, fp=y_raw)
+#         popt, pcov, *_ = curve_fit(f=func_to_fit, xdata=x_raw, ydata=y_raw, bounds=np.array([[0, 0], [np.inf, np.inf]]))
+#         y_fit = func_to_fit(x_fit, *popt)
+#         if plot:
+#             # Plotting the fitted logarithm
+#             plt.scatter(x_raw, y_raw, label='raw data')
+#             plt.plot(x_fit, y_interp, label='interpolation')
+#             plt.plot(x_fit, y_fit, label='curve fit')
+#             plt.legend()
+#             plt.show()
+#         return x_fit, y_fit
+#
+#     x_fit, y_fit = get_fitted_wind_profile()
+#
+#     # # Integrating raw (coarser) data
+#     # idx = np.where(x_raw <= H)[0][-1]
+#     # y_raw_ref = np.trapz(y=y_raw[:idx+1], x=x_raw[:idx+1]) / H
+#
+#     # # Integrating interpolated (finer) data
+#     # idx = np.where(x_fit <= H)[0][-1]
+#     # y_interp_ref = np.trapz(y=y_interp[:idx+1], x=x_fit[:idx+1]) / H
+#
+#     if where == 'pont':
+#         H = H_pont
+#         B = B_pont
+#         L = L_pont
+#         sub_df = pont_df[(pont_df['dof_tag'] == dof + '-PTot') & (pont_df['yaw'] == yaw)]  # subset of df
+#
+#     else:
+#         assert where == 'deck', "Error: Haven't implemented coefficients of other elements"
+#         H = np.round(3.5 * scale, 10)
+#         sub_df = deck_df[(deck_df['dof_tag'] == dof + '-Tot') & (deck_df['yaw'] == yaw)]  # subset of df
+#
+#     if not back_engineered_U:
+#         # Integrating fitted (finer) data
+#         idx = np.where(x_fit <= H)[0][-1]
+#         U_ref = np.trapz(y=y_fit[:idx + 1], x=x_fit[:idx + 1]) / H
+#     else:  # todo: to be deleted, used just for testing
+#         U_ref = 7.596  # the speed that gives the q-tilde-ref in the Excel file of Polimi
+#     qref_tilde = 1 / 2 * rho * U_ref ** 2
+#     F = sub_df['F_mean']  # force or moment
+#
+#     rho = sub_df['rho']
+#
+#     # BERNARDO RE-CODE ALL THIS. SEE ANNEX-DRAFT.PDF AND THE FORMULAS OF EACH COEFFICIENT FOR THE PONTOON AND DECK
+#     # if dof in ['Fx', 'Fy', 'Fz']:
+#     #
+#     #     C = F / (qref_tilde * L * H)
+#     # else:
+#     #     assert dof in ['Mx', 'My', 'Mz']
+#
+#     return NotImplementedError
