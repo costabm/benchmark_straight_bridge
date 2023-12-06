@@ -5,12 +5,12 @@ This script allows pre- and post-processing the raw data files provided.
 bercos@vegvesen.no
 November 2023
 """
-import copy
+
 import os
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from mat4py import loadmat
+from scipy.io import loadmat  # Faster alternative than using mat4py.loadmat
 from scipy.optimize import curve_fit
 from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, all_equal, flatten_nested_list
 import pandas as pd
@@ -19,7 +19,7 @@ matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
 
 raw_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\raw_data")
-debug = True
+debug = False
 
 # Common variables
 scale = 1 / 35  # model scale
@@ -28,18 +28,6 @@ scale = 1 / 35  # model scale
 H_pont = np.round(3.5 * scale, 10)
 B_pont = 14.875 * scale
 L_pont = 53 * scale
-
-# OLD TO BE REPLACED
-# raw_data_types = ['coh', 'col', 'deck', 'pont', 'profile']  # my labels of the different raw data types
-# raw_data_str_cues = ['SIW_FLOW', 'SIW_COLUMN', 'SIW_DECK',
-#                      'SIW_PONTOON', '-FLOW-']  # respective substrings found in Polimi's filenames
-#  TRASH TOO
-# raw_data_types = ['A01-A06', 'A07-A08', 'A09', 'A10',
-#                   'A11-A12', 'A13', 'A14', 'A15-A16']  # my labels of the different raw data types
-# raw_data_str_cues = [['AnnexA1', 'AnnexA2', 'AnnexA3', 'AnnexA4', 'AnnexA5', 'AnnexA6'],
-#                      ['AnnexA7', 'AnnexA8'], ['AnnexA9'], ['Annex10'], ['Annex11', 'Annex12'],
-#                      ['Annex13'], ['Annex14'], ['Annex15', 'Annex16']]  # respective substrings found in Polimi's filenames
-
 
 # Raw data types: my labels of the different raw data types. Cues: respective substrings found in Polimi's filenames
 raw_data_types_and_cues = {'A01-A06': ['AnnexA1', 'AnnexA2', 'AnnexA3', 'AnnexA4', 'AnnexA5', 'AnnexA6'],
@@ -85,7 +73,7 @@ def overview_all_raw_file_keys():
         if debug:  # Only consider a few unique raw data files (with unique name tags), to speed up
             _, file_paths = unique_file_names_and_paths(file_paths)
         for file_path in file_paths:
-            raw_file = loadmat(file_path)
+            raw_file = loadmat(file_path, squeeze_me=True)
             set_of_keys = list(raw_file.keys())
             assert len(set(set_of_keys)) == len(set_of_keys), "One key is repeated in the same file!?"
             set_of_keys = set(set_of_keys)
@@ -99,9 +87,6 @@ def overview_all_raw_file_keys():
     del df['key_set_str']
     set_keys = set(flatten_nested_list([list(k) for k in df['key_set']]))
     return df, set_keys
-
-
-df_all_keys, set_all_keys = overview_all_raw_file_keys()
 
 
 def get_raw_data_dict(raw_data_path):
@@ -120,20 +105,24 @@ def get_raw_data_dict(raw_data_path):
 
         for file_name, file_path in zip(file_names, file_paths):
             k1 = file_name.split('.mat')[0]  # using the filename for key 1
-            data[k1] = loadmat(file_path)
+            data[k1] = loadmat(file_path, squeeze_me=True)  # squeeze unit dimensions
             data_keys = data[k1].keys()
+
             data[k1]['id'] = int(file_name[2:6])  # case number
-            if 't' in data_keys:
+            if 'inclinometer' in data_keys:  # time history acquisition time
+                data[k1]['rx'] = -1.0 * np.array(data[k1]['inclinometer'])  # rx has opposite sign to inclinometer!
+                del data[k1]['inclinometer']  # ditching old key
+            if 't' in data_keys:  # time history acquisition time
                 data[k1]['t'] = np.array(data[k1]['t'])
-            if 'qCeiling' in data_keys:
+            if 'qCeiling' in data_keys:  # time hist of dynamic pressure measured by pitot tube placed on the ceiling
                 data[k1]['q_ceil'] = data[k1].pop('qCeiling')  # rename key, ditching old one
                 data[k1]['q_ceil'] = np.array(data[k1]['q_ceil']).squeeze()  # squeezing unnecessary dimension
                 u_ceil = np.sqrt(data[k1]['q_ceil'] / (1 / 2 * data[k1]['rho']))
                 data[k1].update({'u_ceil': u_ceil, 'U_ceil': np.mean(u_ceil)})
-            if 'qUpwind' in data_keys:
+            if 'qUpwind' in data_keys:  # ... pitot placed upwind (2m ahead the turn table) at h=0.5m.
                 data[k1]['q_upwind'] = data[k1].pop('qUpwind')  # rename key, ditching old one
                 data[k1]['q_upwind'] = np.array(data[k1]['q_upwind']).squeeze()  # squeezing unnecessary dimension
-            if 'turntable' in data_keys:
+            if 'turntable' in data_keys:  # angle imposed to the turning table during the test
                 data[k1]['polimi_yaw'] = data[k1].pop('turntable')  # rename key, ditching old one
                 # Check if the raw data angle 'turntable' corresponds to the angle in the file name after 'Ang':
                 if raw_data_type in ['A10', 'A11-A12', 'A14']:  # file types with different Ang syntax in filename
@@ -145,10 +134,10 @@ def get_raw_data_dict(raw_data_path):
             if 'u' in data_keys:
                 assert 'v' in data_keys
                 assert 'w' in data_keys
-                u = np.array(data[k1]['u']).T  # new shape: (n_cobras, n_samples)
-                v = np.array(data[k1]['v']).T  # new shape: (n_cobras, n_samples)
-                w = np.array(data[k1]['w']).T  # new shape: (n_cobras, n_samples)
-                U = np.mean(u, axis=1)
+                u = data[k1]['u'].T  # new shape: (n_cobras, n_samples) or (n_samples)
+                v = data[k1]['v'].T  # new shape: (n_cobras, n_samples) or (n_samples)
+                w = data[k1]['w'].T  # new shape: (n_cobras, n_samples) or (n_samples)
+                U = np.mean(u, axis=-1)
                 data[k1].update({'U': U, 'u': u, 'v': v, 'w': w})  # updating dict
             if 'THForces' in data_keys:
                 data[k1]['F'] = np.array(data[k1]['THForces']).T  # new shape: (dof, n_samples)
@@ -164,13 +153,25 @@ def get_raw_data_dict(raw_data_path):
             if 'accZ' in data_keys:
                 data[k1]['acc_z'] = np.array(data[k1]['accZ']).squeeze()  # squeezing unnecessary dimension
                 del data[k1]['accZ']
+            if 'conf' in data_keys:
+                data[k1]['config'] = data[k1].pop('conf')  # rename key, ditching old one
+            if 'fsamp' in data_keys:  # (Hz): sampling frequency.
+                data[k1]['fs'] = data[k1].pop('fsamp')  # rename key, ditching old one
             if 'upwind_uvw' in data_keys:
-                data[k1]['upwind_uvw'] = np.array(data[k1]['upwind_uvw']).T  # new shape: (3, n_samples)
-                data[k1]['upwind_U'] = np.mean(data[k1]['upwind_uvw'][0])
+                data[k1]['uvw_upwind'] = data[k1].pop('upwind_uvw')  # rename key, ditching old one
+                data[k1]['uvw_upwind'] = np.array(data[k1]['uvw_upwind']).T  # new shape: (3, n_samples)
+                data[k1]['U_upwind'] = np.mean(data[k1]['uvw_upwind'][0])
             if 'qRef' in data_keys:
                 data[k1]['q_ref'] = data[k1].pop('qRef')  # rename key, ditching old one
             if 'qTildeRef' in data_keys:
                 data[k1]['q_tilde_ref'] = data[k1].pop('qTildeRef')  # rename key, ditching old one
+            if 'Vupwind_mod' in data_keys:
+                assert 'u' in data_keys  # such that U was calculated and set up as new key
+                assert np.allclose(data[k1]['Vupwind_mod'], data[k1]['U_upwind'], rtol=1e-02)
+                del data[k1]['Vupwind_mod']
+            if 'PMot' in data_keys:  # wind tunnel power percentage
+                data[k1]['tunnel_power'] = data[k1].pop('PMot')  # rename key, ditching old one
+
             data[k1] = dict(sorted(data[k1].items()))  # Sorting the dict keys
         assert all_equal([data[k].keys() for k in data.keys()]), \
             "Some files, within the same raw_data_type have different keys! Check the raw data"
@@ -188,7 +189,7 @@ def get_raw_data_dict(raw_data_path):
     return data
 
 
-def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True):
+def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True, drop_matlab_info=True, report_all_original_keys=True):
     """
     Takes as input a triply nested dictionary, with the outer keys as raw_data_types.
     drop_time_series: drops the large time series, for efficiency and to get a dataframe with non-iterable cells
@@ -203,8 +204,11 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True):
         df = pd.DataFrame.from_dict(raw_data).transpose()
         if drop_time_series:
             cols_w_time_series = ['acc_z', 'q_ceil', 'q_upwind', 'u', 'v', 'w', 't', 't_uvw', 'u_ceil', 'F',
-                                  'upwind_uvw']
+                                  'uvw_upwind']
             df = df.drop(cols_w_time_series, axis=1, errors='ignore')  # ignore already non-existing keys
+        if drop_matlab_info:
+            cols_w_matlab_info = ['__globals__', '__header__', '__version__']
+            df = df.drop(cols_w_matlab_info, axis=1, errors='ignore')
         return df.reset_index(names='case_tag')
 
     dict_of_dfs = {k: get_df_from_raw_data(raw_data_dict[k]) for k in raw_data_types}
@@ -218,12 +222,21 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True):
             cols_to_explode_1df = [c for c in dict_of_dfs[k].columns.values if c in cols_to_explode]
             dict_of_dfs[k] = dict_of_dfs[k].explode(cols_to_explode_1df)
 
+    if report_all_original_keys:
+        print(f'Collecting all original keys of the raw data. May take several minutes...')
+        dict_of_dfs['df_all_original_keys'], dict_of_dfs['set_original_keys'] = overview_all_raw_file_keys()
+
     return dict_of_dfs
 
 
 # Getting processed dataframes
 raw_data_dict = get_raw_data_dict(raw_data_path)
 dict_of_dfs = get_dfs_from_raw_data(raw_data_dict)
+
+
+
+
+
 
 
 raise NotImplementedError
