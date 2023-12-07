@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat  # Faster alternative than using mat4py.loadmat
 from scipy.optimize import curve_fit
 from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, all_equal, flatten_nested_list, deg, rad
-from transformations import beta_within_minus_Pi_and_Pi_func
+from transformations import beta_within_minus_Pi_and_Pi_func, beta_from_beta_rx0_and_rx, theta_from_beta_rx0_and_rx
 import pandas as pd
 import logging
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
@@ -21,14 +21,6 @@ matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
 raw_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\raw_data")
 debug = False
-
-# Common variables
-scale = 1 / 35  # model scale
-
-# Pontoon dimensions (for normalization)
-H_pont = np.round(3.5 * scale, 10)
-B_pont = 14.875 * scale
-L_pont = 53 * scale
 
 # Raw data types: my labels of the different raw data types. Cues: respective substrings found in Polimi's filenames
 raw_data_types_and_cues = {'A01-A06': ['AnnexA1', 'AnnexA2', 'AnnexA3', 'AnnexA4', 'AnnexA5', 'AnnexA6'],
@@ -130,6 +122,12 @@ def get_raw_data_dict(raw_data_path):
                     polimi_yaw_2 = float(file_name.split('_Ang')[1].split('.mat')[0])  # find angle between substrings
                 if not np.isclose(data[k1]['polimi_yaw'], polimi_yaw_2, atol=1):  # best to use 1 deg tolerance
                     logging.warning(f"Ang in filename != from 'turntable'. File: {file_path}")
+                # todo: confirm the following calculation of beta_rx0 (2 code lines) after Polimi's reply to my comment:
+                data[k1]['beta_rx0'] = data[k1]['polimi_yaw'] + 180.0  # AnnexA17 eq.: beta = gamma + 180  todo: confirm
+                data[k1]['beta_rx0'] = deg(beta_within_minus_Pi_and_Pi_func(rad(data[k1]['beta_rx0'])))  # to [-pi,pi]
+                if 'rx' in data_keys:
+                    data[k1]['beta_BC'] = deg(beta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']), rad(data[k1]['rx'])))
+                    data[k1]['theta_BC'] = deg(theta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']), rad(data[k1]['rx'])))
             if 'u' in data_keys:
                 assert 'v' in data_keys
                 assert 'w' in data_keys
@@ -158,6 +156,8 @@ def get_raw_data_dict(raw_data_path):
                 data[k1]['config'] = data[k1].pop('conf')  # rename key, ditching old one
             if 'fsamp' in data_keys:  # (Hz): sampling frequency.
                 data[k1]['fs'] = float(data[k1].pop('fsamp'))  # rename key, ditching old one
+            if 'h' in data_keys:  # height of the measurements, either from ground or from deck level (Annex10).
+                data[k1]['z'] = float(data[k1].pop('h'))  # rename key, ditching old one
             if 'upwind_uvw' in data_keys:
                 data[k1]['uvw_upwind'] = data[k1].pop('upwind_uvw')  # rename key, ditching old one
                 data[k1]['uvw_upwind'] = data[k1]['uvw_upwind'].T  # new shape: (3, n_samples)
@@ -240,51 +240,85 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True, drop_matlab_info
     return dict_of_dfs
 
 
+def get_df_all(dict_of_dfs):
+    """
+    Concatenates all the dataframes in the dictionary dict_of_dfs into one big dataframe.
+    'annex': the same as raw_data_type
+    'explode_id': is just an index resulting from the .explode method in get_dfs_from_raw_data
+    """
+    df = pd.concat([dict_of_dfs[k] for k in raw_data_types],
+                   keys=raw_data_types).reset_index().rename(
+                   columns={'level_0':'annex', 'level_1':'explode_id'})
+    return df
+
+
 # Getting processed dataframes
 raw_data_dict = get_raw_data_dict(raw_data_path)
 dict_of_dfs = get_dfs_from_raw_data(raw_data_dict)
+df_all = get_df_all(dict_of_dfs)
 
 
-
-
-
-def run_further_checks(dict_of_dfs):
+def run_further_checks(df_all):
     """
     Running a few checks on the processed data (input format: dictionary of dataframes)
     """
-    df_of_all_dfs = pd.concat(dict_of_dfs[k] for k in raw_data_types)
-
     # TEST 1: Checking the consistency between the "polimi_yaw" (turntable) angles, and the reported "yaw" angles
     cols1 = ['polimi_yaw', 'yaw']  # columns to be checked
-    test1 = df_of_all_dfs.copy()
-    # test1 = pd.concat([dict_of_dfs[k][['case_tag', 'id'] + cols1] for k in raw_data_types])
+    test1 = df_all.copy()
     test1 = test1.drop_duplicates(subset=cols1).copy()  # drop duplicate combinations of these 2 angles
     test1['yaw_eq'] = np.array(test1['polimi_yaw'], dtype=float) + 180.0  # AnnexA17 equation: beta = gamma + 180
     test1['yaw_eq_-pi_pi'] = deg(beta_within_minus_Pi_and_Pi_func(rad(test1['yaw_eq'])))  # convert to interval
     test1['error_in_yaw_eq'] = test1['yaw'] - test1['yaw_eq_-pi_pi']  # difference (error)
-    fail_condition = test1['error_in_yaw_eq'] > 0.5
-    if fail_condition.any():
+    fail_condition1 = test1['error_in_yaw_eq'] > 0.5
+    if fail_condition1.any():
         logging.warning('The following files have an inconsistent yaw angle definition. The polimi_yaw (turntable) '
                         'angle, when added by 180 deg according to the yaw equation (Polimi Report Annex A17),'
-                        'produces a different angle than the reported "yaw" angle')
-        logging.warning(test1[fail_condition])
+                        'produces a different angle than the reported "yaw" angle.')
+        logging.warning(test1[fail_condition1])
 
     # TEST 2: Calculating beta and theta angles from rx (inclinometer) measurements and polimi_yaw (turntable) angles.
-    cols2 = ['polimi_yaw', 'yaw', 'rx']  # columns to be checked todo: SINCE 'rx' doesn't always exist, some raw_data_types are being ignored
-    # test2 = pd.concat([dict_of_dfs[k][['case_tag', 'id'] + cols2] for k in raw_data_types
-    #                    if all([c in dict_of_dfs[k].keys() for c in cols2])])  # if all elements in cols2 are keys
-    test2 = df_of_all_dfs.copy()
+    cols2 = ['polimi_yaw', 'yaw', 'rx', 'beta_rx0', 'beta_BC', 'theta_BC']  # columns to be checked
+    test2 = df_all.copy()
     test2 = test2.drop_duplicates(subset=cols2).copy()  # drop duplicate combinations of these 2 angles
-    # todo: confirm the following calculation of beta_rx0 (2 code lines) after Polimi's reply to my comment:
-    test2['beta_rx0'] = test2['polimi_yaw'] + 180.0  # AnnexA17 equation: beta = gamma + 180
-    test2['beta_rx0'] = deg(beta_within_minus_Pi_and_Pi_func(rad(test2['beta_rx0'])))  # convert to interval
-    test2['beta'] = deg(np.arctan(np.tan(rad(test2['beta_rx0'])) / np.cos(rad(test2['rx']))))
+    test2['error_in_theta'] = test2['theta_BC'] - test2['theta']
+    fail_condition2 = test2['error_in_theta'] > 0.1
+    if fail_condition2.any():
+        logging.warning('The following files have significant theta angle deviations from my theta estimation.')
+        logging.warning(test2[fail_condition2])
 
-    # todo: Bernardo, continue here, check "beta", which is wrong when beta_rx0 is outside -90 to 90 domain??? it seems
+run_further_checks(df_all)
 
 
-raise NotImplementedError
 
+
+
+
+
+def plot():
+    df = df_all.copy()
+    df = df[(df['U'] > 0) & (df['z'] == 0.46)].dropna(axis=1, how='all')
+    plt.scatter(df['beta_rx0'], df['U']/df['U_ceil'],
+                c = get_list_of_colors_matching_list_of_objects(df['code']))
+    plt.show()
+
+    raise NotImplementedError
+
+
+    x = df['beta_rx0']
+    y = df['U']/df['U_ceil']
+    label_axis = 'code'
+    color_list = get_list_of_colors_matching_list_of_objects(df['code'])
+    plt.figure(dpi=400)
+    for label, color in dict(zip(df[label_axis], color_list)).items():
+        sub_df = df[df[label_axis] == label_axis]  # subset dataframe
+        plt.scatter(sub_df[x_axis], sub_df['U/U_ceil'], c=sub_df['colors_to_plot'], label=label, alpha=0.8)
+    plt.legend(title='yaw [deg]', bbox_to_anchor=(1.04, 0.5), loc="lower left")
+    plt.ylabel(r'$U_{centre}\//\/U_{ceiling}$')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
+                             'polimi', 'preliminary', 'polimi_U_by_Uceil_for_cobras.jpg'))
+    plt.close()
 
 
 
@@ -293,7 +327,15 @@ raise NotImplementedError
 
 
 #
+
 #
+# # Common variables
+# scale = 1 / 35  # model scale
+#
+# # Pontoon dimensions (for normalization)
+# H_pont = np.round(3.5 * scale, 10)
+# B_pont = 14.875 * scale
+# L_pont = 53 * scale
 #
 # # Further post-processing
 # coh_df['U/U_ceil'] = coh_df['U'] / coh_df['U_ceil']

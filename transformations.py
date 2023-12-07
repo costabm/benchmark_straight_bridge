@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from straight_bridge_geometry import p_node_idx
 from sympy import cos, sin, Matrix, diff, symbols, pi, lambdify
-from my_utils import delta_array_func
+from my_utils import delta_array_func, deg, rad
 
 
 def normalize(v):
@@ -116,6 +116,33 @@ def beta_within_minus_Pi_and_Pi_func(beta_any):
     """Converts any beta in rads, to a beta inside the interval [-np.pi, np.pi], in rads"""
     beta_within_minus_Pi_and_Pi = np.arctan2(np.sin(beta_any), np.cos(beta_any))
     return beta_within_minus_Pi_and_Pi
+
+def beta_from_beta_rx0_and_rx(beta_rx0, rx):
+    """
+    New equation that improves on eq.(202) from my PhD thesis. Can be used for Polimi's wind tunnel tests.
+    This version expands the domain of beta_rx0 from [-pi/2, pi/2] to [-pi, pi]
+    Inputs and Output are in radians.
+    To obtain this equation, one has to reason in terms of coordinates x and y of the arctan2 function:
+    https://en.wikipedia.org/wiki/Atan2#/media/File:Atan2definition.svg
+    Testing:
+        for beta_rx0 in rad(np.array([-180, -160, -100, -80, -20, 20, 80, 100, 160, 180])):
+            rx = rad(-10)
+            print('beta_rx0 =', deg(beta_rx0))
+            print('beta =', deg(beta_from_beta_rx0_and_rx(beta_rx0, rx)))
+            print('------------')
+    """
+    beta_rx0 = beta_within_minus_Pi_and_Pi_func(beta_rx0)
+    x = np.cos(beta_rx0) * np.cos(rx)
+    y = np.sin(beta_rx0)
+    beta = np.arctan2(y, x)
+    return beta
+
+def theta_from_beta_rx0_and_rx(beta_rx0, rx):
+    """
+    The original eq. (203) from my PhD is already valid for the entire domain of beta_rx0 [-pi, pi]
+    """
+    theta = -np.arcsin(np.cos(beta_rx0) * np.sin(rx))
+    return theta
 
 def from_cos_sin_to_0_2pi(cosines, sines, out_units='rad'):
     # # To test this angle transformations, do:

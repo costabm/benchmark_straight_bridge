@@ -31,7 +31,7 @@ import numpy as np
 import pandas as pd
 from aerodynamic_coefficients.polynomial_fit import cons_poly_fit
 from transformations import T_LnwLs_func, theta_yz_bar_func, T_LsGw_func
-from my_utils import root_dir
+from my_utils import root_dir, deg, rad
 from scipy import interpolate
 import copy
 
@@ -39,14 +39,10 @@ import copy
 Cx_factor = 2.0  # To make CFD results conservative, better match SOH and reflect friction and other bridge equipment
 Cy_factor = 1.0  # MAKE SURE IF THIS HAS ALREADY BEEN DONE IN THE CSV FILE "aero_coef_experimental_data.csv"   # 4.0 / 3.5  # H has increased from 3.5 to 4.0 in Phase 7 of the BJF project, but since Cy is normalized by B, this is overlooked...
 
-def rad(deg):
-    return deg * np.pi / 180
-
-def deg(rad):
-    return rad * 180 / np.pi
-
 # Converting to L.D. Zhu "beta" and "theta" definition. Points are no longer in a regular grid. Angles are converted to a [-180,180] deg interval
 def from_SOH_to_Zhu_angles(betas_uncorrected, alphas):
+    # DEPRECATED FUNCTION. SEE INSTEAD: transformations.beta_theta_from_beta_rx0_and_rx
+    assert np.all(np.logical_and(rad(-90) <= betas_uncorrected, betas_uncorrected <= rad(90)))
     betas = np.arctan(np.tan(betas_uncorrected) / np.cos(alphas))  # [Rad]. Correcting the beta values (when alpha != 0). See the "Angles of the skewed wind" document in the _basis folder for explanation.
     thetas = -np.arcsin(np.cos(betas_uncorrected) * np.sin(alphas))  # [Rad]. thetas as in L.D.Zhu definition. See the "Angles of the skewed wind" document in the _basis folder for explanation.
     return betas, thetas
