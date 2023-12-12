@@ -1,6 +1,17 @@
 """
-In late 2023, Politecnico di Milano (Polimi) delivered us new wind tunnel test results in skew winds.
+In late 2023, Politecnico di Milano (Polimi) delivered SVV new wind tunnel test results in skew winds.
 This script allows pre- and post-processing the raw data files provided.
+
+First, a raw_data_dict is generated, made from all the raw data files found in the folder raw_data_path.
+Several data keys are renamed and some of the data is treated.
+
+Next, the dict_of_dfs is obtained. The data is organized in Annexes. Several annexes share the same data keys
+(U, U_ceil, etc.) so they are grouped together. Each group then forms a dataframe of this dict_of_dfs.
+
+Next, df_all is obtained, simply compiling all the data in dict_of_dfs into one single dataframe, for convenience.
+The result can be stored into a .csv file
+
+A few checks are performed in the end.
 
 bercos@vegvesen.no
 November 2023
@@ -9,18 +20,19 @@ November 2023
 import os
 import numpy as np
 import matplotlib
-import matplotlib.pyplot as plt
-from scipy.io import loadmat  # Faster alternative than using mat4py.loadmat
-from scipy.optimize import curve_fit
-from my_utils import root_dir, get_list_of_colors_matching_list_of_objects, all_equal, flatten_nested_list, deg, rad
+import scipy as sp
+from my_utils import root_dir, all_equal, flatten_nested_list, deg, rad
 from transformations import beta_within_minus_Pi_and_Pi_func, beta_from_beta_rx0_and_rx, theta_from_beta_rx0_and_rx
 import pandas as pd
 import logging
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
-
+# Folder that includes all the raw data as provided by Polimi:
 raw_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\raw_data")
-debug = False
+# File (Excel) with the coefficients results as provided by Polimi :
+xls_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\ResultsCoefficients-Rev1p1.xlsx")
+
+debug = False  # set to True to make debugging of this script faster (only a few unique data files are processed)
 
 # Raw data types: my labels of the different raw data types. Cues: respective substrings found in Polimi's filenames
 raw_data_types_and_cues = {'A01-A06': ['AnnexA1', 'AnnexA2', 'AnnexA3', 'AnnexA4', 'AnnexA5', 'AnnexA6'],
@@ -31,7 +43,6 @@ raw_data_types_and_cues = {'A01-A06': ['AnnexA1', 'AnnexA2', 'AnnexA3', 'AnnexA4
                            'A13': ['Annex13'],
                            'A14': ['Annex14'],
                            'A15-A16': ['Annex15', 'Annex16']}
-
 raw_data_types = list(raw_data_types_and_cues.keys())
 raw_data_str_cues = list(raw_data_types_and_cues.values())
 
@@ -66,7 +77,7 @@ def overview_all_raw_file_keys():
         if debug:  # Only consider a few unique raw data files (with unique name tags), to speed up
             _, file_paths = unique_file_names_and_paths(file_paths)
         for file_path in file_paths:
-            raw_file = loadmat(file_path, squeeze_me=True)
+            raw_file = sp.io.loadmat(file_path, squeeze_me=True)
             set_of_keys = list(raw_file.keys())
             assert len(set(set_of_keys)) == len(set_of_keys), "One key is repeated in the same file!?"
             set_of_keys = set(set_of_keys)
@@ -98,7 +109,7 @@ def get_raw_data_dict(raw_data_path):
 
         for file_name, file_path in zip(file_names, file_paths):
             k1 = file_name.split('.mat')[0]  # using the filename for key 1
-            data[k1] = loadmat(file_path, squeeze_me=True)  # squeeze unit dimensions
+            data[k1] = sp.io.loadmat(file_path, squeeze_me=True)  # squeeze unit dimensions
             data_keys = data[k1].keys()
 
             data[k1]['id'] = int(file_name[2:6])  # case number
@@ -126,8 +137,10 @@ def get_raw_data_dict(raw_data_path):
                 data[k1]['beta_rx0'] = data[k1]['polimi_yaw'] + 180.0  # AnnexA17 eq.: beta = gamma + 180  todo: confirm
                 data[k1]['beta_rx0'] = deg(beta_within_minus_Pi_and_Pi_func(rad(data[k1]['beta_rx0'])))  # to [-pi,pi]
                 if 'rx' in data_keys:
-                    data[k1]['beta_BC'] = deg(beta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']), rad(data[k1]['rx'])))
-                    data[k1]['theta_BC'] = deg(theta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']), rad(data[k1]['rx'])))
+                    data[k1]['beta_BC'] = deg(beta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']),
+                                                                        rad(data[k1]['rx'])))
+                    data[k1]['theta_BC'] = deg(theta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']),
+                                                                          rad(data[k1]['rx'])))
             if 'u' in data_keys:
                 assert 'v' in data_keys
                 assert 'w' in data_keys
@@ -213,14 +226,13 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True, drop_matlab_info
 
         keys_and_types = {'B': float, 'F': object, 'F_mean': object, 'H': float, 'L': float, 'U_ceil': float,
                           'U_upwind': float, '__globals__': object, '__header__': object, '__version__': object,
-                          'acc_z': object, 'code': object, 'dof_tag': object, 'fs': float, 'id': int, 'polimi_yaw': float,
-                          'q_ceil': object, 'q_ref': float, 'q_upwind': object, 'rho': float, 'rx': float,
-                          't': object, 't_uvw': object, 'temp': float, 'theta': float, 'u_ceil': object,
+                          'acc_z': object, 'code': object, 'dof_tag': object, 'fs': float, 'id': int,
+                          'polimi_yaw': float, 'q_ceil': object, 'q_ref': float, 'q_upwind': object, 'rho': float,
+                          'rx': float, 't': object, 't_uvw': object, 'temp': float, 'theta': float, 'u_ceil': object,
                           'units': object, 'uvw_upwind': object, 'yaw': float}
         for key, value in keys_and_types.items():
             if key in df:
                 df[key] = df[key].astype(value)
-
 
         return df.reset_index(names='case_tag')
 
@@ -240,7 +252,7 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True, drop_matlab_info
     return dict_of_dfs
 
 
-def get_df_all(dict_of_dfs):
+def get_df_all(dict_of_dfs, save_csv=False):
     """
     Concatenates all the dataframes in the dictionary dict_of_dfs into one big dataframe.
     'annex': the same as raw_data_type
@@ -248,14 +260,9 @@ def get_df_all(dict_of_dfs):
     """
     df = pd.concat([dict_of_dfs[k] for k in raw_data_types],
                    keys=raw_data_types).reset_index().rename(
-                   columns={'level_0':'annex', 'level_1':'explode_id'})
+                   columns={'level_0': 'annex', 'level_1': 'explode_id'})
+    df.to_csv(os.path.join(root_dir, r"aerodynamic_coefficients\polimi\df_of_all_polimi_tests.csv"))
     return df
-
-
-# Getting processed dataframes
-raw_data_dict = get_raw_data_dict(raw_data_path)
-dict_of_dfs = get_dfs_from_raw_data(raw_data_dict)
-df_all = get_df_all(dict_of_dfs)
 
 
 def run_further_checks(df_all):
@@ -286,48 +293,49 @@ def run_further_checks(df_all):
         logging.warning('The following files have significant theta angle deviations from my theta estimation.')
         logging.warning(test2[fail_condition2])
 
-run_further_checks(df_all)
+
+def create_svv_adapted_aero_coefs(xls_data_path):
+    xl = pd.ExcelFile(xls_data_path)
+    in_sheet = 'K12-G-L'
+    out_sheet = 'K12-G-L-SVV'
+    assert in_sheet in xl.sheet_names, "Sheet name not found"
+    if 'K12-G-L-SVV' not in xl.sheet_names:
+        xls_df = pd.read_excel(xls_data_path, sheet_name=in_sheet)
+        xls_df_svv = xls_df.copy()
+        cols_to_del = ['CxL', 'CyL', 'CzL', 'CMxL', 'CMyL', 'CMzL', 'Cxi', 'Cyi', 'Czi', 'CMxi', 'CMyi', 'CMzi']
+        for c in cols_to_del:
+            del xls_df_svv[c]
+        xls_df_svv['CxTot'] = 2.000 * xls_df_svv['CxTot']  # Doubling the axial coefficient
+        xls_df_svv['CyTot'] = 1.033 * xls_df_svv['CyTot']  # Slightly increasing the Cy coefficient
+        with pd.ExcelWriter(xls_data_path, engine='openpyxl', mode='a') as writer:
+            xls_df_svv.to_excel(writer, sheet_name=out_sheet, index=False)
+
+        print(f'A new sheet {out_sheet}, with the SVV-adapted coefficients, as been created in {xls_data_path}')
+    else:
+        print(f"The sheet 'K12-G-L-SVV' is already found in the existing Excel file.")
+
+
+if __name__ == '__main__':  # If this is the file being run (instead of imported) then run the following functions
+    # Getting all the raw data into one dictionary:
+    raw_data_dict = get_raw_data_dict(raw_data_path)
+
+    # Organizing the raw data into dataframes with similar data formats:
+    dict_of_dfs = get_dfs_from_raw_data(raw_data_dict)
+
+    # Compiling the data into one single dataframe:
+    df_all = get_df_all(dict_of_dfs, save_csv=True)
+
+    # Running a few checks:
+    run_further_checks(df_all)
+
+    # Creating a new sheet with the SVV-adapted aerodynamic coefficients:
+    create_svv_adapted_aero_coefs(xls_data_path)
 
 
 
 
 
-
-
-def plot():
-    df = df_all.copy()
-    df = df[(df['U'] > 0) & (df['z'] == 0.46)].dropna(axis=1, how='all')
-    plt.scatter(df['beta_rx0'], df['U']/df['U_ceil'],
-                c = get_list_of_colors_matching_list_of_objects(df['code']))
-    plt.show()
-
-    raise NotImplementedError
-
-
-    x = df['beta_rx0']
-    y = df['U']/df['U_ceil']
-    label_axis = 'code'
-    color_list = get_list_of_colors_matching_list_of_objects(df['code'])
-    plt.figure(dpi=400)
-    for label, color in dict(zip(df[label_axis], color_list)).items():
-        sub_df = df[df[label_axis] == label_axis]  # subset dataframe
-        plt.scatter(sub_df[x_axis], sub_df['U/U_ceil'], c=sub_df['colors_to_plot'], label=label, alpha=0.8)
-    plt.legend(title='yaw [deg]', bbox_to_anchor=(1.04, 0.5), loc="lower left")
-    plt.ylabel(r'$U_{centre}\//\/U_{ceiling}$')
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(os.path.join(root_dir, 'aerodynamic_coefficients',
-                             'polimi', 'preliminary', 'polimi_U_by_Uceil_for_cobras.jpg'))
-    plt.close()
-
-
-
-
-
-
-
-#
-
+# OLDER STUFF THAT CAN STILL BE USEFULL, like for example fitting a log function to the measured wind profile
 #
 # # Common variables
 # scale = 1 / 35  # model scale
@@ -439,7 +447,7 @@ def plot():
 #         """
 #         x_fit = np.linspace(x_raw.min(), x_raw.max(), num=1000000)
 #         y_interp = np.interp(x=x_fit, xp=x_raw, fp=y_raw)
-#         popt, pcov, *_ = curve_fit(f=func_to_fit, xdata=x_raw, ydata=y_raw, bounds=np.array([[0, 0], [np.inf, np.inf]]))
+#         popt, pcov, *_ = sp.optimize.curve_fit(f=func_to_fit, xdata=x_raw, ydata=y_raw, bounds=np.array([[0, 0], [np.inf, np.inf]]))
 #         y_fit = func_to_fit(x_fit, *popt)
 #         if plot:
 #             # Plotting the fitted logarithm
