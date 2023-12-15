@@ -457,7 +457,7 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
 # plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)
 
-def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2,3,4,5]):
+def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[2]):
     # ZOOM IN GRAPH
     # Tested Domain
     theta_angle_step = 0.1  # in degrees.
@@ -467,7 +467,7 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
     from matplotlib.rcsetup import cycler
 
     for i in idx_to_plot:
-        assert method == '2D_fit_cons_polimi'
+        assert method in ['2D_fit_cons_polimi', '2D_fit_free_polimi']
         title_str = [r'$C_{x}^{Polimi}$', r'$C_{y}^{Polimi}$', r'$C_{z}^{Polimi}$', r'$C_{rx}^{Polimi}$', r'$C_{ry}^{Polimi}$', r'$C_{rz}^{Polimi}$'][i]
 
         # Plotting:
@@ -487,7 +487,7 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], color=color_list[b_i], label=r'$\beta=$'+str(int(round(deg(beta),0)))+'$\degree$', alpha=0.8)  # , marker=marker_str_polimi[b_i],markevery=markevery, markersize=markersize_plt[b_i]*4, fillstyle='none')
             measured_label = 'Measured' if b_i == 1 else ''
 
-            if method in ['2D_fit_cons_polimi']:
+            if method in ['2D_fit_cons_polimi', '2D_fit_free_polimi']:
                 df = df_aero_coef_measurement_data(method)
                 betas_polimi, thetas_polimi = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
                 C_upscaled_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
@@ -506,9 +506,10 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
 
         ylims = [[-0.046, 0.002], [-0.04, 0.125], [-1.05, 0.65], [-0.165, 0.215], [None, None], [None, None]]
         plt.ylim(ylims[i])
+        plt.xlim([-10.2, 10.2])
         plt.grid()
         plt.tight_layout()
-        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '.jpg'))
+        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '_deg__' + '.jpg'))
         plt.close()
 
         # Plotting legend
@@ -520,7 +521,8 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             plt.tight_layout()
             plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
             plt.close()
-plot_2D_at_beta_fixed_polimi()
+plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi')
+# plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi')
 
 raise NotImplementedError
 def plot_2D_at_theta_0(idx_to_plot=[0,1,2,3,4,5], plot_for_EACWE2022=False):

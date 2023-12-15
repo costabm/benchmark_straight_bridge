@@ -276,6 +276,21 @@ def cons_poly_fit(data_in, data_ind_out, data_ind_bounds, degree, ineq_constrain
             solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
         eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
 
+    if 'F_is_0p13_at_x0_start_at_x1_middle' in other_constraint:
+        eq_cons.append(poly_eq.subs(ind_vars[0], 0).subs(ind_vars[1], 0.5) - 0.12113)  # <---- Change here the constraint as desired. Constraint equation (<=> eq_cons = 0)
+        solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
+        eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
+
+    if 'dF/dx1_is_16p4_at_x0_start_at_x1_middle' in other_constraint:  # the dtheta of the derivative is in [0,1] space!! Thus the derivative here increases from 5.2 to 16.4
+        eq_cons.append(poly_eq.diff(ind_vars[1]).subs(ind_vars[0], 0).subs(ind_vars[1], 0.5) - 16.3615)  # <---- Change here the constraint as desired. Constraint equation (<=> eq_cons = 0)
+        solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
+        eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
+
+    # if 'F_is_-0p19_at_x0_start_at_x1_middle' in other_constraint:
+    #     eq_cons.append(poly_eq.subs(ind_vars[0], 0).subs(ind_vars[1], 0.5) + 0.19013)  # <---- Change here the constraint as desired. Constraint equation (<=> eq_cons = 0)
+    #     solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
+    #     eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
+
     if eq_cons_sol_dict:
         A_eq_cons = Matrix([])  # empty matrix, to be filled
         b_eq_cons = Matrix([])  # empty vector, to be filled

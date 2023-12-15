@@ -137,9 +137,9 @@ def get_raw_data_dict(raw_data_path):
                 data[k1]['beta_rx0'] = data[k1]['polimi_yaw'] + 180.0  # AnnexA17 eq.: beta = gamma + 180  todo: confirm
                 data[k1]['beta_rx0'] = deg(beta_within_minus_Pi_and_Pi_func(rad(data[k1]['beta_rx0'])))  # to [-pi,pi]
                 if 'rx' in data_keys:
-                    data[k1]['beta_SVV'] = deg(beta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']),
+                    data[k1]['beta_svv'] = deg(beta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']),
                                                                          rad(data[k1]['rx'])))
-                    data[k1]['theta_SVV'] = deg(theta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']),
+                    data[k1]['theta_svv'] = deg(theta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']),
                                                                            rad(data[k1]['rx'])))
             if 'u' in data_keys:
                 assert 'v' in data_keys
@@ -261,7 +261,8 @@ def get_df_all(dict_of_dfs, save_csv=False):
     df = pd.concat([dict_of_dfs[k] for k in raw_data_types],
                    keys=raw_data_types).reset_index().rename(
                    columns={'level_0': 'annex', 'level_1': 'explode_id'})
-    df.to_csv(os.path.join(root_dir, r"aerodynamic_coefficients\polimi\df_of_all_polimi_tests.csv"))
+    if save_csv:
+        df.to_csv(os.path.join(root_dir, r"aerodynamic_coefficients\polimi\df_of_all_polimi_tests.csv"))
     return df
 
 
@@ -284,21 +285,21 @@ def run_further_checks(df_all):
         logging.warning(test1[fail_condition1])
 
     # TEST 2: Calculating beta and theta angles from rx (inclinometer) measurements and polimi_yaw (turntable) angles.
-    cols2 = ['polimi_yaw', 'yaw', 'rx', 'beta_rx0', 'beta_SVV', 'theta_SVV']  # columns to be checked
+    cols2 = ['polimi_yaw', 'yaw', 'rx', 'beta_rx0', 'beta_svv', 'theta_svv']  # columns to be checked
     test2 = df_all.copy()
     test2 = test2.drop_duplicates(subset=cols2).copy()  # drop duplicate combinations of these 2 angles
-    test2['error_in_theta'] = test2['theta_SVV'] - test2['theta']
+    test2['error_in_theta'] = test2['theta_svv'] - test2['theta']
     fail_condition2 = test2['error_in_theta'] > 0.1
     if fail_condition2.any():
         logging.warning('The following files have significant theta angle deviations from my theta estimation.')
         logging.warning(test2[fail_condition2])
 
 
-def create_svv_adapted_aero_coefs(xls_data_path, df_all=None):
+def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all=None):
     """
     The aero coefficients need to be adapted to account for the traffic signs (only tested for a few angles).
     This function opens the Excel file provided by Polimi and adds a new sheet with the new adapted aero coefs.
-    If df_all is provided instead of None, the true beta and theta values are calculated and included as "..._SVV",
+    If df_all is provided instead of None, the true beta and theta values are calculated and included as "..._svv",
     and the beta_rx0 and rx used to calculate them are also included.
     """
 
@@ -306,38 +307,42 @@ def create_svv_adapted_aero_coefs(xls_data_path, df_all=None):
     in_sheet = 'K12-G-L'
     out_sheet = 'K12-G-L-SVV'
     assert in_sheet in xl.sheet_names, "Sheet name not found"
-    if 'K12-G-L-SVV' not in xl.sheet_names:
-        xls_df = xl.parse(sheet_name=in_sheet)  # parses to a dataframe
-        xl.close()
-        xls_df_svv = xls_df.copy()  # the new sheet '...-SVV' starts as a copy of the in_sheet
-        cols_to_del = ['CxL', 'CyL', 'CzL', 'CMxL', 'CMyL', 'CMzL', 'Cxi', 'Cyi', 'Czi', 'CMxi', 'CMyi', 'CMzi']
-        for c in cols_to_del:
-            del xls_df_svv[c]
-        xls_df_svv['CxTot'] = 2.000 * xls_df_svv['CxTot']  # Doubling the axial coefficient
-        xls_df_svv['CyTot'] = 1.033 * xls_df_svv['CyTot']  # Slightly increasing the Cy coefficient
-        if df_all is not None:
-            def from_df_all_get_unique_value_given_key_and_id(df_all, key, run):
-                """with e.g. key='rx', run=211, get the 'rx' value of df_all where run=211, asserting uniqueness"""
-                value = df_all[key][df_all['id'] == run]
-                assert all_equal(value), ("For some strange reason, entries with the same id in df_all['id'] have "
-                                          "different 'key' values. Understand why before blindly using 1 value")
-                return value.unique()[0]
-            beta_rx0, rx, beta_SVV, theta_SVV = [], [], [], []
-            for i in xls_df_svv['run']:  # 'run' (Polimi notation) and 'id' (my notation) are the same thing
-                beta_rx0.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_rx0', run=i))
-                rx.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='rx', run=i))
-                beta_SVV.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_SVV', run=i))
-                theta_SVV.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='theta_SVV', run=i))
-            xls_df_svv['beta_rx0'] = beta_rx0
-            xls_df_svv['rx'] = rx
-            xls_df_svv['beta_SVV'] = beta_SVV
-            xls_df_svv['theta_SVV'] = theta_SVV
-        with pd.ExcelWriter(xls_data_path, engine='openpyxl', mode='a') as writer:
-            xls_df_svv.to_excel(writer, sheet_name=out_sheet, index=False)
-        print(f'A new sheet {out_sheet}, with the SVV-adapted coefficients, as been created in {xls_data_path}')
-    else:
-        print(f"The sheet 'K12-G-L-SVV' is already found in the existing Excel file.")
-
+    xls_df = xl.parse(sheet_name=in_sheet)  # parses to a dataframe
+    xl.close()
+    xls_df_svv = xls_df.copy()  # the new sheet '...-SVV' starts as a copy of the in_sheet
+    cols_to_del = ['CxL', 'CyL', 'CzL', 'CMxL', 'CMyL', 'CMzL', 'Cxi', 'Cyi', 'Czi', 'CMxi', 'CMyi', 'CMzi']
+    for c in cols_to_del:
+        del xls_df_svv[c]
+    # The following corrections are described in my SVV document of post-analysing the wind tunnel results
+    xls_df_svv['CxTot'] = 1.420 * xls_df_svv['CxTot']  # Extra area of traffic signs
+    xls_df_svv['CyTot'] = 1.014 * xls_df_svv['CyTot']  # Slightly increasing the Cy coefficient
+    if df_all is not None:
+        def from_df_all_get_unique_value_given_key_and_id(df_all, key, run):
+            """with e.g. key='rx', run=211, get the 'rx' value of df_all where run=211, asserting uniqueness"""
+            value = df_all[key][df_all['id'] == run]
+            assert all_equal(value), ("For some strange reason, entries with the same id in df_all['id'] have "
+                                      "different 'key' values. Understand why before blindly using 1 value")
+            return value.unique()[0]
+        beta_rx0, rx, beta_svv, theta_svv = [], [], [], []
+        for i in xls_df_svv['run']:  # 'run' (Polimi notation) and 'id' (my notation) are the same thing
+            beta_rx0.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_rx0', run=i))
+            rx.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='rx', run=i))
+            beta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_svv', run=i))
+            theta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='theta_svv', run=i))
+        xls_df_svv['beta_rx0'] = beta_rx0
+        xls_df_svv['rx'] = rx
+        xls_df_svv['beta_svv'] = beta_svv
+        xls_df_svv['theta_svv'] = theta_svv
+        xls_df_svv['Cx_Ls'] = xls_df_svv.pop('CxTot')
+        xls_df_svv['Cy_Ls'] = xls_df_svv.pop('CyTot')
+        xls_df_svv['Cz_Ls'] = xls_df_svv.pop('CzTot')
+        xls_df_svv['Cxx_Ls'] = xls_df_svv.pop('CMxTot')
+        xls_df_svv['Cyy_Ls'] = xls_df_svv.pop('CMyTot')
+        xls_df_svv['Czz_Ls'] = xls_df_svv.pop('CMzTot')
+        xls_df_svv.rename(columns={'Yaw': 'beta_polimi', 'Theta': 'theta_polimi'}, inplace=True)
+    with pd.ExcelWriter(xls_data_path, engine='openpyxl', mode="a", if_sheet_exists="replace") as writer:
+        xls_df_svv.to_excel(writer, sheet_name=out_sheet, index=False)
+    print(f'A new sheet {out_sheet}, with the SVV-adapted coefficients, as been created in {xls_data_path}')
 
 
 if __name__ == '__main__':  # If this is the file being run (instead of imported) then run the following functions
@@ -354,10 +359,7 @@ if __name__ == '__main__':  # If this is the file being run (instead of imported
     run_further_checks(df_all)
 
     # Creating a new sheet with the SVV-adapted aerodynamic coefficients:
-    create_svv_adapted_aero_coefs(xls_data_path)
-
-
-
+    add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all=df_all)
 
 
 # OLDER STUFF THAT CAN STILL BE USEFULL, like for example fitting a log function to the measured wind profile
