@@ -47,6 +47,7 @@ def from_SOH_to_Zhu_angles(betas_uncorrected, alphas):
     thetas = -np.arcsin(np.cos(betas_uncorrected) * np.sin(alphas))  # [Rad]. thetas as in L.D.Zhu definition. See the "Angles of the skewed wind" document in the _basis folder for explanation.
     return betas, thetas
 
+
 def df_aero_coef_measurement_data(method):
     """
     Creates a dataframe compiling the necessary aerodynamic coefficients from wind tunnel tests (SOH or e.g. Julsund) and CFD results.
@@ -87,6 +88,9 @@ def df_aero_coef_measurement_data(method):
         polimi_only = True
         discard_data_outside_1st_quadrant = True
 
+    # if '_polimi' in method and '_w_cos_rule_data' in method:
+    #     add_cos_rule_data = True
+
     if method == 'cos_rule':
         include_CFD = True
         increase_CFD_Cx = True
@@ -125,16 +129,15 @@ def df_aero_coef_measurement_data(method):
     if polimi_only:
         sheet_name = 'K12-G-L-SVV'
         # Load results
-        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi\ResultsCoefficients-Rev1p1.xlsx')
+        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi\ResultsCoefficients-Rev2.xlsx')
         df = pd.read_excel(io=path_polimi_data, sheet_name=sheet_name).dropna()
-        # Create new results from the average of both sensors
         try:
-            df['Cx_Ls'] =  df.pop('CxTot')  # respect the original aero_coefficients.py notations
-            df['Cy_Ls'] =  df.pop('CyTot')  # respect the original aero_coefficients.py notations
-            df['Cz_Ls'] =  df.pop('CzTot')  # respect the original aero_coefficients.py notations
-            df['Cxx_Ls'] = df.pop('CMxTot')  # respect the original aero_coefficients.py notations
-            df['Cyy_Ls'] = df.pop('CMyTot')  # respect the original aero_coefficients.py notations
-            df['Czz_Ls'] = df.pop('CMzTot')  # respect the original aero_coefficients.py notations
+            df['Cx_Ls'] =  df.pop('CxTot')  # change name to respect the original aero_coefficients.py notations
+            df['Cy_Ls'] =  df.pop('CyTot')  # change name to respect the original aero_coefficients.py notations
+            df['Cz_Ls'] =  df.pop('CzTot')  # change name to respect the original aero_coefficients.py notations
+            df['Cxx_Ls'] = df.pop('CMxTot')  # change name to respect the original aero_coefficients.py notations
+            df['Cyy_Ls'] = df.pop('CMyTot')  # change name to respect the original aero_coefficients.py notations
+            df['Czz_Ls'] = df.pop('CMzTot')  # change name to respect the original aero_coefficients.py notations
         except:  # The names are already the appropriate ones
             assert all([key in df.columns for key in ['Cx_Ls', 'Cy_Ls', 'Cz_Ls', 'Cxx_Ls', 'Cyy_Ls', 'Czz_Ls']])
         try:
@@ -144,6 +147,13 @@ def df_aero_coef_measurement_data(method):
             assert all([key in df.columns for key in ['beta[deg]', 'theta[deg]']])
         df = df.sort_values(['beta[deg]', 'theta[deg]'])
 
+    # if add_cos_rule_data:
+    #     df_at_beta_theta_0 = df[(df['beta[deg]']==0) & (np.isclose(df['theta[deg]'], 0, atol=0.3))]
+    #     Cy_b_0_t_0 = df_at_beta_theta_0['Cy_Ls']
+    #     Cz_b_0_t_0 = df_at_beta_theta_0['Cz_Ls']
+    #     NotImplementedError
+
+
     if discard_data_outside_1st_quadrant:  # just to be sure I'm not changing the previous PhD methods
         df = df[(df['beta[deg]']>=0) & (df['beta[deg]']<=90)]  # removing the new results from Polimi outside the 0-90 quadrant
 
@@ -152,7 +162,7 @@ def df_aero_coef_measurement_data(method):
 def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
               degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4],
                            '2D_fit_cons_scale_to_Jul':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_scale_to_Jul':[3,4,4,5,4,4],
-                           '2D_fit_cons_polimi':[7,9,7,7,7,7], '2D_fit_free_polimi':[4,4,4,4,4,4]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]  BEST FIT FOR '2D_fit_cons_polimi' is [7,9,7,7,-,-]
+                           '2D_fit_cons_polimi':[7,7,7,7,7,7], '2D_fit_free_polimi':[4,4,4,4,4,4]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]  BEST FIT FOR '2D_fit_cons_polimi' is [7,9,7,7,-,-]
     """
     betas: 1D-array
     thetas: 1D-array (same size as betas)
@@ -371,12 +381,10 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
         other_constraint_Cx = ['F_is_0_at_x0_start', 'F_is_0_at_x1_start', 'F_is_0_at_x1_end', 'dF/dx0_is_0_at_x0_end']
         # Cy
         ineq_constraint_Cy = False  # False or 'positivity' or 'negativity'
-        other_constraint_Cy = ['F_is_0_at_x0_end', 'F_is_0_at_x1_start', 'F_is_0_at_x1_end', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end_at_x1_middle', 'F_is_0p13_at_x0_start_at_x1_middle']   # ['F_is_0_at_x0_end', 'F_is_0_at_x1_start', 'F_is_0_at_x1_end','dF/dx0_is_0_at_x0_start'] # ] # 'dF/dx0_is_0_at_x0_start']  #  is a cheap way to replace the malfunctioning "positivity" constraint.
-        print('NEW CONSTRAINT Cy')
+        other_constraint_Cy = ['F_is_0_at_x0_end', 'F_is_0_at_x1_start', 'F_is_0_at_x1_end', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end_at_x1_middle']  # , 'F_is_0p13_at_x0_start_at_x1_middle']
         # Cz
         ineq_constraint_Cz = False  # False or 'positivity' or 'negativity'. we could have: dF/dx1_is_positive_at_x0_end', but difficult to implement with little gain.
-        other_constraint_Cz = ['F_is_0_at_x0_end_at_x1_middle', 'F_is_-2_at_x1_start', 'F_is_2_at_x1_end', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end', 'dF/dx1_is_16p4_at_x0_start_at_x1_middle']  # 'F_is_-0p19_at_x0_start_at_x1_middle']  # 'dF/dx0_is_0_at_x0_start']  # can eventually remove derivative constraint
-        print('NEW CONSTRAINTSSss Cz')
+        other_constraint_Cz = ['F_is_0_at_x0_end_at_x1_middle', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end']  #, 'F_is_-2_at_x1_start', 'F_is_2_at_x1_end', 'dF/dx1_is_16p4_at_x0_start_at_x1_middle', 'F_is_-0p19_at_x0_start_at_x1_middle', # can eventually remove derivative constraint
         # Cxx
         ineq_constraint_Cxx = False  # False or 'positivity' or 'negativity'
         other_constraint_Cxx = ['F_is_0_at_x0_end', 'F_is_0_at_x1_start', 'F_is_0_at_x1_end', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end_at_x1_middle']   # 'dF/dx0_is_0_at_x0_start'
@@ -394,7 +402,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
                       degree_type='max')[1] * Cy_sign  #,, minimize_method='trust-constr', init_guess=[3.71264795e-22, -8.86505000e+00, 4.57056472e+01, -7.39911989e+01, 3.71506016e+01, -6.12248467e-22, -8.75830974e+00,  5.74817737e+01, -1.10425715e+02, 6.17022514e+01, -1.09522498e-21, -2.46382690e+01, 7.14658962e+01, -4.41460857e+01, -2.68154157e+00,  0.00000000e+00, 4.21168758e+01, -1.42475723e+02,  1.30059436e+02, -2.97005883e+01, 0.00000000e+00,  1.44752923e-01, -3.21775938e+01,  9.85035640e+01, -6.64707231e+01])[1] * Cy_sign  # minimize_method='trust-constr'
         Cz_Ls_2D_fit_cons = \
         cons_poly_fit(data_in_Cz_Ls, data_coor_out, data_bounds, degree_list[method][2], ineq_constraint_Cz, other_constraint_Cz,
-                      degree_type='max', minimize_method='SLSQP')[1] * Cz_sign
+                      degree_type='max')[1] * Cz_sign
         Cxx_Ls_2D_fit_cons = \
         cons_poly_fit(data_in_Cxx_Ls, data_coor_out, data_bounds, degree_list[method][3], ineq_constraint_Cxx, other_constraint_Cxx,
                       degree_type='max')[1] * Cxx_sign

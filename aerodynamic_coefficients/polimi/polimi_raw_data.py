@@ -30,7 +30,7 @@ matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 # Folder that includes all the raw data as provided by Polimi:
 raw_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\raw_data")
 # File (Excel) with the coefficients results as provided by Polimi :
-xls_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\ResultsCoefficients-Rev1p1.xlsx")
+xls_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\ResultsCoefficients-Rev2.xlsx")
 
 debug = False  # set to True to make debugging of this script faster (only a few unique data files are processed)
 
@@ -157,10 +157,10 @@ def get_raw_data_dict(raw_data_path):
                 assert 'names' in data_keys
                 data[k1]['dof_tag'] = data[k1].pop('names')  # rename key, ditching old one
                 data[k1]['F_mean'] = np.mean(data[k1]['F'], axis=1)  # new shape: (dof, n_samples)
-            if 'H' not in data[k1].keys():
-                logging.warning(f"Polimi forgot to add an 'H' key to the data in Annex A9. File: {file_path}")
-                data[k1]['H'] = 0.45714285714285713  # taken from the other raw deck data files
-            else:
+            # if 'H' not in data[k1].keys():
+            #     logging.warning(f"Polimi forgot to add an 'H' key to the data in Annex {raw_data_type}. File: {file_path}")
+            #     data[k1]['H'] = 0.45714285714285713  # taken from the other raw deck data files
+            if 'H' in data[k1].keys():
                 data[k1]['H'] = float(data[k1]['H'])
             if 'accZ' in data_keys:
                 data[k1]['acc_z'] = data[k1]['accZ']
@@ -277,7 +277,7 @@ def run_further_checks(df_all):
     test1['yaw_eq'] = np.array(test1['polimi_yaw'], dtype=float) + 180.0  # AnnexA17 equation: beta = gamma + 180
     test1['yaw_eq_-pi_pi'] = deg(beta_within_minus_Pi_and_Pi_func(rad(test1['yaw_eq'])))  # convert to interval
     test1['error_in_yaw_eq'] = test1['yaw'] - test1['yaw_eq_-pi_pi']  # difference (error)
-    fail_condition1 = test1['error_in_yaw_eq'] > 0.5
+    fail_condition1 = test1['error_in_yaw_eq'] > 0.6
     if fail_condition1.any():
         logging.warning('The following files have an inconsistent yaw angle definition. The polimi_yaw (turntable) '
                         'angle, when added by 180 deg according to the yaw equation (Polimi Report Annex A17),'
@@ -295,7 +295,7 @@ def run_further_checks(df_all):
         logging.warning(test2[fail_condition2])
 
 
-def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all=None):
+def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
     """
     The aero coefficients need to be adapted to account for the traffic signs (only tested for a few angles).
     This function opens the Excel file provided by Polimi and adds a new sheet with the new adapted aero coefs.
@@ -313,33 +313,51 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all=None):
     cols_to_del = ['CxL', 'CyL', 'CzL', 'CMxL', 'CMyL', 'CMzL', 'Cxi', 'Cyi', 'Czi', 'CMxi', 'CMyi', 'CMzi']
     for c in cols_to_del:
         del xls_df_svv[c]
+
+    def from_df_all_get_unique_value_given_key_and_id(df_all, key, run):
+        """with e.g. key='rx', run=211, get the 'rx' value of df_all where run=211, asserting uniqueness"""
+        value = df_all[key][df_all['id'] == run]
+        assert all_equal(value), ("For some strange reason, entries with the same id in df_all['id'] have "
+                                  "different 'key' values. Understand why before blindly using 1 value")
+        return value.unique()[0]
+    beta_rx0, rx, beta_svv, theta_svv = [], [], [], []
+    for i in xls_df_svv['run']:  # 'run' (Polimi notation) and 'id' (my notation) are the same thing
+        beta_rx0.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_rx0', run=i))
+        rx.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='rx', run=i))
+        beta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_svv', run=i))
+        theta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='theta_svv', run=i))
+    xls_df_svv['beta_rx0'] = beta_rx0
+    xls_df_svv['rx'] = rx
+    xls_df_svv['beta_svv'] = beta_svv
+    xls_df_svv['theta_svv'] = theta_svv
+    xls_df_svv['Cx_Ls'] = xls_df_svv.pop('CxTot')
+    xls_df_svv['Cy_Ls'] = xls_df_svv.pop('CyTot')
+    xls_df_svv['Cz_Ls'] = xls_df_svv.pop('CzTot')
+    xls_df_svv['Cxx_Ls'] = xls_df_svv.pop('CMxTot')
+    xls_df_svv['Cyy_Ls'] = xls_df_svv.pop('CMyTot')
+    xls_df_svv['Czz_Ls'] = xls_df_svv.pop('CMzTot')
+    xls_df_svv.rename(columns={'Yaw': 'beta_polimi', 'Theta': 'theta_polimi'}, inplace=True)
+
     # The following corrections are described in my SVV document of post-analysing the wind tunnel results
-    xls_df_svv['CxTot'] = 1.420 * xls_df_svv['CxTot']  # Extra area of traffic signs
-    xls_df_svv['CyTot'] = 1.014 * xls_df_svv['CyTot']  # Slightly increasing the Cy coefficient
-    if df_all is not None:
-        def from_df_all_get_unique_value_given_key_and_id(df_all, key, run):
-            """with e.g. key='rx', run=211, get the 'rx' value of df_all where run=211, asserting uniqueness"""
-            value = df_all[key][df_all['id'] == run]
-            assert all_equal(value), ("For some strange reason, entries with the same id in df_all['id'] have "
-                                      "different 'key' values. Understand why before blindly using 1 value")
-            return value.unique()[0]
-        beta_rx0, rx, beta_svv, theta_svv = [], [], [], []
-        for i in xls_df_svv['run']:  # 'run' (Polimi notation) and 'id' (my notation) are the same thing
-            beta_rx0.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_rx0', run=i))
-            rx.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='rx', run=i))
-            beta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_svv', run=i))
-            theta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='theta_svv', run=i))
-        xls_df_svv['beta_rx0'] = beta_rx0
-        xls_df_svv['rx'] = rx
-        xls_df_svv['beta_svv'] = beta_svv
-        xls_df_svv['theta_svv'] = theta_svv
-        xls_df_svv['Cx_Ls'] = xls_df_svv.pop('CxTot')
-        xls_df_svv['Cy_Ls'] = xls_df_svv.pop('CyTot')
-        xls_df_svv['Cz_Ls'] = xls_df_svv.pop('CzTot')
-        xls_df_svv['Cxx_Ls'] = xls_df_svv.pop('CMxTot')
-        xls_df_svv['Cyy_Ls'] = xls_df_svv.pop('CMyTot')
-        xls_df_svv['Czz_Ls'] = xls_df_svv.pop('CMzTot')
-        xls_df_svv.rename(columns={'Yaw': 'beta_polimi', 'Theta': 'theta_polimi'}, inplace=True)
+    xls_df_svv['Cx_Ls'] = 1.420 * xls_df_svv['Cx_Ls']  # Extra area of traffic signs
+    xls_df_svv['Cy_Ls'] = 1.014 * xls_df_svv['Cy_Ls']  # Slightly increasing the Cy coefficient
+    # Forcing coefficient that should be 0 to 0:
+    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Cx_Ls'] = 0  # Constr. No.1
+    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Cyy_Ls'] = 0  # Constr. No.1
+    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Czz_Ls'] = 0  # Constr. No.1
+    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Cy_Ls'] = 0  # Constr. No.2
+    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Cxx_Ls'] = 0  # Constr. No.2
+    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Czz_Ls'] = 0  # Constr. No.2
+    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90)
+                   & (xls_df_svv['theta_polimi'] == 0), 'Cz_Ls'] = 0  # Constr. No.3
+    # Let's help the polynomial fits of Cz with CFD data. Multiply by 1.6 for increased conservativeness.
+    # CFD values taken from here: "Skew aerodynamic coefficients for BJF FEED Phase - A description (Rev A).pdf".
+    # todo: THIS DOESN'T SEEM TO BE WORKING!! I PROBABLY DELETE THE ROWS WITH NANS IN OTHER COEFS.
+    artificial_data_row = pd.DataFrame(
+        [{'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': -10, 'Cz_Ls': -0.0893 * 1.6},
+         {'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': 10,  'Cz_Ls': 0.09888 * 1.6}])
+    xls_df_svv = pd.concat([xls_df_svv, artificial_data_row], ignore_index=True)
+
     with pd.ExcelWriter(xls_data_path, engine='openpyxl', mode="a", if_sheet_exists="replace") as writer:
         xls_df_svv.to_excel(writer, sheet_name=out_sheet, index=False)
     print(f'A new sheet {out_sheet}, with the SVV-adapted coefficients, as been created in {xls_data_path}')
@@ -359,7 +377,7 @@ if __name__ == '__main__':  # If this is the file being run (instead of imported
     run_further_checks(df_all)
 
     # Creating a new sheet with the SVV-adapted aerodynamic coefficients:
-    add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all=df_all)
+    add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all)
 
 
 # OLDER STUFF THAT CAN STILL BE USEFULL, like for example fitting a log function to the measured wind profile

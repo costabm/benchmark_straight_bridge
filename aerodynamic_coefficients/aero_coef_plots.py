@@ -8,6 +8,14 @@ import os
 from my_utils import root_dir
 
 #####################################################################################################################
+# Raw Data from Polimi
+#####################################################################################################################
+df = df_aero_coef_measurement_data(method='_polimi')
+betas_polimi = rad(df['beta[deg]'].to_numpy())
+thetas_polimi = rad(df['theta[deg]'].to_numpy())
+C_polimi_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
+
+#####################################################################################################################
 # Raw Data from SOH
 #####################################################################################################################
 path_df = os.path.join(root_dir, r'aerodynamic_coefficients', 'aero_coef_experimental_data.csv')
@@ -457,17 +465,25 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_o
 # plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)
 
-def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[2]):
+def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2,3,4,5], deg_list=None, zoom='in'):
+    if deg_list is None:
+        deg_list = aero_coef.__defaults__[0][method]  # retrieving the default parameter values :)
     # ZOOM IN GRAPH
     # Tested Domain
-    theta_angle_step = 0.1  # in degrees.
-    thetas = np.arange(rad(-10), rad(10) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
+    if zoom == 'in':
+        theta_angle_step = 0.1  # in degrees.
+        thetas = np.arange(rad(-10), rad(10) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
+        xlims = [-10.2, 10.2]
+    elif zoom == 'out':
+        theta_angle_step = 1  # in degrees.
+        thetas = np.arange(rad(-89.99), rad(89.99) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
+        xlims = [-91, 91]
     beta_list = rad(np.array([0, 10, 20, 30, 40, 50, 60, 70, 80, 90]))
     n_betas = len(beta_list)
     from matplotlib.rcsetup import cycler
 
     for i in idx_to_plot:
-        assert method in ['2D_fit_cons_polimi', '2D_fit_free_polimi']
+        assert method in ['2D_fit_cons_polimi', '2D_fit_free_polimi', '2D_fit_cons_polimi']
         title_str = [r'$C_{x}^{Polimi}$', r'$C_{y}^{Polimi}$', r'$C_{z}^{Polimi}$', r'$C_{rx}^{Polimi}$', r'$C_{ry}^{Polimi}$', r'$C_{rz}^{Polimi}$'][i]
 
         # Plotting:
@@ -482,7 +498,8 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[2]):
         plt.title(title_str +r'$(\beta,\theta)$ fit ($\beta$-fixed views)')
 
         for b_i, beta in enumerate(beta_list):
-            C_Ci_grid_flat_Ls = aero_coef(np.ones(len(thetas)) * beta, thetas, method=method, coor_system='Ls')
+            C_Ci_grid_flat_Ls = aero_coef(np.ones(len(thetas)) * beta, thetas, method=method, coor_system='Ls',
+                                          degree_list={method: deg_list})
             # Line plots
             plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], color=color_list[b_i], label=r'$\beta=$'+str(int(round(deg(beta),0)))+'$\degree$', alpha=0.8)  # , marker=marker_str_polimi[b_i],markevery=markevery, markersize=markersize_plt[b_i]*4, fillstyle='none')
             measured_label = 'Measured' if b_i == 1 else ''
@@ -499,17 +516,16 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[2]):
         handles[0], handles[1], handles[2] = handles[2], handles[0], handles[1]  # swapping
         labels[0], labels[1], labels[2] = labels[2], labels[0], labels[1]  # swapping
 
-
         C_limits = [None,None,None,None,None,None]
         plt.ylim(C_limits[i])
-        plt.xticks(np.arange(-10, 10+0.01, 2))
-
+        if zoom == 'in':
+            plt.xticks(np.arange(-10, 10+0.01, 2))
         ylims = [[-0.046, 0.002], [-0.04, 0.125], [-1.05, 0.65], [-0.165, 0.215], [None, None], [None, None]]
         plt.ylim(ylims[i])
-        plt.xlim([-10.2, 10.2])
+        plt.xlim(xlims)
         plt.grid()
         plt.tight_layout()
-        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + '_deg__' + '.jpg'))
+        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + f'_deg_{deg_list[i]}_w_PhD_constr_except_1p9' + '.jpg'))
         plt.close()
 
         # Plotting legend
@@ -521,8 +537,30 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[2]):
             plt.tight_layout()
             plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
             plt.close()
-plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi')
-# plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi')
+plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[2], deg_list=[9,9,9,9,9,9], zoom='in')
+# plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[0,1,2,3], deg_list=[9,9,9,9,9,9], zoom='in')
+
+
+def table_r_squared_polimi(deg_min=2, deg_max=9, method='2D_fit_cons_polimi', export_table=True):
+    table_r_squared = np.empty((len(range(deg_min, deg_max+1)), 7)) * np.nan
+    for j, d in enumerate(range(deg_min, deg_max+1)):
+        fit_degree_list = [d, d, d, d, d, d]
+        C_Ci_fit_at_polimi = aero_coef(betas_polimi, thetas_polimi, method=method, coor_system='Ls',
+                                       degree_list={method: fit_degree_list})
+        table_r_squared[j, 0] = d
+        for i in range(6):
+            # Finding the coefficient of determination R_squared
+            SSres = sum((C_polimi_Ls[i] - C_Ci_fit_at_polimi[i]) ** 2)
+            SStot = sum((C_polimi_Ls[i] - np.mean(C_polimi_Ls[i]) * np.ones(C_polimi_Ls[i].shape)) ** 2)
+            table_r_squared[j, i+1] = 1 - SSres / SStot
+    df_table_r_squared = pd.DataFrame(table_r_squared, columns=['poly_degree', 'R2_Cx', 'R2_Cy', 'R2_Cz', 'R2_Crx',
+                                                                'R2_Cry', 'R2_Crz',])
+    if export_table: df_table_r_squared.to_csv(r'aerodynamic_coefficients/plots/table_r_squared_'+method+'.csv')
+    return table_r_squared, df_table_r_squared
+table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_cons_polimi')
+# table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_free_polimi')
+
+
 
 raise NotImplementedError
 def plot_2D_at_theta_0(idx_to_plot=[0,1,2,3,4,5], plot_for_EACWE2022=False):
@@ -630,25 +668,28 @@ def plot_2D_at_theta_0(idx_to_plot=[0,1,2,3,4,5], plot_for_EACWE2022=False):
 
 plot_2D_at_theta_0(idx_to_plot=[0,1,2,3,4,5])
 
-def table_r_squared_func(deg_min=1,deg_max=6, method='2D_fit_cons', export_table=True):
+def table_r_squared_func(deg_min=1, deg_max=6, method='2D_fit_cons', export_table=True):
     table_r_squared = np.empty((len(range(deg_min,deg_max+1)),7)) * np.nan
-    for j, d in enumerate(range(deg_min,deg_max+1)):
-        fit_degree_list = [d,d,d,d,d,d]
-        C_Ci_fit_at_SOH = aero_coef(betas_SOH, thetas_SOH, method=method, coor_system='Ls', constr_fit_degree_list=fit_degree_list, constr_fit_2_degree_list=fit_degree_list, free_fit_degree_list=fit_degree_list)
+    for j, d in enumerate(range(deg_min, deg_max+1)):
+        fit_degree_list = [d, d, d, d, d, d]
+        C_Ci_fit_at_SOH = aero_coef(betas_SOH, thetas_SOH, method=method, coor_system='Ls',
+                                    constr_fit_degree_list=fit_degree_list, constr_fit_2_degree_list=fit_degree_list,
+                                    free_fit_degree_list=fit_degree_list)
         table_r_squared[j,0] = d
         for i in range(6):
             # Finding the coefficient of determination R_squared
             SSres = sum((C_SOH_Ls[i] - C_Ci_fit_at_SOH[i]) ** 2)
             SStot = sum((C_SOH_Ls[i] - np.mean(C_SOH_Ls[i]) * np.ones(C_SOH_Ls[i].shape)) ** 2)
-            table_r_squared[j,i+1] = 1 - SSres / SStot
-    df_table_r_squared = pd.DataFrame(table_r_squared, columns=['poly_degree','R2_Cx','R2_Cy','R2_Cz','R2_Crx','R2_Cry','R2_Crz',])
+            table_r_squared[j, i+1] = 1 - SSres / SStot
+    df_table_r_squared = pd.DataFrame(table_r_squared, columns=['poly_degree', 'R2_Cx', 'R2_Cy', 'R2_Cz', 'R2_Crx',
+                                                                'R2_Cry', 'R2_Crz',])
     if export_table: df_table_r_squared.to_csv(r'aerodynamic_coefficients/plots/table_r_squared_'+method+'.csv')
     return table_r_squared, df_table_r_squared
-table_r_squared, df_table_r_squared = table_r_squared_func(method='2D_fit_free')
-table_r_squared, df_table_r_squared = table_r_squared_func(method='2D_fit_cons')
+# table_r_squared, df_table_r_squared = table_r_squared_func(method='2D_fit_free')
+# table_r_squared, df_table_r_squared = table_r_squared_func(method='2D_fit_cons')
 # table_r_squared, df_table_r_squared = table_r_squared_func(method='2D_fit_cons_2')
-table_r_squared, df_table_r_squared = table_r_squared_func(method='2D')
-table_r_squared, df_table_r_squared = table_r_squared_func(method='cos_rule')
+# table_r_squared, df_table_r_squared = table_r_squared_func(method='2D')
+# table_r_squared, df_table_r_squared = table_r_squared_func(method='cos_rule')
 
 def color_table_SOH_values(color_interval='same_as_zoomin_plot', color_in='font', method='2D_fit_cons'):
     """

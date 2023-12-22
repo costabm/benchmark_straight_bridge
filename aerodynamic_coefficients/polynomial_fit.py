@@ -365,7 +365,7 @@ def cons_poly_fit(data_in, data_ind_out, data_ind_bounds, degree, ineq_constrain
         # print('SLSQP method used (Hessian information discarded)')
     # (Note: method= 'SLSQP' is used by default for a constrained problem, if no method is specified. Other methods might require the Hessian matrix (defined above but unused))
     res = scipy.optimize.minimize(func_to_minimize_fitting, C_guess, jac=func_to_minimize_fitting_jacobian, hess=func_to_minimize_fitting_hessian,
-                                  constraints=list_eq_and_ineq_cons_obj, method=minimize_method, options={'maxiter':5000})
+                                  constraints=list_eq_and_ineq_cons_obj, method=minimize_method)  #, options={'maxiter':5000})
     if not (('Optimization terminated successfully' in res.message) or ('is satisfied' in res.message)):
         print(res.message)  # Prints warnings or errors
     poly_coeff = res.x
