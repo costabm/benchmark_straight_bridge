@@ -350,13 +350,13 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
     xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Czz_Ls'] = 0  # Constr. No.2
     xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90)
                    & (xls_df_svv['theta_polimi'] == 0), 'Cz_Ls'] = 0  # Constr. No.3
-    # Let's help the polynomial fits of Cz with CFD data. Multiply by 1.6 for increased conservativeness.
-    # CFD values taken from here: "Skew aerodynamic coefficients for BJF FEED Phase - A description (Rev A).pdf".
-    # todo: THIS DOESN'T SEEM TO BE WORKING!! I PROBABLY DELETE THE ROWS WITH NANS IN OTHER COEFS.
-    artificial_data_row = pd.DataFrame(
-        [{'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': -10, 'Cz_Ls': -0.0893 * 1.6},
-         {'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': 10,  'Cz_Ls': 0.09888 * 1.6}])
-    xls_df_svv = pd.concat([xls_df_svv, artificial_data_row], ignore_index=True)
+    # # # THE FOLLOWING CODE WOULD CREATE NANs. INSTEAD, NEW CONSTRAINTS ARE USED (FOR Cz)
+    # # Let's help the polynomial fits of Cz with CFD data. Multiply by 1.6 for increased conservativeness.
+    # # CFD values taken from here: "Skew aerodynamic coefficients for BJF FEED Phase - A description (Rev A).pdf".
+    # artificial_data_row = pd.DataFrame(
+    #     [{'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': -10, 'Cz_Ls': -0.0893 * 1.6},
+    #      {'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': 10,  'Cz_Ls': 0.09888 * 1.6}])
+    # xls_df_svv = pd.concat([xls_df_svv, artificial_data_row], ignore_index=True)
 
     with pd.ExcelWriter(xls_data_path, engine='openpyxl', mode="a", if_sheet_exists="replace") as writer:
         xls_df_svv.to_excel(writer, sheet_name=out_sheet, index=False)

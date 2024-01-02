@@ -384,7 +384,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
         other_constraint_Cy = ['F_is_0_at_x0_end', 'F_is_0_at_x1_start', 'F_is_0_at_x1_end', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end_at_x1_middle']  # , 'F_is_0p13_at_x0_start_at_x1_middle']
         # Cz
         ineq_constraint_Cz = False  # False or 'positivity' or 'negativity'. we could have: dF/dx1_is_positive_at_x0_end', but difficult to implement with little gain.
-        other_constraint_Cz = ['F_is_0_at_x0_end_at_x1_middle', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end']  #, 'F_is_-2_at_x1_start', 'F_is_2_at_x1_end', 'dF/dx1_is_16p4_at_x0_start_at_x1_middle', 'F_is_-0p19_at_x0_start_at_x1_middle', # can eventually remove derivative constraint
+        other_constraint_Cz = ['F_is_0_at_x0_end_at_x1_middle', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end', 'F_is_CFD_at_x0_end_at_x1_-10', 'F_is_CFD_at_x0_end_at_x1_10']  #, 'F_is_-2_at_x1_start', 'F_is_2_at_x1_end']  # , 'dF/dx1_is_16p4_at_x0_start_at_x1_middle', 'F_is_-0p19_at_x0_start_at_x1_middle'], # can eventually remove derivative constraint
         # Cxx
         ineq_constraint_Cxx = False  # False or 'positivity' or 'negativity'
         other_constraint_Cxx = ['F_is_0_at_x0_end', 'F_is_0_at_x1_start', 'F_is_0_at_x1_end', 'dF/dx0_is_0_at_x0_start', 'dF/dx0_is_0_at_x0_end_at_x1_middle']   # 'dF/dx0_is_0_at_x0_start'

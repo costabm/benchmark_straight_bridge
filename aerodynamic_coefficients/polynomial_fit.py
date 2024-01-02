@@ -286,10 +286,24 @@ def cons_poly_fit(data_in, data_ind_out, data_ind_bounds, degree, ineq_constrain
         solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
         eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
 
-    # if 'F_is_-0p19_at_x0_start_at_x1_middle' in other_constraint:
-    #     eq_cons.append(poly_eq.subs(ind_vars[0], 0).subs(ind_vars[1], 0.5) + 0.19013)  # <---- Change here the constraint as desired. Constraint equation (<=> eq_cons = 0)
-    #     solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
-    #     eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
+    if 'F_is_-0p19_at_x0_start_at_x1_middle' in other_constraint:
+        eq_cons.append(poly_eq.subs(ind_vars[0], 0).subs(ind_vars[1], 0.5) + 0.19013)  # <---- Change here the constraint as desired. Constraint equation (<=> eq_cons = 0)
+        solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
+        eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
+
+    if 'F_is_CFD_at_x0_end_at_x1_-10' in other_constraint:
+        # Helps the polynomial fits of Cz with CFD data.
+        # CFD values taken from here: "Skew aerodynamic coefficients for BJF FEED Phase - A description (Rev A).pdf".
+        eq_cons.append(poly_eq.subs(ind_vars[0], 1).subs(ind_vars[1], (-10-(-90))/(90-(-90))) - (-0.0893))  # <---- Change here the constraint as desired. Constraint equation (<=> eq_cons = 0)
+        solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
+        eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
+
+    if 'F_is_CFD_at_x0_end_at_x1_10' in other_constraint:
+        # Helps the polynomial fits of Cz with CFD data.
+        # CFD values taken from here: "Skew aerodynamic coefficients for BJF FEED Phase - A description (Rev A).pdf".
+        eq_cons.append(poly_eq.subs(ind_vars[0], 1).subs(ind_vars[1], (10-(-90))/(90-(-90))) - 0.09888)  # <---- Change here the constraint as desired. Constraint equation (<=> eq_cons = 0)
+        solution = solve(eq_cons[-1], coefs, dict=True, simplify=False, rational=False)[0]
+        eq_cons_sol_dict.append(solution)  # solve eq_cons (can be slow)
 
     if eq_cons_sol_dict:
         A_eq_cons = Matrix([])  # empty matrix, to be filled

@@ -473,7 +473,7 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
     if zoom == 'in':
         theta_angle_step = 0.1  # in degrees.
         thetas = np.arange(rad(-10), rad(10) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
-        xlims = [-10.2, 10.2]
+        xlims = [-10.4, 10.4]
     elif zoom == 'out':
         theta_angle_step = 1  # in degrees.
         thetas = np.arange(rad(-89.99), rad(89.99) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
@@ -520,12 +520,12 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
         plt.ylim(C_limits[i])
         if zoom == 'in':
             plt.xticks(np.arange(-10, 10+0.01, 2))
-        ylims = [[-0.046, 0.002], [-0.04, 0.125], [-1.05, 0.65], [-0.165, 0.215], [None, None], [None, None]]
+        ylims = [[-0.021, 0.001], [-0.04, 0.125], [-1.07, 0.60], [-0.165, 0.235], [None, None], [None, None]]
         plt.ylim(ylims[i])
         plt.xlim(xlims)
         plt.grid()
         plt.tight_layout()
-        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + f'_deg_{deg_list[i]}_w_PhD_constr_except_1p9' + '.jpg'))
+        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + f'_deg_{deg_list[i]}' + '.jpg'))
         plt.close()
 
         # Plotting legend
@@ -537,8 +537,9 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             plt.tight_layout()
             plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
             plt.close()
-plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[2], deg_list=[9,9,9,9,9,9], zoom='in')
-# plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[0,1,2,3], deg_list=[9,9,9,9,9,9], zoom='in')
+# for d in [2,3,4,5,6,7,8,9]:
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2,3], deg_list=[9,9,9,9,9,9], zoom='in')
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
 
 
 def table_r_squared_polimi(deg_min=2, deg_max=9, method='2D_fit_cons_polimi', export_table=True):
@@ -557,8 +558,8 @@ def table_r_squared_polimi(deg_min=2, deg_max=9, method='2D_fit_cons_polimi', ex
                                                                 'R2_Cry', 'R2_Crz',])
     if export_table: df_table_r_squared.to_csv(r'aerodynamic_coefficients/plots/table_r_squared_'+method+'.csv')
     return table_r_squared, df_table_r_squared
-table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_cons_polimi')
-# table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_free_polimi')
+# table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_cons_polimi')
+table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_free_polimi')
 
 
 
