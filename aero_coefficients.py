@@ -162,7 +162,7 @@ def df_aero_coef_measurement_data(method):
 def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
               degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4],
                            '2D_fit_cons_scale_to_Jul':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_scale_to_Jul':[3,4,4,5,4,4],
-                           '2D_fit_cons_polimi':[7,7,7,7,7,7], '2D_fit_free_polimi':[4,4,4,4,4,4]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]  BEST FIT FOR '2D_fit_cons_polimi' is [7,9,7,7,-,-]
+                           '2D_fit_cons_polimi':[9,9,9,9,9,9], '2D_fit_free_polimi':[4,4,4,4,4,4]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]  BEST FIT FOR '2D_fit_cons_polimi' is [7,9,7,7,-,-]
     """
     betas: 1D-array
     thetas: 1D-array (same size as betas)
