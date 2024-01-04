@@ -7,9 +7,9 @@ from my_utils import root_dir, get_list_of_colors_matching_list_of_objects
 import os
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
+
 folder_path = os.path.join(root_dir, r'aerodynamic_coefficients\polimi')
 file_name = r'ResultsCoefficients-Rev2.xlsx'
-
 
 
 def plot_yaw_dependency_of_U_by_U_ceil():
@@ -37,16 +37,12 @@ def plot_yaw_dependency_of_U_by_U_ceil():
                              'polimi', 'plots', 'U_dependency_on_the_yaw_angle.jpg'))
     plt.close()
 
-
 # plot_yaw_dependency_of_U_by_U_ceil()
-
-
-
 
 
 def plot_phase_7_vs_polimi_coefs(sheet_name):
     polimi_file_name = file_name
-    phase7_file_name = 'aero_coefs_in_Ls_from_SOH_CFD_scaled_to_Julsund.xlsx'  # Beginning of Phase 7, prelim. coefficients
+    phase7_file_name = '../tables/aero_coefs_in_Ls_from_SOH_CFD_scaled_to_Julsund.xlsx'  # Beginning of Phase 7, prelim. coefficients
 
     # Load results
     path_polimi_data = os.path.join(folder_path, polimi_file_name)
@@ -168,8 +164,7 @@ def plot_2_variants_of_polimi_coefs(sheet_1, sheet_2):
     plt.savefig(folder_path + r"\plots\polimi_" + sheet_1 + '_vs_' + sheet_2 + "_legend.jpg", bbox_inches='tight')
     plt.close()
 
-
-# plot_phase_7_vs_polimi_coefs(sheet_name = r'K12-G-L')
+plot_phase_7_vs_polimi_coefs(sheet_name = r'K12-G-L')
 # plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-TS', sheet_2=r'K12-G-L')
 # plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T1', sheet_2=r'K12-G-L')
 # plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T3', sheet_2=r'K12-G-L-T1')
