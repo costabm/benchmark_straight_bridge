@@ -134,6 +134,7 @@ def get_raw_data_dict(raw_data_path):
                 if not np.isclose(data[k1]['polimi_yaw'], polimi_yaw_2, atol=1):  # best to use 1 deg tolerance
                     logging.warning(f"Ang in filename != from 'turntable'. File: {file_path}")
                 # todo: confirm the following calculation of beta_rx0 (2 code lines) after Polimi's reply to my comment:
+                print('REVIEW THIS')
                 data[k1]['beta_rx0'] = data[k1]['polimi_yaw'] + 180.0  # AnnexA17 eq.: beta = gamma + 180  todo: confirm
                 data[k1]['beta_rx0'] = deg(beta_within_minus_Pi_and_Pi_func(rad(data[k1]['beta_rx0'])))  # to [-pi,pi]
                 if 'rx' in data_keys:
@@ -348,7 +349,7 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
         # Filter out other beta quadrants outside 0-90 deg:
         beta_from_list = beta_from_list[np.where((beta_from_list <= 90) & (beta_from_list >= 0))]
 
-        # TODO: METHOD 1:
+        # METHOD 1: DON'T use. Lin. interp. only on _to. Sine Rule of isolated TS-effect shows this is non-conservative.
         # for b in beta_from_list:
         #     C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
         #     if b in beta_to_list:
@@ -365,7 +366,7 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
         #     final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
         #     xls_df_svv.loc[xls_df_svv['Yaw'] == b, dof] *= final_factor
 
-        # TODO: METHOD 2: SINE RULE SUPPORTS THIS ONE
+        # METHOD 2: USE THIS ONE. Lin. interp. on both _from and _to. Sine Rule of the isolated TS-effect supports this.
         for b in beta_from_list:
             if b in beta_to_list:
                 C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
@@ -384,8 +385,6 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
             scale_factor = C_to / C_from
             final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
             xls_df_svv.loc[xls_df_svv['Yaw'] == b, dof] *= final_factor
-
-
 
         return xls_df_svv
 
