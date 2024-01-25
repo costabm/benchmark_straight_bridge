@@ -125,17 +125,15 @@ def get_raw_data_dict(raw_data_path):
             if 'qUpwind' in data_keys:  # ... pitot placed upwind (2m ahead the turn table) at h=0.5m.
                 data[k1]['q_upwind'] = data[k1].pop('qUpwind')  # rename key, ditching old one
             if 'turntable' in data_keys:  # angle imposed to the turning table during the test
-                data[k1]['polimi_yaw'] = float(data[k1].pop('turntable'))  # sometimes it is int, so forcing to float
-                # Check if the raw data angle 'turntable' corresponds to the angle in the file name after 'Ang':
+                data[k1]['polimi_gamma'] = float(data[k1].pop('turntable'))  # sometimes it is int, so forcing to float
+                # Check if the raw data angle 'polimi_gamma' corresponds to the angle in the file name after 'Ang':
                 if raw_data_type in ['A10', 'A11-A12', 'A14']:  # file types with different Ang syntax in filename
-                    polimi_yaw_2 = float(file_name.split('-Ang')[1].split('-Z')[0])  # find angle between substrings
+                    polimi_gamma_2 = float(file_name.split('-Ang')[1].split('-Z')[0])  # find angle between substrings
                 else:
-                    polimi_yaw_2 = float(file_name.split('_Ang')[1].split('.mat')[0])  # find angle between substrings
-                if not np.isclose(data[k1]['polimi_yaw'], polimi_yaw_2, atol=1):  # best to use 1 deg tolerance
-                    logging.warning(f"Ang in filename != from 'turntable'. File: {file_path}")
-                # todo: confirm the following calculation of beta_rx0 (2 code lines) after Polimi's reply to my comment:
-                print('REVIEW THIS')
-                data[k1]['beta_rx0'] = data[k1]['polimi_yaw'] + 180.0  # AnnexA17 eq.: beta = gamma + 180  todo: confirm
+                    polimi_gamma_2 = float(file_name.split('_Ang')[1].split('.mat')[0])  # find angle between substrings
+                if not np.isclose(data[k1]['polimi_gamma'], polimi_gamma_2, atol=1):  # best to use 1 deg tolerance
+                    logging.warning(f"Ang in filename != from 'polimi_gamma'. File: {file_path}")
+                data[k1]['beta_rx0'] = data[k1]['polimi_gamma'] + 180.0  # AnnexA17 eq.: beta_rx0 = gamma + 180
                 data[k1]['beta_rx0'] = deg(beta_within_minus_Pi_and_Pi_func(rad(data[k1]['beta_rx0'])))  # to [-pi,pi]
                 if 'rx' in data_keys:
                     data[k1]['beta_svv'] = deg(beta_from_beta_rx0_and_rx(rad(data[k1]['beta_rx0']),
@@ -228,7 +226,7 @@ def get_dfs_from_raw_data(raw_data_dict, drop_time_series=True, drop_matlab_info
         keys_and_types = {'B': float, 'F': object, 'F_mean': object, 'H': float, 'L': float, 'U_ceil': float,
                           'U_upwind': float, '__globals__': object, '__header__': object, '__version__': object,
                           'acc_z': object, 'code': object, 'dof_tag': object, 'fs': float, 'id': int,
-                          'polimi_yaw': float, 'q_ceil': object, 'q_ref': float, 'q_upwind': object, 'rho': float,
+                          'polimi_gamma': float, 'q_ceil': object, 'q_ref': float, 'q_upwind': object, 'rho': float,
                           'rx': float, 't': object, 't_uvw': object, 'temp': float, 'theta': float, 'u_ceil': object,
                           'units': object, 'uvw_upwind': object, 'yaw': float}
         for key, value in keys_and_types.items():
@@ -271,22 +269,22 @@ def run_further_checks(df_all):
     """
     Running a few checks on the processed data (input format: dictionary of dataframes)
     """
-    # TEST 1: Checking the consistency between the "polimi_yaw" (turntable) angles, and the reported "yaw" angles
-    cols1 = ['polimi_yaw', 'yaw']  # columns to be checked
+    # TEST 1: Checking the consistency between the polimi_gamma (turntable) angles, and the reported "yaw" angles
+    cols1 = ['polimi_gamma', 'yaw']  # columns to be checked
     test1 = df_all.copy()
     test1 = test1.drop_duplicates(subset=cols1).copy()  # drop duplicate combinations of these 2 angles
-    test1['yaw_eq'] = np.array(test1['polimi_yaw'], dtype=float) + 180.0  # AnnexA17 equation: beta = gamma + 180
+    test1['yaw_eq'] = np.array(test1['polimi_gamma'], dtype=float) + 180.0  # AnnexA17 equation: beta = gamma + 180
     test1['yaw_eq_-pi_pi'] = deg(beta_within_minus_Pi_and_Pi_func(rad(test1['yaw_eq'])))  # convert to interval
     test1['error_in_yaw_eq'] = test1['yaw'] - test1['yaw_eq_-pi_pi']  # difference (error)
     fail_condition1 = test1['error_in_yaw_eq'] > 0.6
     if fail_condition1.any():
-        logging.warning('The following files have an inconsistent yaw angle definition. The polimi_yaw (turntable) '
+        logging.warning('The following files have an inconsistent yaw angle definition. The polimi_gamma (turntable) '
                         'angle, when added by 180 deg according to the yaw equation (Polimi Report Annex A17),'
                         'produces a different angle than the reported "yaw" angle.')
         logging.warning(test1[fail_condition1])
 
-    # TEST 2: Calculating beta and theta angles from rx (inclinometer) measurements and polimi_yaw (turntable) angles.
-    cols2 = ['polimi_yaw', 'yaw', 'rx', 'beta_rx0', 'beta_svv', 'theta_svv']  # columns to be checked
+    # TEST 2: Calculating beta and theta angles from rx (inclinometer) measurements and polimi_gamma (turntable) angles.
+    cols2 = ['polimi_gamma', 'yaw', 'rx', 'beta_rx0', 'beta_svv', 'theta_svv']  # columns to be checked
     test2 = df_all.copy()
     test2 = test2.drop_duplicates(subset=cols2).copy()  # drop duplicate combinations of these 2 angles
     test2['error_in_theta'] = test2['theta_svv'] - test2['theta']
@@ -349,7 +347,7 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
         # Filter out other beta quadrants outside 0-90 deg:
         beta_from_list = beta_from_list[np.where((beta_from_list <= 90) & (beta_from_list >= 0))]
 
-        # METHOD 1: DON'T use. Lin. interp. only on _to. Sine Rule of isolated TS-effect shows this is non-conservative.
+        # METHOD 1: DON'T USE: Lin. interp. only on _to. Sine Rule of isolated TS-effect shows this is non-conservative.
         # for b in beta_from_list:
         #     C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
         #     if b in beta_to_list:
@@ -366,7 +364,7 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
         #     final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
         #     xls_df_svv.loc[xls_df_svv['Yaw'] == b, dof] *= final_factor
 
-        # METHOD 2: USE THIS ONE. Lin. interp. on both _from and _to. Sine Rule of the isolated TS-effect supports this.
+        # METHOD 2: USE THIS ONE: Lin. interp. on both _from and _to. Sine Rule of the isolated TS-effect supports this.
         for b in beta_from_list:
             if b in beta_to_list:
                 C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
@@ -388,7 +386,7 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
 
         return xls_df_svv
 
-    # The following corrections are described in my SVV document of post-analysing the wind tunnel results
+    # The following corrections are described in the document "SVV supplementary analyses of Polimi's ..."
     xls_df_svv = scale_coefs_between_2_sheets(xls_df_svv, xls_data_path, from_sheet='K12-G-L', to_sheet='K12-G-L-TS',
                                               dof='CxTot', factor_on_scale_factor=0.44)
     xls_df_svv['CyTot'] = 1.014 * xls_df_svv['CyTot']  # Slightly increasing the Cy coefficient
