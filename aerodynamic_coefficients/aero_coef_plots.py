@@ -537,9 +537,9 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             plt.tight_layout()
             plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
             plt.close()
-# for d in [2,3,4,5,6,7,8,9]:
-#     plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0], deg_list=[d,d,d,d,d,d], zoom='in')
-#     plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[0], deg_list=[d,d,d,d,d,d], zoom='in')
+for d in [2,3,4,5,6,7,8,9]:
+    plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
+    plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
 
 
 def table_r_squared_polimi(deg_min=2, deg_max=9, method='2D_fit_cons_polimi', export_table=True):
@@ -556,14 +556,15 @@ def table_r_squared_polimi(deg_min=2, deg_max=9, method='2D_fit_cons_polimi', ex
             table_r_squared[j, i+1] = 1 - SSres / SStot
     df_table_r_squared = pd.DataFrame(table_r_squared, columns=['poly_degree', 'R2_Cx', 'R2_Cy', 'R2_Cz', 'R2_Crx',
                                                                 'R2_Cry', 'R2_Crz',])
-    if export_table: df_table_r_squared.to_csv(r'aerodynamic_coefficients/plots/table_r_squared_'+method+'.csv')
+    if export_table:
+        df_table_r_squared.to_csv(os.path.join(root_dir, r'aerodynamic_coefficients/plots/table_r_squared_'+method+'.csv'))
     return table_r_squared, df_table_r_squared
-table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_cons_polimi')
+# table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_cons_polimi')
 # table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_free_polimi')
 
 
-
 raise NotImplementedError
+
 def plot_2D_at_theta_0(idx_to_plot=[0,1,2,3,4,5], plot_for_EACWE2022=False):
     beta_angle_step = 0.1  # in degrees.
     betas = np.arange(rad(-15), rad(105) + rad(theta_angle_step) * 0.012345, rad(beta_angle_step))

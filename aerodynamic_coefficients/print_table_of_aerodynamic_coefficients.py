@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
+import os
 from buffeting import C_Ci_func
-from my_utils import deg, rad
+from my_utils import deg, rad, root_dir
 
+folder_path = os.path.join(root_dir, r'aerodynamic_coefficients\tables')
 
 beta_step = 1  # deg
 theta_step = 1  # deg
@@ -20,7 +22,7 @@ elif coor_system == 'Gw':
     d_keys = ['betas_deg', 'thetas_deg', 'CXu', 'CYv', 'CZw', 'CrXu', 'CrYv', 'CrZw']
 else:
     raise NotImplementedError
-d = {key:[] for key in d_keys}
+d = {key: [] for key in d_keys}
 
 for t in list(reversed(theta)):
     arr_equal_thetas = t * np.ones(len(beta))
@@ -33,7 +35,7 @@ for t in list(reversed(theta)):
         assert 'C' in label
         d[label].append(Ci_row[i])
 
-writer = pd.ExcelWriter(r'aerodynamic_coefficients\tables\aero_coefs_'+f'{coor_system}_{method}'+'.xlsx',
+writer = pd.ExcelWriter(os.path.join(folder_path, 'aero_coefs_'+f'{coor_system}_{method}'+'.xlsx'),
                         engine='xlsxwriter')  # You need to: pip install xlsxwriter
 for key in d:
     d[key] = np.array(d[key])

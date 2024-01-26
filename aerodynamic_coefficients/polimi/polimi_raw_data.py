@@ -27,10 +27,11 @@ import pandas as pd
 import logging
 matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
+
 # Folder that includes all the raw data as provided by Polimi:
 raw_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\raw_data")
 # File (Excel) with the coefficients results as provided by Polimi :
-xls_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\ResultsCoefficients-Rev2.xlsx")
+xls_data_path = os.path.join(root_dir, r"aerodynamic_coefficients\polimi\ResultsCoefficients-Rev3.xlsx")
 
 debug = False  # set to True to make debugging of this script faster (only a few unique data files are processed)
 
@@ -156,9 +157,6 @@ def get_raw_data_dict(raw_data_path):
                 assert 'names' in data_keys
                 data[k1]['dof_tag'] = data[k1].pop('names')  # rename key, ditching old one
                 data[k1]['F_mean'] = np.mean(data[k1]['F'], axis=1)  # new shape: (dof, n_samples)
-            # if 'H' not in data[k1].keys():
-            #     logging.warning(f"Polimi forgot to add an 'H' key to the data in Annex {raw_data_type}. File: {file_path}")
-            #     data[k1]['H'] = 0.45714285714285713  # taken from the other raw deck data files
             if 'H' in data[k1].keys():
                 data[k1]['H'] = float(data[k1]['H'])
             if 'accZ' in data_keys:
@@ -310,6 +308,11 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
     xl.close()
     xls_df_svv = xls_df.copy()  # the new sheet '...-SVV' starts as a copy of the in_sheet
 
+    def filter_out_other_quadrants(df):
+        return df[(df['Yaw'] >= -0.5) & (df['Yaw'] <= 90.5)]  # with 0.5 deg tolerance
+
+    xls_df_svv = filter_out_other_quadrants(xls_df_svv)
+
     def scale_coefs_between_2_sheets(xls_df_svv, xls_data_path, from_sheet='K12-G-L', to_sheet='K12-G-L-TS',
                                      dof='CxTot', factor_on_scale_factor=0.44):
         """
@@ -338,14 +341,12 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
         """
         xl = pd.ExcelFile(xls_data_path)
         assert (from_sheet in xl.sheet_names) and (to_sheet in xl.sheet_names), "Sheet name not found"
-        xls_df_from = xl.parse(sheet_name=from_sheet)  # parses to dataframe
-        xls_df_to = xl.parse(sheet_name=to_sheet)  # parses to dataframe
+        xls_df_from = filter_out_other_quadrants(xl.parse(sheet_name=from_sheet))  # parses to dataframe
+        xls_df_to = filter_out_other_quadrants(xl.parse(sheet_name=to_sheet))  # parses to dataframe
         xl.close()
 
         beta_from_list = np.unique(xls_df_from['Yaw'])
         beta_to_list = np.unique(xls_df_to['Yaw'])
-        # Filter out other beta quadrants outside 0-90 deg:
-        beta_from_list = beta_from_list[np.where((beta_from_list <= 90) & (beta_from_list >= 0))]
 
         # METHOD 1: DON'T USE: Lin. interp. only on _to. Sine Rule of isolated TS-effect shows this is non-conservative.
         # for b in beta_from_list:
@@ -377,8 +378,10 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
                 C_to_below = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_below) & (xls_df_to['Theta'] == 0)][dof])
                 C_to_above = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_above) & (xls_df_to['Theta'] == 0)][dof])
                 C_to = C_to_below + (b-beta_below) * (C_to_above - C_to_below) / (beta_above - beta_below)
-                C_from_below = np.array(xls_df_from[(xls_df_from['Yaw'] == beta_below) & (xls_df_from['Theta'] == 0)][dof])
-                C_from_above = np.array(xls_df_from[(xls_df_from['Yaw'] == beta_above) & (xls_df_from['Theta'] == 0)][dof])
+                C_from_below = np.array(
+                    xls_df_from[(xls_df_from['Yaw'] == beta_below) & (xls_df_from['Theta'] == 0)][dof])
+                C_from_above = np.array(
+                    xls_df_from[(xls_df_from['Yaw'] == beta_above) & (xls_df_from['Theta'] == 0)][dof])
                 C_from = C_from_below + (b-beta_below) * (C_from_above - C_from_below) / (beta_above - beta_below)
             scale_factor = C_to / C_from
             final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
@@ -431,7 +434,8 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
     xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Czz_Ls'] = 0  # Constr. No.2
     xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90)
                    & (xls_df_svv['theta_polimi'] == 0), 'Cz_Ls'] = 0  # Constr. No.3
-    # # # THE FOLLOWING CODE WOULD CREATE NANs. INSTEAD, NEW CONSTRAINTS ARE USED (FOR Cz)
+    # # # THE FOLLOWING CODE (ADDING FAKE DATAPOINTS) WOULD CREATE NANs. INSTEAD, NEW CONSTRAINTS ARE USED (FOR Cz)
+    # # # (The fact that the fake datapoints are only added for Cz creates problems in the code)
     # # Let's help the polynomial fits of Cz with CFD data. Multiply by 1.6 for increased conservativeness.
     # # CFD values taken from here: "Skew aerodynamic coefficients for BJF FEED Phase - A description (Rev A).pdf".
     # artificial_data_row = pd.DataFrame(

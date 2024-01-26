@@ -9,7 +9,7 @@ matplotlib.use('Qt5Agg')  # to prevent bug in PyCharm
 
 
 folder_path = os.path.join(root_dir, r'aerodynamic_coefficients\polimi')
-file_name = r'ResultsCoefficients-Rev2.xlsx'
+file_name = r'ResultsCoefficients-Rev3.xlsx'
 
 
 def plot_yaw_dependency_of_U_by_U_ceil():
@@ -112,18 +112,25 @@ def plot_phase_7_vs_polimi_coefs(sheet_name):
 def plot_2_variants_of_polimi_coefs(sheet_1, sheet_2):
     # Load results
     path_data = os.path.join(folder_path, file_name)
-    df_1 = pd.read_excel(io=path_data, sheet_name=sheet_1).dropna().sort_values(['Yaw', 'Theta'])
-    df_2 = pd.read_excel(io=path_data, sheet_name=sheet_2).dropna().sort_values(['Yaw', 'Theta'])
+
+    if sheet_1 == r'K12-AG-BAR' and sheet_2 == 'K12-AG-BAR':
+        df_0 = pd.read_excel(io=path_data, sheet_name=sheet_1).dropna().sort_values(['Yaw', 'Theta'])
+        df_1 = df_0[df_0['Code'] == 'K12-AG-BAR Aero']
+        df_2 = df_0[df_0['Code'] == 'K12-AG-BAR Geo']
+    else:
+        df_1 = pd.read_excel(io=path_data, sheet_name=sheet_1).dropna().sort_values(['Yaw', 'Theta'])
+        df_2 = pd.read_excel(io=path_data, sheet_name=sheet_2).dropna().sort_values(['Yaw', 'Theta'])
 
     def rename(df):
-        return df.rename(columns={'Code': 'code', 'qRef': 'q_ref', 'Yaw': 'yaw', 'Theta': 'theta',
-                                  'CMxL': 'CrxL', 'CMxi': 'Crxi',
-                                  'CMyL': 'CryL', 'CMyi': 'Cryi',
-                                  'CMzL': 'CrzL', 'CMzi': 'Crzi',
-                                  'CxTot': 'Cx', 'CyTot': 'Cy', 'CzTot': 'Cz',
-                                  'CMxTot': 'Crx', 'CMyTot': 'Cry', 'CMzTot': 'Crz'}, inplace=True)
-    rename(df_1)
-    rename(df_2)
+        df = df.rename(columns={'Code': 'code', 'qRef': 'q_ref', 'Yaw': 'yaw', 'Theta': 'theta',
+                                'CMxL': 'CrxL', 'CMxi': 'Crxi',
+                                'CMyL': 'CryL', 'CMyi': 'Cryi',
+                                'CMzL': 'CrzL', 'CMzi': 'Crzi',
+                                'CxTot': 'Cx', 'CyTot': 'Cy', 'CzTot': 'Cz',
+                                'CMxTot': 'Crx', 'CMyTot': 'Cry', 'CMzTot': 'Crz'})
+        return df
+    df_1 = rename(df_1)
+    df_2 = rename(df_2)
 
     lst_betas = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]  # list of betas to plot
     color_list = plt.cm.turbo(np.linspace(0, 0.95, len(lst_betas))).tolist()
@@ -164,10 +171,11 @@ def plot_2_variants_of_polimi_coefs(sheet_1, sheet_2):
     plt.savefig(folder_path + r"\plots\polimi_" + sheet_1 + '_vs_' + sheet_2 + "_legend.jpg", bbox_inches='tight')
     plt.close()
 
-plot_phase_7_vs_polimi_coefs(sheet_name = r'K12-G-L')
-# plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-TS', sheet_2=r'K12-G-L')
-# plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T1', sheet_2=r'K12-G-L')
-# plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T3', sheet_2=r'K12-G-L-T1')
-# plot_2_variants_of_polimi_coefs(sheet_1=r'K12-AG-BAR-AERO', sheet_2=r'K12-AG-BAR-GEO')
+
+plot_phase_7_vs_polimi_coefs(sheet_name=r'K12-G-L')
+plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-TS', sheet_2=r'K12-G-L')
+plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T1', sheet_2=r'K12-G-L')
+plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T3', sheet_2=r'K12-G-L-T1')
+plot_2_variants_of_polimi_coefs(sheet_1=r'K12-AG-BAR', sheet_2=r'K12-AG-BAR')
 
 

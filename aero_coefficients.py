@@ -129,7 +129,7 @@ def df_aero_coef_measurement_data(method):
     if polimi_only:
         sheet_name = 'K12-G-L-SVV'
         # Load results
-        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi\ResultsCoefficients-Rev2.xlsx')
+        path_polimi_data = os.path.join(root_dir, r'aerodynamic_coefficients\polimi\ResultsCoefficients-Rev3.xlsx')
         df = pd.read_excel(io=path_polimi_data, sheet_name=sheet_name).dropna()
         try:
             df['Cx_Ls'] =  df.pop('CxTot')  # change name to respect the original aero_coefficients.py notations
@@ -331,7 +331,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
             Cyy_Ls_2D_fit_beta_0_theta_all = np.zeros(size)
             Czz_Ls_2D_fit_beta_0_theta_all = np.zeros(size)
 
-            factor = np.sin(thetas_extrap)** 2 + np.cos(betas_extrap)** 2 * np.cos(thetas_extrap)** 2
+            factor = np.sin(thetas_extrap)**2 + np.cos(betas_extrap)**2 * np.cos(thetas_extrap)**2
 
         elif method == 'cos_rule':
             # First step: find the C(0,theta) values for all thetas (even if repeated), using the 2D fit on all SOH data_in.
