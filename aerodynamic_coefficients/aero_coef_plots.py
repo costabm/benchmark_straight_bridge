@@ -1,27 +1,21 @@
 import copy
 import pandas as pd
 import numpy as np
-from aero_coefficients import aero_coef, df_aero_coef_measurement_data, aero_coef_derivatives, rad, deg, Cx_factor, Cy_factor
+from aero_coefficients import (aero_coef, df_aero_coef_measurement_data, aero_coef_derivatives, rad, deg,
+                               Cx_factor, Cy_factor, lst_methods)
 import matplotlib.pyplot as plt
 import matplotlib
 import os
 from my_utils import root_dir
 
-#####################################################################################################################
-# Raw Data from Polimi
-#####################################################################################################################
-df = df_aero_coef_measurement_data(method='_polimi')
-betas_polimi = rad(df['beta[deg]'].to_numpy())
-thetas_polimi = rad(df['theta[deg]'].to_numpy())
-C_polimi_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
 
 #####################################################################################################################
 # Raw Data from SOH
 #####################################################################################################################
 path_df = os.path.join(root_dir, r'aerodynamic_coefficients', 'aero_coef_experimental_data.csv')
 df = pd.read_csv(path_df)  # raw original values
-betas_uncorrected_SOH = rad(df['SOH_beta_uncorrected[deg]'].to_numpy()) # SOH initial skew angle, before performing rotation about bridge axis (which changes the beta angle).
-alphas_SOH = rad(df['alpha[deg]'].to_numpy()) # Alpha: rotation about the bridge x-axis, which differs from the theta definition from L.D.Zhu and from SOH alpha (opposite direction).
+betas_uncorrected_SOH = rad(df['SOH_beta_uncorrected[deg]'].to_numpy())  # SOH initial skew angle, before performing rotation about bridge axis (which changes the beta angle).
+alphas_SOH = rad(df['alpha[deg]'].to_numpy())  # Alpha: rotation about the bridge x-axis, which differs from the theta definition from L.D.Zhu and from SOH alpha (opposite direction).
 betas_SOH = rad(df['beta[deg]'].to_numpy())
 thetas_SOH = rad(df['theta[deg]'].to_numpy())
 C_SOH_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
@@ -323,7 +317,7 @@ def colormap_2var_cons_fit_zoomin(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5
 #
 #
 
-def plot_2D_at_beta_fixed(method='2D_fit_cons',idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False, plot_CFD=False, plot_extra_lines=False):
+def plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_other_bridges=False, plot_CFD=False, plot_extra_lines=False):
     if plot_other_bridges:
         path_raw_data = os.path.join(root_dir, r'other', 'Langenuen and other bridges - static coefficients - v5.xlsx')
         str_bridges = ['Langenuen', 'Julsundet', 'Sotrabru']
@@ -483,7 +477,7 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
     from matplotlib.rcsetup import cycler
 
     for i in idx_to_plot:
-        assert method in ['2D_fit_cons_polimi', '2D_fit_free_polimi', '2D_fit_cons_polimi']
+        assert method in lst_methods
         title_str = [r'$C_{x}^{Polimi}$', r'$C_{y}^{Polimi}$', r'$C_{z}^{Polimi}$', r'$C_{rx}^{Polimi}$', r'$C_{ry}^{Polimi}$', r'$C_{rz}^{Polimi}$'][i]
 
         # Plotting:
@@ -504,7 +498,7 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], color=color_list[b_i], label=r'$\beta=$'+str(int(round(deg(beta),0)))+'$\degree$', alpha=0.8)  # , marker=marker_str_polimi[b_i],markevery=markevery, markersize=markersize_plt[b_i]*4, fillstyle='none')
             measured_label = 'Measured' if b_i == 1 else ''
 
-            if method in ['2D_fit_cons_polimi', '2D_fit_free_polimi']:
+            if method in ['2D_fit_cons_polimi', '2D_fit_free_polimi', '2D_fit_cons_polimi-K12-G-L-SVV']:
                 df = df_aero_coef_measurement_data(method)
                 betas_polimi, thetas_polimi = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
                 C_upscaled_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
@@ -537,12 +531,21 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             plt.tight_layout()
             plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
             plt.close()
-for d in [2,3,4,5,6,7,8,9]:
-    plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
-    plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
+for d in [5]:  #[2,3,4,5,6,7,8,9]:
+    plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-SVV', idx_to_plot=[1, 2, 3], deg_list=[d, d, d, d, d, d], zoom='in')
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-T1-SVV', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
 
 
 def table_r_squared_polimi(deg_min=2, deg_max=9, method='2D_fit_cons_polimi', export_table=True):
+    #####################################################################################################################
+    # Raw Data from Polimi
+    #####################################################################################################################
+    df = df_aero_coef_measurement_data(method)
+    betas_polimi = rad(df['beta[deg]'].to_numpy())
+    thetas_polimi = rad(df['theta[deg]'].to_numpy())
+    C_polimi_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
+
     table_r_squared = np.empty((len(range(deg_min, deg_max+1)), 7)) * np.nan
     for j, d in enumerate(range(deg_min, deg_max+1)):
         fit_degree_list = [d, d, d, d, d, d]

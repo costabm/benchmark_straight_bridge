@@ -294,173 +294,172 @@ def run_further_checks(df_all):
 
 def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
     """
-    The aero coefficients need to be adapted to account for the traffic signs (only tested for a few angles).
+    The 'K12-G-L' aero coefficients need to be adapted to account for the traffic signs (only tested for a few angles).
     This function opens the Excel file provided by Polimi and adds a new sheet with the new adapted aero coefs.
     If df_all is provided instead of None, the true beta and theta values are calculated and included as "..._svv",
     and the beta_rx0 and rx used to calculate them are also included.
+    For the remaining 'K12-G-L-T1', 'K12-G-L-T3', 'K12-G-L-CS' coefs, only formatting changes are performed.
     """
 
-    xl = pd.ExcelFile(xls_data_path)
-    in_sheet = 'K12-G-L'
-    out_sheet = 'K12-G-L-SVV'
-    assert in_sheet in xl.sheet_names, "Sheet name not found"
-    xls_df = xl.parse(sheet_name=in_sheet)  # parses to a dataframe
-    xl.close()
-    xls_df_svv = xls_df.copy()  # the new sheet '...-SVV' starts as a copy of the in_sheet
-
-    def filter_out_other_quadrants(df):
-        return df[(df['Yaw'] >= -0.5) & (df['Yaw'] <= 90.5)]  # with 0.5 deg tolerance
-
-    xls_df_svv = filter_out_other_quadrants(xls_df_svv)
-
-    def scale_coefs_between_2_sheets(xls_df_svv, xls_data_path, from_sheet='K12-G-L', to_sheet='K12-G-L-TS',
-                                     dof='CxTot', factor_on_scale_factor=0.44):
-        """
-        Scales the coefficients of one sheet, e.g. Cx from 'K12-G-L' to those in 'K12-G-L-TS', linearly interpolating at
-        beta-missing values (e.g. scales up coefs without traffic signs, to those with traffic signs despite only a few
-        angles having been tested with traffic signs). Only the values at theta=0 are being used for the scaling.
-
-        xls_df_svv: dataframe (equivalent to one sheet) where the new results will be saved
-        xls_data_path: path of the original Excel file with all sheets
-        from_sheet: sheet name from where to take original values
-        to_sheet: sheet name with the values to which the original values will be scaled
-        dof: str with the degree-of-freedom at stake
-        factor_on_scale_factor: Another factor to be applied to the scale factor! can be used to account for e.g.
-            the real VS modelled traffic sign area (see my note "SVV supplementary analyses of Polimi’s wind tunnel
-            tests – Bjørnafjord 2023"). Use 0.44 for Cx and 0.42 for Cy.
-
-        Mental exercise:
-        (TS = effect of including traffic signs in the model test)
-        Cx_no_TS = 2   (at given beta, average of several thetas)
-        Cx_w_TS = 2.5  (at given beta, average of several thetas)
-        factor_on_scale_factor = 0.44 (the TS effect is overestimated, and only 44% of it is realistic)
-        Cs_new_alt =   2 * (1 + (2.5/2 - 1) * 0.44)  # where final_factor = (1 + (2.5/2 - 1) * 0.44)
-        Cs_new_alt_1 = 2 + 2 * (2.5/2 - 1) * 0.44  # alternative 1
-        Cs_new_alt_2 = 2 + (2.5 - 2) * 0.44  # alternative 2
-
-        """
+    for in_sheet in ['K12-G-L', 'K12-G-L-T1', 'K12-G-L-T3', 'K12-G-L-CS']:
+        out_sheet = in_sheet + '-SVV'
         xl = pd.ExcelFile(xls_data_path)
-        assert (from_sheet in xl.sheet_names) and (to_sheet in xl.sheet_names), "Sheet name not found"
-        xls_df_from = filter_out_other_quadrants(xl.parse(sheet_name=from_sheet))  # parses to dataframe
-        xls_df_to = filter_out_other_quadrants(xl.parse(sheet_name=to_sheet))  # parses to dataframe
+        assert in_sheet in xl.sheet_names, "Sheet name not found"
+        xls_df = xl.parse(sheet_name=in_sheet)  # parses to a dataframe
         xl.close()
+        xls_df_svv = xls_df.copy()  # the new sheet '...-SVV' starts as a copy of the in_sheet
 
-        beta_from_list = np.unique(xls_df_from['Yaw'])
-        beta_to_list = np.unique(xls_df_to['Yaw'])
+        def filter_out_other_quadrants(df):
+            return df[(df['Yaw'] >= -0.5) & (df['Yaw'] <= 90.5)]  # with 0.5 deg tolerance
 
-        # METHOD 1: DON'T USE: Lin. interp. only on _to. Sine Rule of isolated TS-effect shows this is non-conservative.
-        # for b in beta_from_list:
-        #     C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
-        #     if b in beta_to_list:
-        #         C_to = np.array(xls_df_to[(xls_df_to['Yaw'] == b) & (xls_df_to['Theta'] == 0)][dof])
-        #     else:  # We need to linearly interpolate the scaling of xls_df_from with the nearest values in xls_df_to
-        #         betas_larger = beta_to_list[np.where(beta_to_list > b)]
-        #         betas_smaller = beta_to_list[np.where(beta_to_list < b)]
-        #         beta_below = betas_smaller[np.argmin(abs(betas_smaller - b))]
-        #         beta_above = betas_larger[np.argmin(abs(betas_larger - b))]
-        #         C_to_below = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_below) & (xls_df_to['Theta'] == 0)][dof])
-        #         C_to_above = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_above) & (xls_df_to['Theta'] == 0)][dof])
-        #         C_to = C_to_below + (b-beta_below) * (C_to_above - C_to_below) / (beta_above - beta_below)
-        #     scale_factor = C_to / C_from
-        #     final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
-        #     xls_df_svv.loc[xls_df_svv['Yaw'] == b, dof] *= final_factor
+        xls_df_svv = filter_out_other_quadrants(xls_df_svv)
 
-        # METHOD 2: USE THIS ONE: Lin. interp. on both _from and _to. Sine Rule of the isolated TS-effect supports this.
-        for b in beta_from_list:
-            if b in beta_to_list:
-                C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
-                C_to = np.array(xls_df_to[(xls_df_to['Yaw'] == b) & (xls_df_to['Theta'] == 0)][dof])
-            else:  # We need to linearly interpolate the scaling of xls_df_from with the nearest values in xls_df_to
-                betas_larger = beta_to_list[np.where(beta_to_list > b)]
-                betas_smaller = beta_to_list[np.where(beta_to_list < b)]
-                beta_below = betas_smaller[np.argmin(abs(betas_smaller - b))]
-                beta_above = betas_larger[np.argmin(abs(betas_larger - b))]
-                C_to_below = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_below) & (xls_df_to['Theta'] == 0)][dof])
-                C_to_above = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_above) & (xls_df_to['Theta'] == 0)][dof])
-                C_to = C_to_below + (b-beta_below) * (C_to_above - C_to_below) / (beta_above - beta_below)
-                C_from_below = np.array(
-                    xls_df_from[(xls_df_from['Yaw'] == beta_below) & (xls_df_from['Theta'] == 0)][dof])
-                C_from_above = np.array(
-                    xls_df_from[(xls_df_from['Yaw'] == beta_above) & (xls_df_from['Theta'] == 0)][dof])
-                C_from = C_from_below + (b-beta_below) * (C_from_above - C_from_below) / (beta_above - beta_below)
-            scale_factor = C_to / C_from
-            final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
-            xls_df_svv.loc[xls_df_svv['Yaw'] == b, dof] *= final_factor
+        def scale_coefs_between_2_sheets(xls_df_svv, xls_data_path, from_sheet='K12-G-L', to_sheet='K12-G-L-TS',
+                                         dof='CxTot', factor_on_scale_factor=0.44):
+            """
+            Scales the coefficients of one sheet, e.g. Cx from 'K12-G-L' to those in 'K12-G-L-TS', linearly interpolating at
+            beta-missing values (e.g. scales up coefs without traffic signs, to those with traffic signs despite only a few
+            angles having been tested with traffic signs). Only the values at theta=0 are being used for the scaling.
 
-        return xls_df_svv
+            xls_df_svv: dataframe (equivalent to one sheet) where the new results will be saved
+            xls_data_path: path of the original Excel file with all sheets
+            from_sheet: sheet name from where to take original values
+            to_sheet: sheet name with the values to which the original values will be scaled
+            dof: str with the degree-of-freedom at stake
+            factor_on_scale_factor: Another factor to be applied to the scale factor! can be used to account for e.g.
+                the real VS modelled traffic sign area (see my note "SVV supplementary analyses of Polimi’s wind tunnel
+                tests – Bjørnafjord 2023"). Use 0.44 for Cx and 0.42 for Cy.
 
-    # The following corrections are described in the document "SVV supplementary analyses of Polimi's ..."
-    xls_df_svv = scale_coefs_between_2_sheets(xls_df_svv, xls_data_path, from_sheet='K12-G-L', to_sheet='K12-G-L-TS',
-                                              dof='CxTot', factor_on_scale_factor=0.44)
-    xls_df_svv['CyTot'] = 1.014 * xls_df_svv['CyTot']  # Slightly increasing the Cy coefficient
+            Mental exercise:
+            (TS = effect of including traffic signs in the model test)
+            Cx_no_TS = 2   (at given beta, average of several thetas)
+            Cx_w_TS = 2.5  (at given beta, average of several thetas)
+            factor_on_scale_factor = 0.44 (the TS effect is overestimated, and only 44% of it is realistic)
+            Cs_new_alt =   2 * (1 + (2.5/2 - 1) * 0.44)  # where final_factor = (1 + (2.5/2 - 1) * 0.44)
+            Cs_new_alt_1 = 2 + 2 * (2.5/2 - 1) * 0.44  # alternative 1
+            Cs_new_alt_2 = 2 + (2.5 - 2) * 0.44  # alternative 2
 
-    # Formatting changes, e.g. changing key names:
-    cols_to_del = ['CxL', 'CyL', 'CzL', 'CMxL', 'CMyL', 'CMzL', 'Cxi', 'Cyi', 'Czi', 'CMxi', 'CMyi', 'CMzi']
-    for c in cols_to_del:
-        del xls_df_svv[c]
+            """
+            xl = pd.ExcelFile(xls_data_path)
+            assert (from_sheet in xl.sheet_names) and (to_sheet in xl.sheet_names), "Sheet name not found"
+            xls_df_from = filter_out_other_quadrants(xl.parse(sheet_name=from_sheet))  # parses to dataframe
+            xls_df_to = filter_out_other_quadrants(xl.parse(sheet_name=to_sheet))  # parses to dataframe
+            xl.close()
 
-    def from_df_all_get_unique_value_given_key_and_id(df_all, key, run):
-        """with e.g. key='rx', run=211, get the 'rx' value of df_all where run=211, asserting uniqueness"""
-        value = df_all[key][df_all['id'] == run]
-        assert all_equal(value), ("For some strange reason, entries with the same id in df_all['id'] have "
-                                  "different 'key' values. Understand why before blindly using 1 value")
-        return value.unique()[0]
+            beta_from_list = np.unique(xls_df_from['Yaw'])
+            beta_to_list = np.unique(xls_df_to['Yaw'])
 
-    beta_rx0, rx, beta_svv, theta_svv = [], [], [], []
-    for i in xls_df_svv['run']:  # 'run' (Polimi notation) and 'id' (my notation) are the same thing
-        beta_rx0.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_rx0', run=i))
-        rx.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='rx', run=i))
-        beta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_svv', run=i))
-        theta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='theta_svv', run=i))
+            # METHOD 1: DON'T USE: Lin. interp. only on _to. Sine Rule of isolated TS-effect shows this is non-conservative.
+            # for b in beta_from_list:
+            #     C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
+            #     if b in beta_to_list:
+            #         C_to = np.array(xls_df_to[(xls_df_to['Yaw'] == b) & (xls_df_to['Theta'] == 0)][dof])
+            #     else:  # We need to linearly interpolate the scaling of xls_df_from with the nearest values in xls_df_to
+            #         betas_larger = beta_to_list[np.where(beta_to_list > b)]
+            #         betas_smaller = beta_to_list[np.where(beta_to_list < b)]
+            #         beta_below = betas_smaller[np.argmin(abs(betas_smaller - b))]
+            #         beta_above = betas_larger[np.argmin(abs(betas_larger - b))]
+            #         C_to_below = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_below) & (xls_df_to['Theta'] == 0)][dof])
+            #         C_to_above = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_above) & (xls_df_to['Theta'] == 0)][dof])
+            #         C_to = C_to_below + (b-beta_below) * (C_to_above - C_to_below) / (beta_above - beta_below)
+            #     scale_factor = C_to / C_from
+            #     final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
+            #     xls_df_svv.loc[xls_df_svv['Yaw'] == b, dof] *= final_factor
 
-    xls_df_svv['beta_rx0'] = beta_rx0
-    xls_df_svv['rx'] = rx
-    xls_df_svv['beta_svv'] = beta_svv
-    xls_df_svv['theta_svv'] = theta_svv
-    xls_df_svv['Cx_Ls'] = xls_df_svv.pop('CxTot')
-    xls_df_svv['Cy_Ls'] = xls_df_svv.pop('CyTot')
-    xls_df_svv['Cz_Ls'] = xls_df_svv.pop('CzTot')
-    xls_df_svv['Cxx_Ls'] = xls_df_svv.pop('CMxTot')
-    xls_df_svv['Cyy_Ls'] = xls_df_svv.pop('CMyTot')
-    xls_df_svv['Czz_Ls'] = xls_df_svv.pop('CMzTot')
-    xls_df_svv.rename(columns={'Yaw': 'beta_polimi', 'Theta': 'theta_polimi'}, inplace=True)
+            # METHOD 2: USE THIS ONE: Lin. interp. on both _from and _to. Sine Rule of the isolated TS-effect supports this.
+            for b in beta_from_list:
+                if b in beta_to_list:
+                    C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
+                    C_to = np.array(xls_df_to[(xls_df_to['Yaw'] == b) & (xls_df_to['Theta'] == 0)][dof])
+                else:  # We need to linearly interpolate the scaling of xls_df_from with the nearest values in xls_df_to
+                    betas_larger = beta_to_list[np.where(beta_to_list > b)]
+                    betas_smaller = beta_to_list[np.where(beta_to_list < b)]
+                    beta_below = betas_smaller[np.argmin(abs(betas_smaller - b))]
+                    beta_above = betas_larger[np.argmin(abs(betas_larger - b))]
+                    C_to_below = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_below) & (xls_df_to['Theta'] == 0)][dof])
+                    C_to_above = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_above) & (xls_df_to['Theta'] == 0)][dof])
+                    C_to = C_to_below + (b-beta_below) * (C_to_above - C_to_below) / (beta_above - beta_below)
+                    C_from_below = np.array(
+                        xls_df_from[(xls_df_from['Yaw'] == beta_below) & (xls_df_from['Theta'] == 0)][dof])
+                    C_from_above = np.array(
+                        xls_df_from[(xls_df_from['Yaw'] == beta_above) & (xls_df_from['Theta'] == 0)][dof])
+                    C_from = C_from_below + (b-beta_below) * (C_from_above - C_from_below) / (beta_above - beta_below)
+                scale_factor = C_to / C_from
+                final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
+                xls_df_svv.loc[xls_df_svv['Yaw'] == b, dof] *= final_factor
 
-    # Forcing coefficient that should be 0 to 0:
-    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Cx_Ls'] = 0  # Constr. No.1
-    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Cyy_Ls'] = 0  # Constr. No.1
-    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Czz_Ls'] = 0  # Constr. No.1
-    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Cy_Ls'] = 0  # Constr. No.2
-    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Cxx_Ls'] = 0  # Constr. No.2
-    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Czz_Ls'] = 0  # Constr. No.2
-    xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90)
-                   & (xls_df_svv['theta_polimi'] == 0), 'Cz_Ls'] = 0  # Constr. No.3
-    # # # THE FOLLOWING CODE (ADDING FAKE DATAPOINTS) WOULD CREATE NANs. INSTEAD, NEW CONSTRAINTS ARE USED (FOR Cz)
-    # # # (The fact that the fake datapoints are only added for Cz creates problems in the code)
-    # # Let's help the polynomial fits of Cz with CFD data. Multiply by 1.6 for increased conservativeness.
-    # # CFD values taken from here: "Skew aerodynamic coefficients for BJF FEED Phase - A description (Rev A).pdf".
-    # artificial_data_row = pd.DataFrame(
-    #     [{'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': -10, 'Cz_Ls': -0.0893 * 1.6},
-    #      {'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': 10,  'Cz_Ls': 0.09888 * 1.6}])
-    # xls_df_svv = pd.concat([xls_df_svv, artificial_data_row], ignore_index=True)
+            return xls_df_svv
 
-    with pd.ExcelWriter(xls_data_path, engine='openpyxl', mode="a", if_sheet_exists="replace") as writer:
-        xls_df_svv.to_excel(writer, sheet_name=out_sheet, index=False)
-    print(f'A new sheet {out_sheet}, with the SVV-adapted coefficients, as been created in {xls_data_path}')
+        if in_sheet == 'K12-G-L':  # Scaling the 'K12-G-L' coefficients to account for the traffic signs.
+            # The following corrections are described in the document "SVV supplementary analyses of Polimi's ..."
+            xls_df_svv = scale_coefs_between_2_sheets(xls_df_svv, xls_data_path, from_sheet='K12-G-L',
+                                                      to_sheet='K12-G-L-TS', dof='CxTot', factor_on_scale_factor=0.44)
+            xls_df_svv['CyTot'] = 1.014 * xls_df_svv['CyTot']  # Slightly increasing the Cy coefficient
+
+        def from_df_all_get_unique_value_given_key_and_id(df_all, key, run):
+            """with e.g. key='rx', run=211, get the 'rx' value of df_all where run=211, asserting uniqueness"""
+            value = df_all[key][df_all['id'] == run]
+            assert all_equal(value), ("For some strange reason, entries with the same id in df_all['id'] have "
+                                      "different 'key' values. Understand why before blindly using 1 value")
+            return value.unique()[0]
+
+        # Get pre-calculated angle info from df_all, given the unique 'run' id.
+        beta_rx0, rx, beta_svv, theta_svv = [], [], [], []
+        for i in xls_df_svv['run']:  # 'run' (Polimi notation) and 'id' (my notation) are the same thing
+            beta_rx0.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_rx0', run=i))
+            rx.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='rx', run=i))
+            beta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='beta_svv', run=i))
+            theta_svv.append(from_df_all_get_unique_value_given_key_and_id(df_all, key='theta_svv', run=i))
+
+        xls_df_svv['beta_rx0'] = beta_rx0
+        xls_df_svv['rx'] = rx
+        xls_df_svv['beta_svv'] = beta_svv
+        xls_df_svv['theta_svv'] = theta_svv
+        xls_df_svv['Cx_Ls'] = xls_df_svv.pop('CxTot')
+        xls_df_svv['Cy_Ls'] = xls_df_svv.pop('CyTot')
+        xls_df_svv['Cz_Ls'] = xls_df_svv.pop('CzTot')
+        xls_df_svv['Cxx_Ls'] = xls_df_svv.pop('CMxTot')
+        xls_df_svv['Cyy_Ls'] = xls_df_svv.pop('CMyTot')
+        xls_df_svv['Czz_Ls'] = xls_df_svv.pop('CMzTot')
+        xls_df_svv.rename(columns={'Yaw': 'beta_polimi', 'Theta': 'theta_polimi'}, inplace=True)
+
+        # Formatting changes, e.g. changing key names:
+        cols_to_del = ['CxL', 'CyL', 'CzL', 'CMxL', 'CMyL', 'CMzL', 'Cxi', 'Cyi', 'Czi', 'CMxi', 'CMyi', 'CMzi']
+        for c in cols_to_del:
+            del xls_df_svv[c]
+
+        # Forcing coefficient that should be 0 to 0:
+        xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Cx_Ls'] = 0  # Constr.1
+        xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Cyy_Ls'] = 0  # Constr.1
+        xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 0) | (xls_df_svv['beta_polimi'] == 180), 'Czz_Ls'] = 0  # Constr.1
+        xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Cy_Ls'] = 0  # Constr.2
+        xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Cxx_Ls'] = 0  # Constr.2
+        xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90), 'Czz_Ls'] = 0  # Constr.2
+        xls_df_svv.loc[(xls_df_svv['beta_polimi'] == 90) | (xls_df_svv['beta_polimi'] == -90)
+                       & (xls_df_svv['theta_polimi'] == 0), 'Cz_Ls'] = 0  # Constr. No.3
+        # # # THE FOLLOWING CODE (ADDING FAKE DATAPOINTS) WOULD CREATE NANs. INSTEAD, NEW CONSTRAINTS ARE USED (FOR Cz)
+        # # # (The fact that the fake datapoints are only added for Cz creates problems in the code)
+        # # Let's help the polynomial fits of Cz with CFD data. Multiply by 1.6 for increased conservativeness.
+        # # CFD values taken from here: "Skew aerodynamic coefficients for BJF FEED Phase - A description (Rev A).pdf".
+        # artificial_data_row = pd.DataFrame(
+        #     [{'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': -10, 'Cz_Ls': -0.0893 * 1.6},
+        #      {'Code': 'Phase7_CFD*1.6', 'beta_svv': 90, 'theta_svv': 10,  'Cz_Ls': 0.09888 * 1.6}])
+        # xls_df_svv = pd.concat([xls_df_svv, artificial_data_row], ignore_index=True)
+
+        with pd.ExcelWriter(xls_data_path, engine='openpyxl', mode="a", if_sheet_exists="replace") as writer:
+            xls_df_svv.to_excel(writer, sheet_name=out_sheet, index=False)
+        print(f'A new sheet {out_sheet}, with the SVV-adapted coefficients, as been created in {xls_data_path}')
 
 
 if __name__ == '__main__':  # If this is the file being run (instead of imported) then run the following functions
     # Getting all the raw data into one dictionary:
     raw_data_dict = get_raw_data_dict(raw_data_path)
-
     # Organizing the raw data into dataframes with similar data formats:
     dict_of_dfs = get_dfs_from_raw_data(raw_data_dict)
-
     # Compiling the data into one single dataframe:
     df_all = get_df_all(dict_of_dfs, save_csv=True)
-
     # Running a few checks:
     run_further_checks(df_all)
-
     # Creating a new sheet with the SVV-adapted aerodynamic coefficients:
     add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all)
 

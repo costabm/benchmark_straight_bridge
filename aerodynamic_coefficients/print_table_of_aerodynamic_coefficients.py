@@ -13,6 +13,9 @@ beta = rad(np.arange(-180, 180+beta_step, beta_step))
 theta = rad(np.arange(-12, 12+theta_step, theta_step))
 
 method = '2D_fit_cons_polimi'  # "2D_fit_cons_w_CFD_scale_to_Jul"
+
+# todo: implement methods for traffic T1 and T3! Perhaps also for all other cases
+
 coor_system = 'Ls'  # Ls or Gw
 n_aero_coef = 4  # Choose 4 to neglect Cry and Crz
 
