@@ -37,8 +37,6 @@ def plot_yaw_dependency_of_U_by_U_ceil():
                              'polimi', 'plots', 'U_dependency_on_the_yaw_angle.jpg'))
     plt.close()
 
-# plot_yaw_dependency_of_U_by_U_ceil()
-
 
 def plot_phase_7_vs_polimi_coefs(sheet_name):
     polimi_file_name = file_name
@@ -172,10 +170,17 @@ def plot_2_variants_of_polimi_coefs(sheet_1, sheet_2):
     plt.close()
 
 
+def plot_2nd_quadrant_polimi_coefs(xls_SVV, xls_Mil='ResultsCoefficients-Rev3', model_name='K12-G-L-TS'):
+    # Load results
+    dof = 'Cx'
+    path_data = os.path.join(folder_path, file_name)
+    df_SVV = pd.read_excel(io=path_data, sheet_name=sheet_1).dropna().sort_values(['Yaw', 'Theta'])
+
+
+
+# plot_yaw_dependency_of_U_by_U_ceil()
 plot_phase_7_vs_polimi_coefs(sheet_name=r'K12-G-L')
 plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-TS', sheet_2=r'K12-G-L')
 plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T1', sheet_2=r'K12-G-L')
 plot_2_variants_of_polimi_coefs(sheet_1=r'K12-G-L-T3', sheet_2=r'K12-G-L-T1')
 plot_2_variants_of_polimi_coefs(sheet_1=r'K12-AG-BAR', sheet_2=r'K12-AG-BAR')
-
-

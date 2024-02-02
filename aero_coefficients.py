@@ -38,7 +38,7 @@ import copy
 
 lst_methods = ['cos_rule', 'hybrid', 'table', '2D_fit_free', '2D_fit_cons', '2D_fit_cons_scale_to_Jul',
                '2D_fit_cons_w_CFD_scale_to_Jul', '2D_fit_free_polimi',
-               '2D_fit_cons_polimi-K12-G-L-SVV', '2D_fit_cons_polimi-K12-G-L-T1-SVV',
+               '2D_fit_cons_polimi-K12-G-L-TS-SVV', '2D_fit_cons_polimi-K12-G-L-T1-SVV',
                '2D_fit_cons_polimi-K12-G-L-T3-SVV', '2D_fit_cons_polimi-K12-G-L-CS-SVV']
 
 
@@ -134,7 +134,7 @@ def df_aero_coef_measurement_data(method):
         df = pd.concat([df, df_Jul])
 
     if polimi_only:
-        assert any([s in method for s in ['K12-G-L-SVV', 'K12-G-L-T1-SVV', 'K12-G-L-T3-SVV', 'K12-G-L-CS-SVV']]), \
+        assert any([s in method for s in ['K12-G-L-TS-SVV', 'K12-G-L-T1-SVV', 'K12-G-L-T3-SVV', 'K12-G-L-CS-SVV']]), \
             '"method" not covered'
         sheet_name = method.split('_polimi-')[1]  # use the last part of the method-string as the sheet name
         # Load results
@@ -171,7 +171,10 @@ def df_aero_coef_measurement_data(method):
 def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
               degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4],
                            '2D_fit_cons_scale_to_Jul':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_scale_to_Jul':[3,4,4,5,4,4],
-                           '2D_fit_cons_polimi-K12-G-L-SVV':[9,9,9,9,9,9], '2D_fit_free_polimi':[4,4,4,4,4,4]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]  BEST FIT FOR '2D_fit_cons_polimi' is [7,9,7,7,-,-]
+                           '2D_fit_cons_polimi-K12-G-L-TS-SVV':[9,9,9,9,9,9], '2D_fit_free_polimi':[4,4,4,4,4,4],
+                           '2D_fit_cons_polimi-K12-G-L-T1-SVV':[9,9,9,9,9,9],
+                           '2D_fit_cons_polimi-K12-G-L-T3-SVV':[9,9,9,9,9,9],
+                           '2D_fit_cons_polimi-K12-G-L-CS-SVV':[9,9,9,9,9,9]}):  # constr_fit_adjusted_degree_list=[3,5,5,5,4,4]  BEST FIT FOR '2D_fit_cons_polimi' is [7,9,7,7,-,-]
     """
     betas: 1D-array
     thetas: 1D-array (same size as betas)
@@ -516,7 +519,10 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
     if coor_system == 'Ls':
         if '2D_fit_free' in method:
             return C_Ci_Ls_2D_fit_free
-        elif method in ['2D_fit_cons', '2D_fit_cons_2', '2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted', '2D_fit_cons_scale_to_Jul', '2D_fit_cons_w_CFD_scale_to_Jul', '2D_fit_cons_polimi-K12-G-L-SVV']:
+        elif method in ['2D_fit_cons', '2D_fit_cons_2', '2D_fit_cons_w_CFD', '2D_fit_cons_w_CFD_adjusted',
+                        '2D_fit_cons_scale_to_Jul', '2D_fit_cons_w_CFD_scale_to_Jul',
+                        '2D_fit_cons_polimi-K12-G-L-TS-SVV', '2D_fit_cons_polimi-K12-G-L-T1-SVV',
+                        '2D_fit_cons_polimi-K12-G-L-T3-SVV', '2D_fit_cons_polimi-K12-G-L-CS-SVV']:
             return C_Ci_Ls_2D_fit_cons
         elif method in ['cos_rule','2D']:
             return C_Ci_Ls_cos

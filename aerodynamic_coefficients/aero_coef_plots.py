@@ -498,7 +498,7 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             plt.plot(deg(thetas), C_Ci_grid_flat_Ls[i], color=color_list[b_i], label=r'$\beta=$'+str(int(round(deg(beta),0)))+'$\degree$', alpha=0.8)  # , marker=marker_str_polimi[b_i],markevery=markevery, markersize=markersize_plt[b_i]*4, fillstyle='none')
             measured_label = 'Measured' if b_i == 1 else ''
 
-            if method in ['2D_fit_cons_polimi', '2D_fit_free_polimi', '2D_fit_cons_polimi-K12-G-L-SVV']:
+            if '_polimi' in method:
                 df = df_aero_coef_measurement_data(method)
                 betas_polimi, thetas_polimi = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
                 C_upscaled_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
@@ -507,15 +507,16 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
         y_label_str = [r'$C_{x}$', r'$C_{y}$', r'$C_{z}$', r'$C_{rx}$', r'$C_{ry}$', r'$C_{rz}$'][i]
         ax.set_ylabel(y_label_str)
         handles, labels = ax.get_legend_handles_labels()
-        handles[0], handles[1], handles[2] = handles[2], handles[0], handles[1]  # swapping
-        labels[0], labels[1], labels[2] = labels[2], labels[0], labels[1]  # swapping
+        handles.append(handles.pop(2))  # replacing the 3rd item ("Measured") to last
+        labels.append(labels.pop(2))  # replacing the 3rd item ("Measured") to last
 
         C_limits = [None,None,None,None,None,None]
         plt.ylim(C_limits[i])
         if zoom == 'in':
             plt.xticks(np.arange(-10, 10+0.01, 2))
-        ylims = [[-0.025, 0.001], [-0.04, 0.125], [-1.07, 0.60], [-0.165, 0.235], [None, None], [None, None]]
-        plt.ylim(ylims[i])
+        if method == '2D_fit_cons_polimi-K12-G-L-TS-SVV':
+            ylims = [[-0.025, 0.001], [-0.04, 0.125], [-1.07, 0.60], [-0.165, 0.235], [None, None], [None, None]]
+            plt.ylim(ylims[i])
         plt.xlim(xlims)
         plt.grid()
         plt.tight_layout()
@@ -525,15 +526,17 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
         # Plotting legend
         if i == 1:
             from matplotlib.legend_handler import HandlerTuple
-            plt.figure(figsize=(2, 3), dpi=1000)
+            plt.figure(figsize=(10, 0.8), dpi=1000)
             plt.axis("off")
-            plt.legend(handles, labels) #, handler_map={tuple: HandlerTuple(ndivide=None)})
+            plt.legend(handles, labels, ncol=6) #, handler_map={tuple: HandlerTuple(ndivide=None)})
             plt.tight_layout()
             plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
             plt.close()
-for d in [5]:  #[2,3,4,5,6,7,8,9]:
-    plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-SVV', idx_to_plot=[1, 2, 3], deg_list=[d, d, d, d, d, d], zoom='in')
-    # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-T1-SVV', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
+for d in [2]: #,3,4,5,6,7,8,9]:
+    plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-TS-SVV', idx_to_plot=[1], deg_list=[d,d,d,d,d,d], zoom='in')
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-T1-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-T3-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-CS-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
     # plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
 
 
@@ -562,7 +565,7 @@ def table_r_squared_polimi(deg_min=2, deg_max=9, method='2D_fit_cons_polimi', ex
     if export_table:
         df_table_r_squared.to_csv(os.path.join(root_dir, r'aerodynamic_coefficients/plots/table_r_squared_'+method+'.csv'))
     return table_r_squared, df_table_r_squared
-# table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_cons_polimi')
+# table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_cons_polimi-K12-G-L-TS-SVV')
 # table_r_squared, df_table_r_squared = table_r_squared_polimi(method='2D_fit_free_polimi')
 
 
