@@ -77,3 +77,10 @@ def flatten_nested_list(nested_list):
             result.append(element)
     return result
 
+
+def from_df_all_get_unique_value_given_key_and_id(df_all, key, run):
+    """with e.g. key='rx', run=211, get the 'rx' value of df_all where run=211, asserting uniqueness"""
+    value = df_all[key][df_all['id'] == run]
+    assert all_equal(value), ("For some strange reason, entries with the same id in df_all['id'] have "
+                              "different 'key' values. Understand why before blindly using 1 value")
+    return value.unique()[0]

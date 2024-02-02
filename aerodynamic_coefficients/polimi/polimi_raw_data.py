@@ -21,7 +21,7 @@ import os
 import numpy as np
 import matplotlib
 import scipy as sp
-from my_utils import root_dir, all_equal, flatten_nested_list, deg, rad
+from my_utils import root_dir, all_equal, flatten_nested_list, deg, rad, from_df_all_get_unique_value_given_key_and_id
 from transformations import beta_within_minus_Pi_and_Pi_func, beta_from_beta_rx0_and_rx, theta_from_beta_rx0_and_rx
 import pandas as pd
 import logging
@@ -317,13 +317,6 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
 
             xls_df_svv = xls_df_svv.copy()  # this is safer and avoids SettingWithWarning!
             xls_df_svv = filter_out_other_quadrants(xls_df_svv)
-
-            def from_df_all_get_unique_value_given_key_and_id(df_all, key, run):
-                """with e.g. key='rx', run=211, get the 'rx' value of df_all where run=211, asserting uniqueness"""
-                value = df_all[key][df_all['id'] == run]
-                assert all_equal(value), ("For some strange reason, entries with the same id in df_all['id'] have "
-                                          "different 'key' values. Understand why before blindly using 1 value")
-                return value.unique()[0]
 
             # Get pre-calculated angle info from df_all, given the unique 'run' id.
             beta_rx0, rx, beta_svv, theta_svv = [], [], [], []

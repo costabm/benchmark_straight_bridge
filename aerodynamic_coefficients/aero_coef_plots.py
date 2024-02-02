@@ -537,6 +537,7 @@ for d in [2]: #,3,4,5,6,7,8,9]:
     # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-T1-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
     # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-T3-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
     # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-CS-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
     # plot_2D_at_beta_fixed_polimi(method='2D_fit_free_polimi', idx_to_plot=[1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
 
 
