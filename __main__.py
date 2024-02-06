@@ -407,10 +407,12 @@ include_KG_cases = [True]  # include the effects of geometric stiffness (both in
 n_aero_coef_cases = [4]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
-aero_coef_method_cases = ['2D_fit_cons_w_CFD_scale_to_Jul']  #, '2D_fit_cons_w_CFD_scale_to_Jul']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', '2D_fit_cons_w_CFD_scale_to_Jul', 'cos_rule', '2D', or "benchmark", or "table"
+aero_coef_method_cases = ['cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx',
+                          'aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx',
+                          'aero_coefs_in_Ls_from_SOH_CFD_scaled_to_Julsund.xlsx']  #, '2D_fit_cons_w_CFD_scale_to_Jul']  # method of interpolation & extrapolation. '2D_fit_free', '2D_fit_cons', '2D_fit_cons_w_CFD_scale_to_Jul', 'cos_rule', '2D', or "benchmark", or "table"
 skew_approach_cases = ['3D']  # '3D', '2D', '2D+1D', '2D_cos_law'
 flutter_derivatives_type_cases = ['3D_full']  # '3D_full', '3D_Scanlan', '3D_Scanlan confirm', '3D_Zhu', '3D_Zhu_bad_P5', '2D_full','2D_in_plane'
-n_freq_cases = [4096]  # Use 4096 with 'equal_energy_bins' (torsion wasn't quite converged with new coefficients) or 1024*16 otherwise
+n_freq_cases = [1024]  # Use 4096 with 'equal_energy_bins' (torsion wasn't quite converged with new coefficients) or 1024*16 otherwise
 f_min_cases = [0.002]  # Hz. Use 0.002
 f_max_cases = [2]  # Hz. Use 0.5! important to not overstretch this parameter
 f_array_type_cases = ['equal_energy_bins']  # 'equal_width_bins', 'equal_energy_bins', 'logspace_base_n' where n is the base of the log

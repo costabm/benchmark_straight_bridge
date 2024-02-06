@@ -170,6 +170,44 @@ def df_aero_coef_measurement_data(method):
 
     return df
 
+
+def aero_coef_table_method(betas_extrap, thetas_extrap, method):
+    table_path = os.path.join(root_dir, 'aerodynamic_coefficients', 'tables', method)
+    betas_table = np.deg2rad(pd.read_excel(table_path, header=None, sheet_name='betas_deg').to_numpy())
+    thetas_table = np.deg2rad(pd.read_excel(table_path, header=None, sheet_name='thetas_deg').to_numpy())
+    C_Ci_Ls_table = np.array([
+        pd.read_excel(table_path, header=None, sheet_name='Cx').to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name='Cy').to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name='Cz').to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name='Crx').to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name='Cry').to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name='Crz').to_numpy()])
+    # NOTE THAT THE TABLE SHOULD BE C_Ci_Ls_table[:,::-1,:] SINCE THE THETAS WERE, IN THE ORIGINAL TABLE, IN DESCENDING ORDER, BUT ARE FORCED BY RectBivariateSpline to be ascending
+    C_C0_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table),
+                                                np.moveaxis(C_Ci_Ls_table[:, ::-1, :], 1, 2)[0], kx=1, ky=1)
+    C_C1_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table),
+                                                np.moveaxis(C_Ci_Ls_table[:, ::-1, :], 1, 2)[1], kx=1, ky=1)
+    C_C2_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table),
+                                                np.moveaxis(C_Ci_Ls_table[:, ::-1, :], 1, 2)[2], kx=1, ky=1)
+    C_C3_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table),
+                                                np.moveaxis(C_Ci_Ls_table[:, ::-1, :], 1, 2)[3], kx=1, ky=1)
+    C_C4_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table),
+                                                np.moveaxis(C_Ci_Ls_table[:, ::-1, :], 1, 2)[4], kx=1, ky=1)
+    C_C5_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table),
+                                                np.moveaxis(C_Ci_Ls_table[:, ::-1, :], 1, 2)[5], kx=1, ky=1)
+    C_Ci_Ls_table_interp = np.array(
+        [C_C0_func.ev(betas_extrap, thetas_extrap),  # .ev means "evaluate" the interpolation, at given points
+         C_C1_func.ev(betas_extrap, thetas_extrap),
+         C_C2_func.ev(betas_extrap, thetas_extrap),
+         C_C3_func.ev(betas_extrap, thetas_extrap),
+         C_C4_func.ev(betas_extrap, thetas_extrap),
+         C_C5_func.ev(betas_extrap, thetas_extrap)])
+
+    if method[:9] != 'cos_rule_':  # If it starts with cos_rule
+        raise NotImplementedError
+    return C_Ci_Ls_table_interp
+
+
 def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
               degree_list={'2D_fit_free':[2,2,1,1,3,4], '2D_fit_cons':[3,4,4,4,4,4],
                            '2D_fit_cons_scale_to_Jul':[3,4,4,4,4,4], '2D_fit_cons_w_CFD_scale_to_Jul':[3,4,4,5,4,4],
@@ -205,31 +243,9 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
     if len(np.shape(betas_extrap)) != 1 or len(np.shape(thetas_extrap)) != 1:
         raise TypeError('Input should be 1D array')
 
-    if method == 'table':
-        betas_table = np.deg2rad(pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='betas_deg').to_numpy())
-        thetas_table = np.deg2rad(pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='thetas_deg').to_numpy())
-        C_Ci_Ls_table = np.array([
-            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Cx').to_numpy(),
-            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Cy').to_numpy(),
-            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Cz').to_numpy(),
-            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Crx').to_numpy(),
-            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Cry').to_numpy(),
-            pd.read_excel(r'aerodynamic_coefficients\aero_coefs_ready_for_table_method.xlsx', header=None, sheet_name='Crz').to_numpy()])
-        # NOTE THAT THE TABLE SHOULD BE C_Ci_Ls_table[:,::-1,:] SINCE THE THETAS WERE, IN THE ORIGINAL TABLE, IN DESCENDING ORDER, BUT ARE FORCED BY RectBivariateSpline to be ascending
-        C_C0_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[0], kx=1, ky=1)
-        C_C1_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[1], kx=1, ky=1)
-        C_C2_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[2], kx=1, ky=1)
-        C_C3_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[3], kx=1, ky=1)
-        C_C4_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[4], kx=1, ky=1)
-        C_C5_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table), np.moveaxis(C_Ci_Ls_table[:,::-1,:], 1, 2)[5], kx=1, ky=1)
-        C_Ci_Ls_table_interp = np.array(
-            [C_C0_func.ev(betas_extrap, thetas_extrap),  # .ev means "evaluate" the interpolation, at given points
-             C_C1_func.ev(betas_extrap, thetas_extrap),
-             C_C2_func.ev(betas_extrap, thetas_extrap),
-             C_C3_func.ev(betas_extrap, thetas_extrap),
-             C_C4_func.ev(betas_extrap, thetas_extrap),
-             C_C5_func.ev(betas_extrap, thetas_extrap)])
-        return C_Ci_Ls_table_interp
+    if method[-5:] == '.xlsx':  # then READ AN EXCEL TABLE with this name
+        assert coor_system == 'Ls'
+        return aero_coef_table_method(betas_extrap, thetas_extrap, method)
 
     # ELSE, if not 'table':
     # Importing input data
@@ -243,6 +259,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
     Cxx_Ls = df['Cxx_Ls'].to_numpy()
     Cyy_Ls = df['Cyy_Ls'].to_numpy()
     Czz_Ls = df['Czz_Ls'].to_numpy()
+
 
     # Converting all [-180,180] angles into equivalent [0,90] angles. The sign information outside [0,90] is lost and stored manually for each coefficient. Assumes symmetric cross-section.
     size = len(betas_extrap)

@@ -402,6 +402,23 @@ def add_sheet_with_svv_adapted_aero_coefs(xls_data_path, df_all):
                 beta_from_list = np.unique(xls_df_from['Yaw'])
                 beta_to_list = np.unique(xls_df_to['Yaw'])
 
+                # # "Alternative 1": Do NOT use.
+                # for b in beta_from_list:
+                #     C_from = np.array(xls_df_from[(xls_df_from['Yaw'] == b) & (xls_df_from['Theta'] == 0)][dof])
+                #     if b in beta_to_list:
+                #         C_to = np.array(xls_df_to[(xls_df_to['Yaw'] == b) & (xls_df_to['Theta'] == 0)][dof])
+                #     else:  # We need to linearly interpolate the scaling of xls_df_from with the nearest values in xls_df_to
+                #         betas_larger = beta_to_list[np.where(beta_to_list > b)]
+                #         betas_smaller = beta_to_list[np.where(beta_to_list < b)]
+                #         beta_below = betas_smaller[np.argmin(abs(betas_smaller - b))]
+                #         beta_above = betas_larger[np.argmin(abs(betas_larger - b))]
+                #         C_to_below = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_below) & (xls_df_to['Theta'] == 0)][dof])
+                #         C_to_above = np.array(xls_df_to[(xls_df_to['Yaw'] == beta_above) & (xls_df_to['Theta'] == 0)][dof])
+                #         C_to = C_to_below + (b-beta_below) * (C_to_above - C_to_below) / (beta_above - beta_below)
+                #     scale_factor = C_to / C_from
+                #     final_factor = 1 + (scale_factor - 1) * factor_on_scale_factor
+                #     xls_df_svv.loc[xls_df_svv['Yaw'] == b, dof] *= final_factor
+
                 # "Alternative 2": Lin. interp. on both _from and _to. Sine Rule of the isolated TS-effect supports this.
                 for b in beta_from_list:
                     if b in beta_to_list:
