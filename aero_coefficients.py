@@ -171,6 +171,49 @@ def df_aero_coef_measurement_data(method):
     return df
 
 
+def get_C_signs_and_change_betas_extrap(betas_extrap):
+    # Converting all [-180,180] angles into equivalent [0,90] angles. The sign information outside [0,90] is lost and stored manually for each coefficient. Assumes symmetric cross-section.
+    size = len(betas_extrap)
+    Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = np.zeros((6, size))
+    # Signs for axes in Ls.
+    for b in range(size):
+        if rad(0) <= betas_extrap[b] <= rad(90):  # all other intervals will be transformations to this one
+            Cx_sign[b] = 1
+            Cy_sign[b] = 1
+            Cz_sign[b] = 1
+            Cxx_sign[b] = 1
+            Cyy_sign[b] = 1
+            Czz_sign[b] = 1
+        elif rad(90) < betas_extrap[b] <= rad(180):
+            betas_extrap[b] = rad(180) - betas_extrap[b]  # if beta = 110, then becomes 180-110=70
+            # the following signs will conserve the fact that beta was in another quadrant.
+            Cx_sign[b] = 1
+            Cy_sign[b] = -1
+            Cz_sign[b] = 1
+            Cxx_sign[b] = -1
+            Cyy_sign[b] = 1
+            Czz_sign[b] = -1
+        elif -rad(90) <= betas_extrap[b] < 0:
+            betas_extrap[b] = -betas_extrap[b]  # if beta = -60, then becomes 60
+            # the following signs will conserve the fact that beta was in another quadrant.
+            Cx_sign[b] = -1
+            Cy_sign[b] = 1
+            Cz_sign[b] = 1
+            Cxx_sign[b] = 1
+            Cyy_sign[b] = -1
+            Czz_sign[b] = -1
+        elif -rad(180) <= betas_extrap[b] < -rad(90):
+            betas_extrap[b] = rad(180) + betas_extrap[b]  # if beta = -160, then becomes 180+(-160)=20
+            # the following signs will conserve the fact that beta was in another quadrant.
+            Cx_sign[b] = -1
+            Cy_sign[b] = -1
+            Cz_sign[b] = 1
+            Cxx_sign[b] = -1
+            Cyy_sign[b] = -1
+            Czz_sign[b] = 1
+    return betas_extrap, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign
+
+
 def aero_coef_table_method(betas_extrap, thetas_extrap, method):
     table_path = os.path.join(root_dir, 'aerodynamic_coefficients', 'tables', method)
     betas_table = np.deg2rad(pd.read_excel(table_path, header=None, sheet_name='betas_deg').to_numpy())
@@ -203,8 +246,6 @@ def aero_coef_table_method(betas_extrap, thetas_extrap, method):
          C_C4_func.ev(betas_extrap, thetas_extrap),
          C_C5_func.ev(betas_extrap, thetas_extrap)])
 
-    if method[:9] != 'cos_rule_':  # If it starts with cos_rule
-        raise NotImplementedError
     return C_Ci_Ls_table_interp
 
 
@@ -243,55 +284,29 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
     if len(np.shape(betas_extrap)) != 1 or len(np.shape(thetas_extrap)) != 1:
         raise TypeError('Input should be 1D array')
 
+    size = len(betas_extrap)
+
     # IF TABLE:
     if method[-5:] == '.xlsx':
         assert coor_system == 'Ls'
-        return aero_coef_table_method(betas_extrap, thetas_extrap, method)
+        if not method[:8] == 'cos_rule':  # NO cosine rule
+            return aero_coef_table_method(betas_extrap, thetas_extrap, method)
+        else:  # COSINE RULE
+            assert method[:9] == 'cos_rule_'
+            # Get coefficient signs.
+            _, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = get_C_signs_and_change_betas_extrap(betas_extrap)
+            zeros = np.zeros(size)
+            table_name = method[9:]
+            C_Ci_Ls_table_interp_beta0 = aero_coef_table_method(zeros, thetas_extrap, method=table_name)
+            C_Ci_Ls_table_interp_beta0 = np.array([zeros,
+                                                   C_Ci_Ls_table_interp_beta0[1]*Cy_sign,
+                                                   C_Ci_Ls_table_interp_beta0[2]*Cz_sign,
+                                                   C_Ci_Ls_table_interp_beta0[3]*Cxx_sign,
+                                                   zeros,
+                                                   zeros])
+            return C_Ci_Ls_table_interp_beta0 * np.cos(betas_extrap)**2
 
-    def get_C_signs_and_change_betas_extrap(betas_extrap):
-        # Converting all [-180,180] angles into equivalent [0,90] angles. The sign information outside [0,90] is lost and stored manually for each coefficient. Assumes symmetric cross-section.
-        size = len(betas_extrap)
-        Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = np.zeros((6, size))
-        # Signs for axes in Ls.
-        for b in range(size):
-            if rad(0) <= betas_extrap[b] <= rad(90):  # all other intervals will be transformations to this one
-                Cx_sign[b] = 1
-                Cy_sign[b] = 1
-                Cz_sign[b] = 1
-                Cxx_sign[b] = 1
-                Cyy_sign[b] = 1
-                Czz_sign[b] = 1
-            elif rad(90) < betas_extrap[b] <= rad(180):
-                betas_extrap[b] = rad(180) - betas_extrap[b]  # if beta = 110, then becomes 180-110=70
-                # the following signs will conserve the fact that beta was in another quadrant.
-                Cx_sign[b] = 1
-                Cy_sign[b] = -1
-                Cz_sign[b] = 1
-                Cxx_sign[b] = -1
-                Cyy_sign[b] = 1
-                Czz_sign[b] = -1
-            elif -rad(90) <= betas_extrap[b] < 0:
-                betas_extrap[b] = -betas_extrap[b]  # if beta = -60, then becomes 60
-                # the following signs will conserve the fact that beta was in another quadrant.
-                Cx_sign[b] = -1
-                Cy_sign[b] = 1
-                Cz_sign[b] = 1
-                Cxx_sign[b] = 1
-                Cyy_sign[b] = -1
-                Czz_sign[b] = -1
-            elif -rad(180) <= betas_extrap[b] < -rad(90):
-                betas_extrap[b] = rad(180) + betas_extrap[b]  # if beta = -160, then becomes 180+(-160)=20
-                # the following signs will conserve the fact that beta was in another quadrant.
-                Cx_sign[b] = -1
-                Cy_sign[b] = -1
-                Cz_sign[b] = 1
-                Cxx_sign[b] = -1
-                Cyy_sign[b] = -1
-                Czz_sign[b] = 1
-        return betas_extrap, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign
-
-    betas_extrap, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = get_C_signs_and_change_betas_extrap(betas_extrap)
-
+    # If NOT TABLE
     # Importing input data
     df = df_aero_coef_measurement_data(method)
 
@@ -303,6 +318,9 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
     Cxx_Ls = df['Cxx_Ls'].to_numpy()
     Cyy_Ls = df['Cyy_Ls'].to_numpy()
     Czz_Ls = df['Czz_Ls'].to_numpy()
+
+    # Get coefficient signs and then change all betas back to the 0-90 quadrant.
+    betas_extrap, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = get_C_signs_and_change_betas_extrap(betas_extrap)
 
     # Input data and desired output coordinates (betas and thetas)
     data_in_Cx_Ls = np.array([betas_SOH, thetas_SOH, Cx_Ls])
