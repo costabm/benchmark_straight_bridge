@@ -15,7 +15,7 @@ import numpy as np
 ########################################################################################################################
 # Floating bridge Properties:
 ########################################################################################################################
-R = 5000000  # m. Horizontal radius of the bridge. (R = 5000 for Bjornafjorden. R = 5000000 for almost straight)
+R = 1000  # m. Horizontal radius of the bridge. (R = 5000 for Bjornafjorden. R = 5000000 for almost straight)
 arc_length = 1000  # m. Arc length of the bridge. (arc_length = 5000 for Bjornafjorden)
 pontoons_s = np.cumsum([100]*9)  # Total of 49 pontoons: np.cumsum([100]*49)
 zbridge = 20  # m. (deck height above water, measured at the Shear Centre!)

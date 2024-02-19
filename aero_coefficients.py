@@ -40,8 +40,10 @@ lst_methods = ['cos_rule', 'hybrid', 'table', '2D_fit_free', '2D_fit_cons', '2D_
                '2D_fit_cons_w_CFD_scale_to_Jul', '2D_fit_free_polimi',
                '2D_fit_cons_polimi-K12-G-L-TS-SVV', '2D_fit_cons_polimi-K12-G-L-T1-SVV',
                '2D_fit_cons_polimi-K12-G-L-T3-SVV', '2D_fit_cons_polimi-K12-G-L-CS-SVV',
-               '2D_fit_cons_polimi-K12-G-L-SVV']
-
+               '2D_fit_cons_polimi-K12-G-L-SVV',
+               'aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx',
+               'cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx',
+               'aero_coefs_in_Ls_from_SOH_CFD_scaled_to_Julsund.xlsx']
 
 # Factor for when using aero_coef_method == '2D_fit_cons_w_CFD_adjusted':
 Cx_factor = 2.0  # To make CFD results conservative, better match SOH and reflect friction and other bridge equipment

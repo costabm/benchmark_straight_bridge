@@ -459,9 +459,16 @@ def plot_2D_at_beta_fixed(method='2D_fit_cons', idx_to_plot=[0,1,2,3,4,5], plot_
 # plot_2D_at_beta_fixed(method='2D', idx_to_plot=[1,2,3], plot_other_bridges=False)
 # plot_2D_at_beta_fixed(method='cos_rule', idx_to_plot=[1,2,3], plot_other_bridges=False)
 
-def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2,3,4,5], deg_list=None, zoom='in'):
-    if deg_list is None:
-        deg_list = aero_coef.__defaults__[0][method]  # retrieving the default parameter values :)
+def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0, 1, 2, 3, 4, 5], deg_list=None, zoom='in',
+                                 beta_list=rad(np.array([0, 10, 20, 30, 40, 50, 60, 70, 80, 90]))):
+    if method[-5:] == '.xlsx':
+        method_is_table = True
+        method_behind_table = (method.split('aero_coefs_Ls_')[1]).split('.xlsx')[0]
+        assert deg_list is None
+    else:
+        method_is_table = False
+        if deg_list is None:
+            deg_list = aero_coef.__defaults__[0][method]  # retrieving the default parameter values :)
     # ZOOM IN GRAPH
     # Tested Domain
     if zoom == 'in':
@@ -472,7 +479,6 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
         theta_angle_step = 1  # in degrees.
         thetas = np.arange(rad(-89.99), rad(89.99) + rad(theta_angle_step) * 0.012345, rad(theta_angle_step))
         xlims = [-91, 91]
-    beta_list = rad(np.array([0, 10, 20, 30, 40, 50, 60, 70, 80, 90]))
     n_betas = len(beta_list)
     from matplotlib.rcsetup import cycler
 
@@ -499,41 +505,60 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0,1,2
             measured_label = 'Measured' if b_i == 1 else ''
 
             if '_polimi' in method:
-                df = df_aero_coef_measurement_data(method)
+                if method_is_table:  # then the method is table. But we want to plot the raw wind tunnel data, so we go get it from the method_behind_table which was previously used to arrive at the table at hand.
+                    df = df_aero_coef_measurement_data(method_behind_table)
+                else:
+                    df = df_aero_coef_measurement_data(method)
                 betas_polimi, thetas_polimi = rad(df['beta[deg]'].to_numpy()), rad(df['theta[deg]'].to_numpy())
                 C_upscaled_Ls = np.array([df['Cx_Ls'], df['Cy_Ls'], df['Cz_Ls'], df['Cxx_Ls'], df['Cyy_Ls'], df['Czz_Ls']])
-                empty_ax_polimi[b_i] = plt.scatter(deg(thetas_polimi[np.where(np.isclose(betas_polimi, beta, atol=rad(2)))]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_polimi,beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
+                empty_ax_polimi[b_i] = plt.scatter(deg(thetas_polimi[np.where(np.isclose(betas_polimi, beta, atol=rad(2)))]).tolist(),     C_upscaled_Ls[i, np.where(np.isclose(betas_polimi, beta, atol=rad(2)))][0].tolist(), alpha=0.8, label=measured_label, color=color_list[b_i], marker=marker_list[b_i], s=markersize_list[b_i], edgecolors='none')
         ax.set_xlabel(r'$\theta\/[\degree]$')
         y_label_str = [r'$C_{x}$', r'$C_{y}$', r'$C_{z}$', r'$C_{rx}$', r'$C_{ry}$', r'$C_{rz}$'][i]
         ax.set_ylabel(y_label_str)
         handles, labels = ax.get_legend_handles_labels()
-        handles.append(handles.pop(2))  # replacing the 3rd item ("Measured") to last
-        labels.append(labels.pop(2))  # replacing the 3rd item ("Measured") to last
+        if len(beta_list) > 3:
+            handles.append(handles.pop(2))  # replacing the 3rd item ("Measured") to last
+            labels.append(labels.pop(2))  # replacing the 3rd item ("Measured") to last
 
         C_limits = [None,None,None,None,None,None]
         plt.ylim(C_limits[i])
         if zoom == 'in':
             plt.xticks(np.arange(-10, 10+0.01, 2))
-        if method == '2D_fit_cons_polimi-K12-G-L-TS-SVV':
+        if '2D_fit_cons_polimi-K12-G-L-TS-SVV' in method:
             ylims = [[-0.025, 0.001], [-0.04, 0.125], [-1.07, 0.60], [-0.165, 0.235], [None, None], [None, None]]
             plt.ylim(ylims[i])
         plt.xlim(xlims)
         plt.grid()
         plt.tight_layout()
-        plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/2D_beta_fixed_' + method + '_' + str(i) + f'_deg_{deg_list[i]}' + '.jpg'))
+        # File name
+        fig_path_name = r'aerodynamic_coefficients/plots/2D_beta_fixed_'
+        if len(beta_list) == 1:
+            assert beta_list[0] == 0
+            fig_path_name += 'at_0_'
+        if method_is_table:
+            fig_path_name += 'xlsx_' + method.split('.xlsx')[0] + "_dof_" + str(i) + '.jpg'
+        else:
+            fig_path_name += method + '_dof_' + str(i) + f'_deg_{deg_list[i]}' + '.jpg'
+        plt.savefig(os.path.join(root_dir, fig_path_name))
         plt.close()
 
         # Plotting legend
+        legend_path_name = fig_path_name.split(r'2D_beta_fixed_')[0] + 'legend_2D_beta_fixed_' + fig_path_name.split(r'2D_beta_fixed_')[1]
         if i == 1:
             from matplotlib.legend_handler import HandlerTuple
             plt.figure(figsize=(10, 0.8), dpi=1000)
             plt.axis("off")
             plt.legend(handles, labels, ncol=6) #, handler_map={tuple: HandlerTuple(ndivide=None)})
             plt.tight_layout()
-            plt.savefig(os.path.join(root_dir, r'aerodynamic_coefficients/plots/legend_2D_beta_fixed_' + method + '.jpg'))
+            plt.savefig(os.path.join(root_dir, legend_path_name))
             plt.close()
-for d in [2]: #,3,4,5,6,7,8,9]:
-    plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-TS-SVV', idx_to_plot=[1], deg_list=[d,d,d,d,d,d], zoom='in')
+
+plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in', beta_list=rad(np.array([0])))
+plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in')
+plot_2D_at_beta_fixed_polimi(method='cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in')
+
+# for d in [2]: #,3,4,5,6,7,8,9]:
+    # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-TS-SVV', idx_to_plot=[1], deg_list=[d,d,d,d,d,d], zoom='in')
     # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-T1-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
     # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-T3-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
     # plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi-K12-G-L-CS-SVV', idx_to_plot=[0,1,2,3], deg_list=[d,d,d,d,d,d], zoom='in')
