@@ -43,7 +43,8 @@ lst_methods = ['cos_rule', 'hybrid', 'table', '2D_fit_free', '2D_fit_cons', '2D_
                '2D_fit_cons_polimi-K12-G-L-SVV',
                'aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx',
                'cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx',
-               'aero_coefs_in_Ls_from_SOH_CFD_scaled_to_Julsund.xlsx']
+               'aero_coefs_in_Ls_from_SOH_CFD_scaled_to_Julsund.xlsx',
+               'aero_coefs_Gw_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx']
 
 # Factor for when using aero_coef_method == '2D_fit_cons_w_CFD_adjusted':
 Cx_factor = 2.0  # To make CFD results conservative, better match SOH and reflect friction and other bridge equipment
@@ -216,17 +217,22 @@ def get_C_signs_and_change_betas_extrap(betas_extrap):
     return betas_extrap, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign
 
 
-def aero_coef_table_method(betas_extrap, thetas_extrap, method):
+def aero_coef_table_method(betas_extrap, thetas_extrap, method, coor_system):
+    assert coor_system in ['Ls', 'Gw']
     table_path = os.path.join(root_dir, 'aerodynamic_coefficients', 'tables', method)
     betas_table = np.deg2rad(pd.read_excel(table_path, header=None, sheet_name='betas_deg').to_numpy())
     thetas_table = np.deg2rad(pd.read_excel(table_path, header=None, sheet_name='thetas_deg').to_numpy())
+    if coor_system == 'Ls':
+        sheet_names = ['Cx', 'Cy', 'Cz', 'Crx', 'Cry', 'Crz']
+    elif coor_system == 'Gw':
+        sheet_names = ['CXu', 'CYv', 'CZw', 'CrXu', 'CrYv', 'CrZw']
     C_Ci_Ls_table = np.array([
-        pd.read_excel(table_path, header=None, sheet_name='Cx').to_numpy(),
-        pd.read_excel(table_path, header=None, sheet_name='Cy').to_numpy(),
-        pd.read_excel(table_path, header=None, sheet_name='Cz').to_numpy(),
-        pd.read_excel(table_path, header=None, sheet_name='Crx').to_numpy(),
-        pd.read_excel(table_path, header=None, sheet_name='Cry').to_numpy(),
-        pd.read_excel(table_path, header=None, sheet_name='Crz').to_numpy()])
+        pd.read_excel(table_path, header=None, sheet_name=sheet_names[0]).to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name=sheet_names[1]).to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name=sheet_names[2]).to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name=sheet_names[3]).to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name=sheet_names[4]).to_numpy(),
+        pd.read_excel(table_path, header=None, sheet_name=sheet_names[5]).to_numpy()])
     # NOTE THAT THE TABLE SHOULD BE C_Ci_Ls_table[:,::-1,:] SINCE THE THETAS WERE, IN THE ORIGINAL TABLE, IN DESCENDING ORDER, BUT ARE FORCED BY RectBivariateSpline to be ascending
     C_C0_func = interpolate.RectBivariateSpline(np.unique(betas_table), np.unique(thetas_table),
                                                 np.moveaxis(C_Ci_Ls_table[:, ::-1, :], 1, 2)[0], kx=1, ky=1)
@@ -290,23 +296,30 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
 
     # IF TABLE:
     if method[-5:] == '.xlsx':
-        assert coor_system == 'Ls'
         if not method[:8] == 'cos_rule':  # NO cosine rule
-            return aero_coef_table_method(betas_extrap, thetas_extrap, method)
+            return aero_coef_table_method(betas_extrap, thetas_extrap, method, coor_system)
         else:  # COSINE RULE
             assert method[:9] == 'cos_rule_'
-            # Get coefficient signs.
-            _, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = get_C_signs_and_change_betas_extrap(betas_extrap)
+            # Get the table in Ls coordinates (must exist first!). Only then, if necessary, transform to Gw coordinates.
+            _, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign = get_C_signs_and_change_betas_extrap(betas_extrap)  # Get coefficient signs.
             zeros = np.zeros(size)
             table_name = method[9:]
-            C_Ci_Ls_table_interp_beta0 = aero_coef_table_method(zeros, thetas_extrap, method=table_name)
+            table_name_Ls = table_name.replace('_Gw_', '_Ls_')
+            C_Ci_Ls_table_interp_beta0 = aero_coef_table_method(zeros, thetas_extrap, method=table_name_Ls, coor_system="Ls")
             C_Ci_Ls_table_interp_beta0 = np.array([zeros,
                                                    C_Ci_Ls_table_interp_beta0[1]*Cy_sign,
                                                    C_Ci_Ls_table_interp_beta0[2]*Cz_sign,
                                                    C_Ci_Ls_table_interp_beta0[3]*Cxx_sign,
                                                    zeros,
                                                    zeros])
-            return C_Ci_Ls_table_interp_beta0 * np.cos(betas_extrap)**2
+            C_Ci_Ls_cos_rule = C_Ci_Ls_table_interp_beta0 * np.cos(betas_extrap) ** 2
+            if coor_system == 'Ls':
+                return C_Ci_Ls_cos_rule
+            elif coor_system == 'Gw':
+                T_GwLs = np.transpose(T_LsGw_func(betas_extrap, thetas_extrap, dim='6x6'), axes=(0, 2, 1))
+                C_Ci_Gw_cos_rule = np.einsum('nij,jn->in', T_GwLs, C_Ci_Ls_cos_rule, optimize=True)  # todo: confirm subscripts
+                return C_Ci_Gw_cos_rule
+
 
     # If NOT TABLE
     # Importing input data
