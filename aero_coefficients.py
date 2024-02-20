@@ -317,7 +317,7 @@ def aero_coef(betas_extrap, thetas_extrap, method, coor_system,
                 return C_Ci_Ls_cos_rule
             elif coor_system == 'Gw':
                 T_GwLs = np.transpose(T_LsGw_func(betas_extrap, thetas_extrap, dim='6x6'), axes=(0, 2, 1))
-                C_Ci_Gw_cos_rule = np.einsum('nij,jn->in', T_GwLs, C_Ci_Ls_cos_rule, optimize=True)  # todo: confirm subscripts
+                C_Ci_Gw_cos_rule = np.einsum('nij,jn->in', T_GwLs, C_Ci_Ls_cos_rule, optimize=True)
                 return C_Ci_Gw_cos_rule
 
 
