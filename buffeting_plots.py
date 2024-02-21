@@ -1,7 +1,7 @@
 import json
 import numpy as np
 import scipy.stats
-from buffeting import beta_DB_func
+from buffeting import beta_DB_func, beta_0_func
 # from create_minigrid_data_from_raw_WRF_500_data import lat_lon_aspect_ratio, bridge_WRF_nodes_coor_func
 from straight_bridge_geometry import g_node_coor, p_node_coor, g_s_3D_func
 from my_utils import normalize
@@ -11,6 +11,7 @@ from matplotlib import colors
 import copy
 import pandas as pd
 import sympy
+import openpyxl
 import os
 
 def rad(deg):
@@ -387,10 +388,63 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
         table_max_diff_all_betas.to_csv(r'results\Table_of_the_maximum_difference_for_pairs_of_cases_' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
 
 
-response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='static', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
-response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='buffeting', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
-# response_polar_plots(symmetry_180_shifts=False, error_bars=False, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
-# response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'make_M_C_freq_dep', 'beta_DB'])
+# response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='static', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
+# response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='buffeting', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
+# # response_polar_plots(symmetry_180_shifts=False, error_bars=False, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
+# # response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'make_M_C_freq_dep', 'beta_DB'])
+
+
+def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, method_2):
+    """
+    Produces a table comparing the relative changes in response from method_1 to method_2
+    """
+    df = pd.read_csv(in_csv_path)
+    beta_DB = df[df['Method'] == method_1]['beta_DB']
+    beta_0 = beta_0_func(beta_DB)
+    df_out_3 = pd.DataFrame({'beta_DB': beta_DB, 'beta_0': beta_0})  # named 3, instead of 1, to not confuse w/ method 1
+    df_out_4 = pd.DataFrame({'keys':['diff_of_max', 'max_1', 'max_2', 'beta_max_1', 'beta_max_2',
+                                     'max_of_diff', 'beta_max_of_diff']})  # named 4, instead of 2, to not confuse w/ method 2
+
+    for type in ['static_max_dof_', 'std_max_dof_']:
+        for d in ["0","1","2","3","4","5"]:
+            # Getting difference of the two maximums (diff between max of method 1 and max of method 2)
+            dof = type+d
+            resp_1 = np.array(df[df['Method'] == method_1][dof])
+            resp_2 = np.array(df[df['Method'] == method_2][dof])
+            rel_change = (resp_2 - resp_1) / np.abs(resp_1)
+            df_out_3[f'diff_{dof}'] = rel_change
+            idx_absmax_1 = df[df['Method'] == method_1][dof].abs().idxmax()
+            idx_absmax_2 = df[df['Method'] == method_2][dof].abs().idxmax()
+            absmax_1 = df[df['Method'] == method_1][dof][idx_absmax_1]
+            absmax_2 = df[df['Method'] == method_2][dof][idx_absmax_2]
+            beta_absmax_1 = df[df['Method'] == method_1]['beta_DB'][idx_absmax_1]
+            beta_absmax_2 = df[df['Method'] == method_2]['beta_DB'][idx_absmax_2]
+            diff_of_absmax = (absmax_2 - absmax_1) / np.abs(absmax_1)
+            idx_absmax_of_diff = df_out_3[f'diff_{dof}'].abs().idxmax()
+            absmax_of_diff = df_out_3[f'diff_{dof}'][idx_absmax_of_diff]  # Less relevant: Getting maximum of the all differences (one difference per beta)
+            beta_absmax_of_diff = df_out_3['beta_DB'][idx_absmax_of_diff]
+
+            df_out_4[dof] = [diff_of_absmax, absmax_1, absmax_2, beta_absmax_1, beta_absmax_2,
+                             absmax_of_diff, beta_absmax_of_diff]
+
+
+    with pd.ExcelWriter(out_csv_path, engine='openpyxl') as writer:
+        df_out_3.to_excel(writer, sheet_name='all_angles')
+        df_out_4.to_excel(writer, sheet_name='summary')
+
+
+produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\standard straight bridge\FD_std_delta_max_2024-02-06_18-27-22.csv",
+                                       out_csv_path = r'results\compare_response_differences_straight.xlsx',
+                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
+produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\R 500\FD_std_delta_max_2024-02-06_20-27-35.csv",
+                                       out_csv_path = r'results\compare_response_differences_R500.xlsx',
+                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
+produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\R 1000\FD_std_delta_max_2024-02-06_21-42-32.csv",
+                                       out_csv_path = r'results\compare_response_differences_R1000.xlsx',
+                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
 
 
 def plot_contourf_spectral_response(f_array, S_delta_local, g_node_coor, S_by_freq_unit='rad', zlims_bool=False, cbar_extend='min', filename='Contour_', idx_plot=[1,2,3]):

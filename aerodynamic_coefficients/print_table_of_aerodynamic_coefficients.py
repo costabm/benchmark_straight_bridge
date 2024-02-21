@@ -12,10 +12,10 @@ theta_step = 1  # deg
 beta = rad(np.arange(-180, 180+beta_step, beta_step))
 theta = rad(np.arange(-12, 12+theta_step, theta_step))
 
-method = '2D_fit_cons_polimi-K12-G-L-TS-SVV'  # "2D_fit_cons_w_CFD_scale_to_Jul"
+method = '2D_fit_cons_polimi-K12-G-L-TS-SVV'  # 'cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx' # "2D_fit_cons_w_CFD_scale_to_Jul"
 # method = '2D_fit_cons_polimi-K12-G-L-SVV'  # "2D_fit_cons_w_CFD_scale_to_Jul"
 
-coor_system = 'Gw'  # Ls or Gw
+coor_system = 'Ls'  # Ls or Gw
 n_aero_coef = 4  # Choose 4 to neglect Cry and Crz
 
 if coor_system == 'Ls':
