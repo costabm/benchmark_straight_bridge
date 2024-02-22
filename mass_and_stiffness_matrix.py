@@ -511,7 +511,7 @@ def stiff_matrix_func(g_node_coor, p_node_coor, alpha):
         matrix[6*(g_node_num + p):6 * (g_node_num + p) + 6, 6 * (g_node_num + p):6 * (g_node_num + p) + 6] += p_stiff_global[p]
     # Boundary conditions (first and last girder g_nodes):
     matrix[0:6, 0:6] += np.diag([stiffspring, stiffspring, stiffspring, stiffspring, stiffspring, stiffspring])
-    matrix[(g_node_num - 1) * 6:g_node_num * 6, (g_node_num - 1) * 6:g_node_num * 6] += np.diag([0, stiffspring, stiffspring,
+    matrix[(g_node_num - 1) * 6:g_node_num * 6, (g_node_num - 1) * 6:g_node_num * 6] += np.diag([stiffspring, stiffspring, stiffspring,
                                                                                                  stiffspring, stiffspring, stiffspring])
 
 

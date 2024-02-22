@@ -400,19 +400,22 @@ def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, 
     """
     df = pd.read_csv(in_csv_path)
     beta_DB = df[df['Method'] == method_1]['beta_DB']
+    assert np.allclose(df[df['Method'] == method_1]['beta_DB'], df[df['Method'] == method_2]['beta_DB']), 'Method 1 and 2 have different sizes of betas which will cause problems here'
     beta_0 = beta_0_func(beta_DB)
     df_out_3 = pd.DataFrame({'beta_DB': beta_DB, 'beta_0': beta_0})  # named 3, instead of 1, to not confuse w/ method 1
     df_out_4 = pd.DataFrame({'keys':['diff_of_max', 'max_1', 'max_2', 'beta_max_1', 'beta_max_2',
                                      'max_of_diff', 'beta_max_of_diff']})  # named 4, instead of 2, to not confuse w/ method 2
+    df_out_5 = pd.DataFrame({'keys':['diff_of_max', 'diff_beta0_0', 'diff_beta0_30', 'diff_beta0_60', 'diff_beta0_90']})
 
     for type in ['static_max_dof_', 'std_max_dof_']:
         for d in ["0","1","2","3","4","5"]:
             # Getting difference of the two maximums (diff between max of method 1 and max of method 2)
-            dof = type+d
+            dof = type + d
             resp_1 = np.array(df[df['Method'] == method_1][dof])
             resp_2 = np.array(df[df['Method'] == method_2][dof])
             rel_change = (resp_2 - resp_1) / np.abs(resp_1)
             df_out_3[f'diff_{dof}'] = rel_change
+
             idx_absmax_1 = df[df['Method'] == method_1][dof].abs().idxmax()
             idx_absmax_2 = df[df['Method'] == method_2][dof].abs().idxmax()
             absmax_1 = df[df['Method'] == method_1][dof][idx_absmax_1]
@@ -423,14 +426,26 @@ def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, 
             idx_absmax_of_diff = df_out_3[f'diff_{dof}'].abs().idxmax()
             absmax_of_diff = df_out_3[f'diff_{dof}'][idx_absmax_of_diff]  # Less relevant: Getting maximum of the all differences (one difference per beta)
             beta_absmax_of_diff = df_out_3['beta_DB'][idx_absmax_of_diff]
-
             df_out_4[dof] = [diff_of_absmax, absmax_1, absmax_2, beta_absmax_1, beta_absmax_2,
                              absmax_of_diff, beta_absmax_of_diff]
 
+            df['beta_0'] = beta_0_func(df['beta_DB'])
+            diff_value_beta0_b_all = {}
+            for b_deg in [0, 30, 60, 90]:
+                b_rad = rad(b_deg)
+                idx_1_beta0_b = (df[df['Method'] == method_1]['beta_0'] - b_rad).abs().idxmin()
+                idx_2_beta0_b = (df[df['Method'] == method_2]['beta_0'] - b_rad).abs().idxmin()
+                value_1_beta0_b = df[df['Method'] == method_1][dof][idx_1_beta0_b]
+                value_2_beta0_b = df[df['Method'] == method_2][dof][idx_2_beta0_b]
+                diff_value_beta0_b = (value_2_beta0_b - value_1_beta0_b) / np.abs(value_1_beta0_b)
+                diff_value_beta0_b_all[f'beta0_{b_deg}'] = diff_value_beta0_b
+            df_out_5[dof] = [diff_of_absmax, diff_value_beta0_b_all['beta0_0'], diff_value_beta0_b_all['beta0_30'],
+                             diff_value_beta0_b_all['beta0_60'], diff_value_beta0_b_all['beta0_90']]
 
     with pd.ExcelWriter(out_csv_path, engine='openpyxl') as writer:
         df_out_3.to_excel(writer, sheet_name='all_angles')
-        df_out_4.to_excel(writer, sheet_name='summary')
+        df_out_4.to_excel(writer, sheet_name='other')
+        df_out_5.to_excel(writer, sheet_name='summary')
 
 
 produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\standard straight bridge\FD_std_delta_max_2024-02-06_18-27-22.csv",
