@@ -15,13 +15,14 @@ import numpy as np
 ########################################################################################################################
 # Floating bridge Properties:
 ########################################################################################################################
-R = 5000000  # m. Horizontal radius of the bridge. (R = 5000 for Bjornafjorden. R = 5000000 for almost straight)
+R = 500  # m. Horizontal radius of the bridge. (R = 5000 for Bjornafjorden. R = 5000000 for almost straight)
 arc_length = 1000  # m. Arc length of the bridge. (arc_length = 5000 for Bjornafjorden)
 pontoons_s = np.cumsum([100]*9)  # Total of 49 pontoons: np.cumsum([100]*49)
-zbridge = 20  # m. (deck height above water, measured at the Shear Centre!)
+zbridge = 16  # m. It was 20 in the benchmark!! (deck height above water, measured at the Shear Centre!)
 p_freeboard = 4  # m. (height of pontoon above water level)
 CS_height = 4  # m. CS height
 FEM_max_length = 20  # Paper 2 & 4: 25. Choose: 10,12.5,14.29,16.67,20,25,33.34,50,100  # Horizontal response->100 (accurate to 0.3%). Vertical->50(6.2%) 33.34(2.6%) 25(1.4%). Torsional->50(8.1%) 33.34(3.6%) 25(1.9%)
+angle_Gs_Gmagnetic = np.deg2rad(0)  # use np.deg2rad(10) or similar for Bjørnafjord
 vertical_curvature = False  # False: horizontal bridge girder.
 bridge_shape = 'C'
 # Dependent variables

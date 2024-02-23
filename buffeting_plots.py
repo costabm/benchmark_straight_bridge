@@ -3,7 +3,7 @@ import numpy as np
 import scipy.stats
 from buffeting import beta_DB_func, beta_0_func
 # from create_minigrid_data_from_raw_WRF_500_data import lat_lon_aspect_ratio, bridge_WRF_nodes_coor_func
-from straight_bridge_geometry import g_node_coor, p_node_coor, g_s_3D_func
+from straight_bridge_geometry import g_node_coor, p_node_coor, g_s_3D_func, angle_Gs_Gmagnetic
 from my_utils import normalize
 import matplotlib.pyplot as plt
 import matplotlib
@@ -21,7 +21,7 @@ def deg(rad):
 
 def get_bridge_node_angles_and_radia_to_plot(ax):
     # rotate from Gs system to Gmagnetic system, where x-axis is aligned with S-N direction:
-    rot_angle = rad(10)
+    rot_angle = angle_Gs_Gmagnetic.copy()
     g_node_coor_Gmagnetic = np.einsum('ij,nj->ni', np.transpose(np.array([[np.cos(rot_angle), -np.sin(rot_angle), 0],
                                                                           [np.sin(rot_angle), np.cos(rot_angle), 0],
                                                                           [0, 0, 1]])), g_node_coor)
@@ -388,7 +388,7 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
         table_max_diff_all_betas.to_csv(r'results\Table_of_the_maximum_difference_for_pairs_of_cases_' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
 
 
-# response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='static', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
+response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='static', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
 response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='buffeting', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
 # # response_polar_plots(symmetry_180_shifts=False, error_bars=False, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
 # # response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'make_M_C_freq_dep', 'beta_DB'])

@@ -48,7 +48,7 @@ import math
 import copy
 import time
 import pandas as pd
-from straight_bridge_geometry import arc_length
+from straight_bridge_geometry import arc_length, angle_Gs_Gmagnetic
 from aero_coefficients import aero_coef, aero_coef_derivatives
 from transformations import normalize, g_node_L_3D_func, g_elem_nodes_func, T_GsGw_func, T_LsGs_3g_func, T_LsGs_6g_func,\
     T_LrLs_func, T_LSOHLwbar_func, mat_Ls_node_Gs_node_all_func, rotate_v1_about_v2_func, vec_Ls_elem_Ls_node_girder_func, \
@@ -75,11 +75,12 @@ x_tower = 325  # m. x-coordinate of South tower for turbulence considerations.
 theta_0 = 0  # it is 0 if wind is in the Global XY plane. theta will account for girder geometries (and static loads).
 # Damping
 damping_type = 'Rayleigh'  # 'Rayleigh' or 'modal'.
-damping_ratio = 0.005  #  0.000001 * 0.005  # Structural damping
+damping_ratio = 0.005*4  # Multiply by 4 after critical response change from beta_DB = 40 to 50 happened in the R=500 bridge due to very low damping, and negative aero damping in modal coupling! Structural damping
 damping_Ti = 10  # period matching exactly the damping ratio (see Rayleigh damping)
 damping_Tj = 1  # period matching exactly the damping ratio (see Rayleigh damping)  # this used to be 5 sec, but see AMC\Milestone 10\Appendix F - Enclosure 1, Designers format, K11-K14.zip
 
 U_benchmark = 30
+
 
 ########################################################################################################################
 # Auxiliary generic functions
@@ -104,22 +105,17 @@ def delta_array_func(array):
 def beta_0_func(beta_DB):
     assert np.max(beta_DB) <= rad(360)
     assert np.min(beta_DB) >= rad(0)
-    beta_0 = rad(100) - beta_DB  # [rad]. Global XYZ mean yaw angle, where both bridge ends fall on X-axis. Convention used as in Fig.1 (of the mentioned paper). beta_DB = 100 <=> beta_0 = 0. beta_DB = 80 <=> beta_0 = 20 [deg].
+    beta_0 = rad(90) + angle_Gs_Gmagnetic - beta_DB  # [rad]. Global XYZ mean yaw angle, where both bridge ends fall on X-axis. Convention used as in Fig.1 (of the mentioned paper). beta_DB = 100 <=> beta_0 = 0. beta_DB = 80 <=> beta_0 = 20 [deg].
     beta_0 = np.where(beta_0<=rad(-180), rad(180) - (rad(-180) - beta_0), beta_0)  # converting to interval [rad(-180),rad(180)]. Confirm with: print('beta_DB = ', round(deg(beta_DB)), ' beta_0 = ', round(deg(beta_0)))
     return beta_0
 
 def beta_DB_func(beta_0):
     assert np.max(beta_0) <= rad(180)
     assert np.min(beta_0) >= rad(-180)
-    beta_DB = rad(100) - beta_0
+    beta_DB = rad(90) + angle_Gs_Gmagnetic - beta_0
     beta_DB = beta_within_minus_Pi_and_Pi_func(beta_DB)
     beta_DB = np.where(beta_DB<0, rad(180) + (rad(180) - np.abs(beta_DB)), beta_DB)
     return beta_DB
-
-def beta_DB_func_2(beta_0):
-    assert np.max(beta_0) <= rad(180)
-    assert np.min(beta_0) >= rad(-180)
-    return np.where(np.logical_and(rad(-180) < beta_0, beta_0 <= rad(100)), rad(100) - beta_0, rad(460) - beta_0)
 
 def U_bar_func(g_node_coor, RP=RP):
     """ 10min mean wind """  #
