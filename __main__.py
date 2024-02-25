@@ -380,7 +380,7 @@ include_SE_in_modal = True  # includes effects from Kse when calculating mode sh
 # ONE CASE (Can be used to generate new spectra of response for further use in the frequency discretization)
 dtype_in_response_spectra = 'float32'
 include_sw = True
-include_KG = False
+include_KG = True
 n_aero_coef = 4
 cospec_type = 2
 include_SE = True
@@ -405,7 +405,7 @@ std_delta_local = buffeting_FD_func(include_sw, include_KG, aero_coef_method, n_
 # MULTIPLE CASES
 dtype_in_response_spectra_cases = ['float64']  # complex128, float64, float32. It doesn't make a difference in accuracy, nor in computational time (only when memory is an issue!).
 include_sw_cases = [True]  # include static wind effects or not (initial angle of attack and geometric stiffness)
-include_KG_cases = [False]  # include the effects of geometric stiffness (both in girder and columns)
+include_KG_cases = [True]  # include the effects of geometric stiffness (both in girder and columns)
 n_aero_coef_cases = [4]  # Include 3 coef (Drag, Lift, Moment), 4 (..., Axial) or 6 (..., Moment xx, Moment zz). Only working for the '3D' skew wind approach!!
 include_SE_cases = [True]  # include self-excited forces or not. If False, then flutter_derivatives_type must be either '3D_full' or '2D_full'
 make_M_C_freq_dep_cases = [False]  # include frequency-dependent added masses and added damping, or instead make an independent approach (using only the dominant frequency of each dof)
@@ -444,8 +444,6 @@ parametric_buffeting_FD_func(list_of_cases, g_node_coor, p_node_coor, Ii_simplif
 # pr.disable()
 # pr.print_stats(sort='cumtime')
 
-if 'table' in aero_coef_method_cases:
-    print('WARNIIIIIIING: Using "table" for aero_coef_method is WRONG. The symmetry transformations are probably being applied twice!!!!')
 
 ########################################################################################################################
 # Time domain buffeting analysis:
@@ -510,8 +508,6 @@ list_of_cases = list_of_cases_TD_func(aero_coef_method_cases, n_aero_coef_cases,
 # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
 # # # # # buffeting_plots.response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'beta_DB'])
 # Note: to accelerate the code, calculate the polynomial coefficients of the constrained fits only once and save them in a separate file to be accessed for each mean wind direction. Or use the analytical formula for each polynomial + symmetry transformations
-if 'table' in aero_coef_method_cases:
-    print('WARNIIIIIIING: Using "table" for aero_coef_method is WRONG. The symmetry transformations are probably being applied twice!!!!')
 
 # #######################################################################################################################
 # Validating the wind field:

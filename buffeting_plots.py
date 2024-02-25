@@ -160,12 +160,12 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
     #                  cycler(lw=lineweight_list) +
     #                  cycler(alpha=[0.8, 0.4, 0.8, 0.8, 0.8]))
     # FD aero method with both FD and TD
-    lineweight_list = [2., 2., 2., 2.]
-    custom_cycler = (cycler(color=['dodgerblue', 'gold', 'blue', 'orange']) +
-                     #cycler(color=new_colors) +
-                     cycler(linestyle=['-', '-', '--', '--']) +
-                     cycler(lw=lineweight_list) +
-                     cycler(alpha=[0.8, 0.8, 0.8, 0.8]))
+    # lineweight_list = [2., 2., 2., 2.]
+    # custom_cycler = (cycler(color=['dodgerblue', 'gold', 'blue', 'orange']) +
+    #                  #cycler(color=new_colors) +
+    #                  cycler(linestyle=['-', '-', '--', '--']) +
+    #                  cycler(lw=lineweight_list) +
+    #                  cycler(alpha=[0.8, 0.8, 0.8, 0.8]))
     # # Sensitivity
     # custom_cycler = (cycler(color=['cyan', 'orange', 'red', 'blue', 'magenta', 'blue', 'red']) +
     #                  # cycler(color=new_colors) +
@@ -190,6 +190,15 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
     #                  cycler(marker=["o"]*len(lineweight_list)) +
     #                  cycler(markersize=np.array(lineweight_list)*1.2) +
     #                  cycler(alpha=[0.8, 0.8, 0.8, 0.4]))
+    # Polimi FD cases:
+    lineweight_list = [2.5, 1.8, 2., 2.]
+    custom_cycler = (cycler(color=['brown', 'dodgerblue', 'gold', 'blue', ]) +
+                     #cycler(color=new_colors) +
+                     cycler(linestyle=['-', '--', '--', (0, (3, 1.5, 1, 1.5, 1, 1.5))]) +
+                     cycler(lw=lineweight_list) +
+                     cycler(marker=["o"]*len(lineweight_list)) +
+                     cycler(markersize=np.array(lineweight_list)*1.2) +
+                     cycler(alpha=[0.8, 0.8, 0.8, 0.4]))
     # Only one FD case:
     # lineweight_list = [2., 2., 2., 2.]
     # custom_cycler = (cycler(color=['brown', 'green', 'gold', 'blue', ]) +
