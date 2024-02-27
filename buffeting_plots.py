@@ -307,6 +307,35 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
             ax.plot(bridge_node_angle, bridge_node_radius_norm, linestyle='-', linewidth=3., alpha=0.5, color='black', marker="None", label='Bridge axis')#,zorder=k+1)
 
         ax.grid(True)
+
+        def draw_minor_thetagrids(ax, angles, styles):
+            """
+            Draw custom theta gridlines on a polar plot.
+
+            Parameters:
+            - ax: The polar plot axis to draw gridlines on.
+            - angles: A list of angles (in degrees) where gridlines should be drawn.
+            - styles: A dictionary of style parameters to apply to the gridlines.
+            """
+            # Convert angles to radians
+            angles_rad = np.radians(angles)
+
+            # Get the radial limits of the plot
+            r_min, r_max = ax.get_ylim()
+
+            # Loop through each angle and draw a line
+            for angle in angles_rad:
+                # Calculate the line's x and y coordinates
+                x = [angle, angle]
+                y = [0, r_max]
+
+                # Plot the line with the given styles
+                ax.plot(x, y, **styles)
+            ax.set_ylim([r_min, r_max])
+
+        ax.set_thetagrids(np.arange(0, 360, 45))  # Major grid
+        draw_minor_thetagrids(ax, np.arange(0, 360, 10), {'color': 'grey', 'linewidth': 0.3, 'linestyle': '-', 'marker':'None', 'alpha':0.3})
+
         # ax.legend(bbox_to_anchor=(1.63,0.93), loc="upper right", title='Analysis:')
         ax.set_theta_zero_location("N")
         ax.set_theta_direction(-1)
@@ -397,10 +426,85 @@ def response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_pol
         table_max_diff_all_betas.to_csv(r'results\Table_of_the_maximum_difference_for_pairs_of_cases_' + strftime("%Y-%m-%d_%H-%M-%S", gmtime()) + '.csv')
 
 
-response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='static', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
-response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='buffeting', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
+# response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='static', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
+# response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=False, show_bridge=True, buffeting_or_static='buffeting', order_by=['Analysis', 'Method', 'n_freq', 'beta_DB'])
 # # response_polar_plots(symmetry_180_shifts=False, error_bars=False, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'C_Ci_linearity', 'f_array_type', 'make_M_C_freq_dep', 'dtype_in_response_spectra', 'beta_DB'])
 # # response_polar_plots(symmetry_180_shifts=False, error_bars=True, closing_polygon=True, tables_of_differences=False, shaded_sector=True, show_bridge=True, order_by=['skew_approach', 'Analysis', 'g_node_num', 'n_freq', 'SWind', 'KG',  'Method', 'SE', 'FD_type', 'n_aero_coef', 'make_M_C_freq_dep', 'beta_DB'])
+
+
+def response_along_bridge(results_path, methods_to_compare, beta):
+    """ Plotting std. of the response along the bridge girder."""
+    file_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results"
+    full_path = os.path.join(file_path, results_path)
+    df = pd.read_csv(full_path)
+    df = df[np.isclose(df['beta_DB'], beta)]  # select data at the desired beta
+
+    g_s_3D = g_s_3D_func(g_node_coor)
+    n_g_nodes = len(g_s_3D)
+
+    resp_static = {}
+    resp_buffet = {}
+
+    # Organizing data in nested dicts
+    for m in methods_to_compare:
+        resp_static[m] = {}
+        resp_buffet[m] = {}
+        for dof in range(6):
+            static_lst = []
+            buffet_lst = []
+            for g in range(n_g_nodes):
+                static_lst.extend(df[df['Method']==m][f'g_node_{g}_static_dof_{dof}'])
+                buffet_lst.extend(df[df['Method']==m][f'g_node_{g}_std_dof_{dof}'])
+            resp_static[m][dof] = np.array(static_lst)
+            resp_buffet[m][dof] = np.array(buffet_lst)
+
+    static_label_list = [r'$\Delta_{x}\/[m]$', r'$\Delta_{y}\/[m]$', r'$\Delta_{z}\/[m]$', r'$\Delta_{rx}\/[\degree]$']
+    buffet_label_list = [r'$\sigma_{x}\/[m]$', r'$\sigma_{y}\/[m]$', r'$\sigma_{z}\/[m]$', r'$\sigma_{rx}\/[\degree]$']
+    color_list = ['brown', 'dodgerblue', 'gold', 'blue', ]
+    linestyle_list = ['-', '--', '--', (0, (3, 1.5, 1, 1.5, 1, 1.5))]
+    lineweight_list = [2.5, 1.8, 2., 2.]
+
+    for dof in range(4):
+
+
+        # Static
+        plt.figure(figsize=(3.65, 2.65), dpi=400)
+        plt.title(static_label_list[dof])
+        for m_idx, m in enumerate(methods_to_compare):
+            resp_to_plot = resp_static[m][dof] if dof <3 else resp_static[m][dof] * 180 / np.pi
+            plt.plot(g_s_3D, resp_to_plot, label=m, c=color_list[m_idx], ls=linestyle_list[m_idx], lw=lineweight_list[m_idx], alpha=0.8)
+        plt.xlabel('Axial coordinate [m]')
+        plt.grid()
+        plt.tight_layout()
+        plt.savefig(
+            r'results\static_response_along_bridge_beta' + str(int(deg(beta))) + '_dof_' + str(dof) + "_file_" + results_path + '.png')
+        plt.close()
+
+        # Buffeting
+        plt.figure(figsize=(3.65, 2.65), dpi=400)
+        plt.title(buffet_label_list[dof])
+        for  m_idx, m in enumerate(methods_to_compare):
+            resp_to_plot = resp_buffet[m][dof] if dof <3 else resp_buffet[m][dof] * 180 / np.pi
+            plt.plot(g_s_3D, resp_to_plot, label=m, c=color_list[m_idx], ls=linestyle_list[m_idx], lw=lineweight_list[m_idx], alpha=0.8)
+        plt.xlabel('Axial coordinate [m]')
+        plt.grid()
+        plt.tight_layout()
+        handles, labels = plt.gca().get_legend_handles_labels()
+        plt.savefig(
+            r'results\buffet_response_along_bridge_beta_' + str(int(deg(beta))) + '_dof_' + str(dof) + "_file_" + results_path + '.png')
+        plt.close()
+
+    # Legend
+    plt.figure(dpi=400)
+    plt.axis("off")
+    plt.legend(handles, labels, ncol=2)
+    plt.tight_layout()
+    plt.savefig(r'results\legend_response_along_bridge_beta' + str(int(deg(beta))) + '_dof_' + str(dof) + "_file_" + results_path + '.png')
+    plt.close()
+
+response_along_bridge(methods_to_compare=['aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', 'cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx'],
+                      results_path="FD_all_nodes_std_delta_2024-02-25_22-05-29.csv",
+                      beta=rad(320))
 
 
 def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, method_2):
@@ -456,19 +560,20 @@ def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, 
         df_out_4.to_excel(writer, sheet_name='other')
         df_out_5.to_excel(writer, sheet_name='summary')
 
+# produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\Rinf\FD_std_delta_max_2024-02-26_01-03-26.csv",
+#                                        out_csv_path = r'results\compare_response_differences_Rinf.xlsx',
+#                                        method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+#                                        method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
+# produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\R1000\FD_std_delta_max_2024-02-25_22-05-29.csv",
+#                                        out_csv_path = r'results\compare_response_differences_R1000.xlsx',
+#                                        method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+#                                        method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
+# produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\R500\FD_std_delta_max_2024-02-25_13-30-19.csv",
+#                                        out_csv_path = r'results\compare_response_differences_R500.xlsx',
+#                                        method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+#                                        method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
 
-produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\standard straight bridge\FD_std_delta_max_2024-02-06_18-27-22.csv",
-                                       out_csv_path = r'results\compare_response_differences_straight.xlsx',
-                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
-                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
-produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\R 500\FD_std_delta_max_2024-02-06_20-27-35.csv",
-                                       out_csv_path = r'results\compare_response_differences_R500.xlsx',
-                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
-                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
-produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\R 1000\FD_std_delta_max_2024-02-06_21-42-32.csv",
-                                       out_csv_path = r'results\compare_response_differences_R1000.xlsx',
-                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
-                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
+raise NotImplementedError
 
 
 def plot_contourf_spectral_response(f_array, S_delta_local, g_node_coor, S_by_freq_unit='rad', zlims_bool=False, cbar_extend='min', filename='Contour_', idx_plot=[1,2,3]):
