@@ -579,12 +579,22 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0, 1,
             plt.savefig(os.path.join(root_dir, legend_path_name))
             plt.close()
 
+        # # If you just want to plot the markers, uncomment this:
+        # plt.figure(figsize=(1, 3))
+        # color_list = plt.cm.turbo(np.linspace(0, 0.95, 10)).tolist()
+        # marker_list = ["^", "v", "s", "D", "p", "h", "8", "X", "P", "*"]
+        # markersize_list = np.array([1.8, 1.8, 1.8, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3]) * 28
+        # [plt.scatter(i, 0, c=color_list[i], marker=marker_list[i], s=markersize_list[i]) for i in range(10)]
+        # plt.savefig(os.path.join(root_dir, "measured_markers.jpg"))
+
+
 # plot_2D_at_beta_fixed_polimi(method='aero_coefs_Gw_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3,4,5], deg_list=None, zoom='in', beta_list=rad(np.array([0])))
 # plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in', beta_list=rad(np.array([0])))
 # plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in')
 # plot_2D_at_beta_fixed_polimi(method='cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in')
 plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='inin')
 plot_2D_at_beta_fixed_polimi(method='cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='inin')
+
 
 
 # for d in [2]: #,3,4,5,6,7,8,9]:
