@@ -590,10 +590,10 @@ def plot_2D_at_beta_fixed_polimi(method='2D_fit_cons_polimi', idx_to_plot=[0, 1,
 
 # plot_2D_at_beta_fixed_polimi(method='aero_coefs_Gw_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3,4,5], deg_list=None, zoom='in', beta_list=rad(np.array([0])))
 # plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in', beta_list=rad(np.array([0])))
-# plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in')
-# plot_2D_at_beta_fixed_polimi(method='cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in')
-plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='inin')
-plot_2D_at_beta_fixed_polimi(method='cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='inin')
+plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in')
+plot_2D_at_beta_fixed_polimi(method='cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='in')
+# plot_2D_at_beta_fixed_polimi(method='aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='inin')
+# plot_2D_at_beta_fixed_polimi(method='cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', idx_to_plot=[0,1,2,3], deg_list=None, zoom='inin')
 
 
 
