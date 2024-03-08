@@ -75,7 +75,7 @@ x_tower = 325  # m. x-coordinate of South tower for turbulence considerations.
 theta_0 = 0  # it is 0 if wind is in the Global XY plane. theta will account for girder geometries (and static loads).
 # Damping
 damping_type = 'Rayleigh'  # 'Rayleigh' or 'modal'.
-damping_ratio = 0.005*4  # Multiply by 4 after critical response change from beta_DB = 40 to 50 happened in the R=500 bridge due to very low damping, and negative aero damping in modal coupling! Structural damping
+damping_ratio = 0.02  # Normally 0.005. But 0.02 after critical response change from beta_DB = 40 to 50 happened in the R=500 bridge due to very low damping, and negative aero damping in modal coupling! Structural damping
 damping_Ti = 10  # period matching exactly the damping ratio (see Rayleigh damping)
 damping_Tj = 1  # period matching exactly the damping ratio (see Rayleigh damping)  # this used to be 5 sec, but see AMC\Milestone 10\Appendix F - Enclosure 1, Designers format, K11-K14.zip
 

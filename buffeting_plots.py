@@ -502,9 +502,9 @@ def response_along_bridge(results_path, methods_to_compare, beta):
     plt.savefig(r'results\legend_response_along_bridge_beta' + str(int(deg(beta))) + '_dof_' + str(dof) + "_file_" + results_path + '.png')
     plt.close()
 
-response_along_bridge(methods_to_compare=['aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', 'cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx'],
-                      results_path="FD_all_nodes_std_delta_2024-02-25_22-05-29.csv",
-                      beta=rad(320))
+# response_along_bridge(methods_to_compare=['aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx', 'cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx'],
+#                       results_path="FD_all_nodes_std_delta_2024-02-25_22-05-29.csv",
+#                       beta=rad(320))
 
 
 def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, method_2):
@@ -518,7 +518,8 @@ def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, 
     df_out_3 = pd.DataFrame({'beta_DB': beta_DB, 'beta_0': beta_0})  # named 3, instead of 1, to not confuse w/ method 1
     df_out_4 = pd.DataFrame({'keys':['diff_of_max', 'max_1', 'max_2', 'beta_max_1', 'beta_max_2',
                                      'max_of_diff', 'beta_max_of_diff']})  # named 4, instead of 2, to not confuse w/ method 2
-    df_out_5 = pd.DataFrame({'keys':['diff_of_max', 'diff_beta0_0', 'diff_beta0_30', 'diff_beta0_60', 'diff_beta0_90']})
+    df_out_5 = pd.DataFrame({'keys':['diff_of_max', 'diff_beta0_0', 'diff_beta0_10', 'diff_beta0_20', 'diff_beta0_30', 'diff_beta0_40',
+                                     'diff_beta0_50', 'diff_beta0_60', 'diff_beta0_70', 'diff_beta0_80', 'diff_beta0_90']})
 
     for type in ['static_max_dof_', 'std_max_dof_']:
         for d in ["0","1","2","3","4","5"]:
@@ -544,7 +545,7 @@ def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, 
 
             df['beta_0'] = beta_0_func(df['beta_DB'])
             diff_value_beta0_b_all = {}
-            for b_deg in [0, 30, 60, 90]:
+            for b_deg in [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]:
                 b_rad = rad(b_deg)
                 idx_1_beta0_b = (df[df['Method'] == method_1]['beta_0'] - b_rad).abs().idxmin()
                 idx_2_beta0_b = (df[df['Method'] == method_2]['beta_0'] - b_rad).abs().idxmin()
@@ -552,26 +553,27 @@ def produce_response_tables_of_differences(in_csv_path, out_csv_path, method_1, 
                 value_2_beta0_b = df[df['Method'] == method_2][dof][idx_2_beta0_b]
                 diff_value_beta0_b = (value_2_beta0_b - value_1_beta0_b) / np.abs(value_1_beta0_b)
                 diff_value_beta0_b_all[f'beta0_{b_deg}'] = diff_value_beta0_b
-            df_out_5[dof] = [diff_of_absmax, diff_value_beta0_b_all['beta0_0'], diff_value_beta0_b_all['beta0_30'],
-                             diff_value_beta0_b_all['beta0_60'], diff_value_beta0_b_all['beta0_90']]
+            df_out_5[dof] = [diff_of_absmax, diff_value_beta0_b_all['beta0_0'], diff_value_beta0_b_all['beta0_10'], diff_value_beta0_b_all['beta0_20'],
+                             diff_value_beta0_b_all['beta0_30'], diff_value_beta0_b_all['beta0_40'], diff_value_beta0_b_all['beta0_50'], diff_value_beta0_b_all['beta0_60'],
+                             diff_value_beta0_b_all['beta0_70'], diff_value_beta0_b_all['beta0_80'], diff_value_beta0_b_all['beta0_90']]
 
     with pd.ExcelWriter(out_csv_path, engine='openpyxl') as writer:
         df_out_3.to_excel(writer, sheet_name='all_angles')
         df_out_4.to_excel(writer, sheet_name='other')
         df_out_5.to_excel(writer, sheet_name='summary')
 
-# produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\Rinf\FD_std_delta_max_2024-02-26_01-03-26.csv",
-#                                        out_csv_path = r'results\compare_response_differences_Rinf.xlsx',
-#                                        method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
-#                                        method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
-# produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\R1000\FD_std_delta_max_2024-02-25_22-05-29.csv",
-#                                        out_csv_path = r'results\compare_response_differences_R1000.xlsx',
-#                                        method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
-#                                        method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
-# produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\R500\FD_std_delta_max_2024-02-25_13-30-19.csv",
-#                                        out_csv_path = r'results\compare_response_differences_R500.xlsx',
-#                                        method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
-#                                        method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
+produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\Rinf\FD_std_delta_max_2024-02-26_01-03-26.csv",
+                                       out_csv_path = r'results\compare_response_differences_Rinf.xlsx',
+                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
+produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\R1000\FD_std_delta_max_2024-02-25_22-05-29.csv",
+                                       out_csv_path = r'results\compare_response_differences_R1000.xlsx',
+                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
+produce_response_tables_of_differences(in_csv_path = r"C:\Users\bercos\PycharmProjects\benchmark_straight_bridge\results\now_with_KG\R500\FD_std_delta_max_2024-02-25_13-30-19.csv",
+                                       out_csv_path = r'results\compare_response_differences_R500.xlsx',
+                                       method_1 = r"cos_rule_aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx",
+                                       method_2 = r"aero_coefs_Ls_2D_fit_cons_polimi-K12-G-L-TS-SVV.xlsx")
 
 raise NotImplementedError
 
