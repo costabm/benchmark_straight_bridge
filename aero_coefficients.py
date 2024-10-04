@@ -217,6 +217,33 @@ def get_C_signs_and_change_betas_extrap(betas_extrap):
     return betas_extrap, Cx_sign, Cy_sign, Cz_sign, Cxx_sign, Cyy_sign, Czz_sign
 
 
+def get_C_signs_and_change_betas_NEW(betas):
+    # todo: Bernardo check if we can use this function instead of the one above. It's vectorized, so should be faster
+    # Ensure betas is a NumPy array
+    betas = np.asarray(betas)
+
+    # Initialize sign arrays
+    signs = np.ones((6, betas.size))  # Shape (6, size) for Cx, Cy, Cz, Crx, Cry, Crz
+
+    # Define masks for different beta quadrants
+    mask_90_180 = (betas > rad(90)) & (betas <= rad(180))
+    mask_neg90_0 = (betas >= -rad(90)) & (betas < 0)
+    mask_neg180_neg90 = (betas >= -rad(180)) & (betas < -rad(90))
+
+    # Transform betas and update signs
+    betas[mask_90_180] = rad(180) - betas[mask_90_180]
+    signs[:, mask_90_180] = [[1], [-1], [1], [-1], [1], [-1]]
+
+    betas[mask_neg90_0] = -betas[mask_neg90_0]
+    signs[:, mask_neg90_0] = [[-1], [1], [1], [1], [-1], [-1]]
+
+    betas[mask_neg180_neg90] = rad(180) + betas[mask_neg180_neg90]
+    signs[:, mask_neg180_neg90] = [[-1], [-1], [1], [-1], [-1], [1]]
+
+    return (betas,) + tuple(signs)
+
+
+
 def aero_coef_table_method(betas_extrap, thetas_extrap, method, coor_system):
     assert coor_system in ['Ls', 'Gw']
     table_path = os.path.join(root_dir, 'aerodynamic_coefficients', 'tables', method)
