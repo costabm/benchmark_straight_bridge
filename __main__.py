@@ -90,7 +90,7 @@ if run_modal_analysis:
             ax.set_xticks([0, 500, 1000])
         fig.supxlabel('x-axis [m]')
         plt.tight_layout(pad=0.5) # w_pad=0.04, h_pad=0.06)
-        plt.savefig(r'_mode_shapes/ first_50_modes.png')
+        plt.savefig(r'_mode_shapes/first_50_modes.png')
 
         h, l = ax.get_legend_handles_labels()
         plt.figure(dpi=500, figsize=(6,1))
